@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Team-Zufallsgenerator & Timer</title>
+  <style>
+    /* --- Base Styles & Typography --- */
+    @import url('https://fonts.googleapis.com/css2?family=Helvetica&display=swap');
+    body {
+      font-family: 'Helvetica', 'Arial', sans-serif;
+      background: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      color: #002878;
+    }
+
+    h1 {
+      margin-top: 30px;
+      font-size: 1.8em;
+      text-align: center;
+    }
+    
+    /* --- UI Components: Buttons --- */
+    .app-button {
+      background-color: #002878;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.2em;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 10px 0;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      width: 90%;
+      max-width: 320px;
+    }
+    
+    .app-button:hover {
+      background-color: #001d5a;
+    }
+    
+    /* Secondary Action Buttons Container */
+    .control-buttons-container {
+        display: flex;
+        flex-direction: column; 
+        width: 90%;
+        max-width: 320px;
+        margin-top: 10px; 
+        margin-bottom: 20px;
+        gap: 10px; 
+    }
+    
+    @media (min-width: 480px) {
+        .control-buttons-container {
+            flex-direction: row;
+            justify-content: space-between;
+        }
+    }
+    
+    #editButton, #helpButton {
+        background-color: #8c8c8c;
+        color: white; 
+        padding: 10px 15px; 
+        font-size: 1em;
+        margin: 0; 
+        width: 100%; 
+        box-sizing: border-box;
+    }
+
+    #editButton:hover, #helpButton:hover {
+        background-color: #6a6a6a;
+    }
+    
+    @media (min-width: 480px) {
+        #editButton, #helpButton {
+            width: 49%; 
+        }
+    }
+
+    /* --- UI Components: Participant Selection --- */
+    #participantSelection {
+        display: flex;
+        flex-direction: column;
+        align-items: center;    
+        gap: 10px;
+        width: 90%;
+        max-width: 320px;       
+        margin-bottom: 20px;
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 0 5px rgba(0,0,0,0.05);
+        min-height: 50px; 
+    }
+
+    .participant-label {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        background-color: #eef2f8;
+        padding: 12px 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1.1em;
+        transition: background-color 0.2s;
+        border: 1px solid #d0d7e5;
+        user-select: none; 
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .participant-label:hover {
+        background-color: #dde4f0;
+    }
+
+    .participant-label input[type="checkbox"] {
+        margin-right: 15px;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+
+    /* State: Participant unselected */
+    .participant-label.unchecked {
+        opacity: 0.6;
+        background-color: #f0f0f0;
+        text-decoration: line-through;
+        color: #888;
+    }
+    
+    /* --- UI Components: Timer --- */
+    #timerContainer {
+        display: flex;
+        align-items: center;
+        margin: 20px 0;
+    }
+
+    .timer-icon {
+        font-size: 2.5em;
+        padding: 0 10px;
+        line-height: 1;
+        display: none;
+        transition: transform 0.2s ease;
+    }
+    
+    #timerDisplay {
+        font-size: 3.5em; 
+        font-weight: bold;
+        color: #002878;
+        display: none;
+        letter-spacing: -2px; 
+        min-width: 120px; 
+        text-align: center;
+        transition: color 0.3s ease;
+    }
+
+    /* Timer State Colors */
+    .color-20s { color: #FFD700 !important; } /* Threshold: 20s remaining */
+    .color-15s { color: #FF8C00 !important; } /* Threshold: 15s remaining */
+    .color-10s { color: #FF4500 !important; } /* Threshold: 10s remaining */
+    .color-05s { color: #DC143C !important; } /* Threshold: 5s remaining */
+    .overtime { color: #d32f2f !important; }  /* Threshold: Overtime */
+
+    /* --- UI Components: Team List --- */
+    #teamList {
+      list-style-type: none;
+      padding: 0;
+      font-size: 1.2em;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 320px;
+      text-align: center;
+      display: none;
+      margin-top: 20px;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+
+    #teamList li {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      background-color: white; 
+      transition: background-color 0.3s ease, border 0.3s ease, transform 0.1s ease;
+    }
+
+    #teamList li:last-child {
+      border-bottom: none;
+    }
+
+    /* State: Active Participant Highlight */
+    #teamList li.active-participant {
+      background-color: #ffe0b2;
+      font-weight: bold;
+      font-size: 1.3em;
+      border: 2px solid #ff9800;
+      transform: scale(1.05);
+      position: relative;
+      z-index: 1;
+      color: #004d40;
+    }
+
+    #teamList li.active-participant:first-child {
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+     #teamList li.active-participant:last-child {
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+    /* --- Notifications & Banners --- */
+    #updateBanner {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+      font-size: 0.9em;
+      text-align: center;
+      width: 90%;
+      max-width: 320px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      transition: opacity 0.5s ease-out;
+    }
+    
+    /* --- Modal Dialogs --- */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.6);
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 15% auto;
+      padding: 25px;
+      border: 1px solid #888;
+      width: 90%;
+      max-width: 400px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px 0 rgba(0,0,0,0.3);
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: #000;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    
+    /* Forms within Modals */
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      padding: 10px;
+      margin: 10px 0 20px 0;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      border-radius: 5px;
+      font-size: 1em;
+      background-color: #f5f5f5; 
+    }
+    
+    .modal-button-container {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .modal-button-container button {
+      flex-grow: 1;
+      padding: 8px 15px; 
+      font-size: 0.9em;
+      max-width: none;
+      margin: 5px 0;
+    }
+    
+    #resetNamesButton {
+      background-color: #b0b0b0;
+      width: auto;
+      flex-grow: 0;
+    }
+    
+    #resetNamesButton:hover {
+      background-color: #949494;
+    }
+
+    /* Feedback State */
+    .saved-feedback {
+      background-color: #4CAF50 !important;
+      color: white !important;
+      transform: scale(1.05);
+    }
+    
+    /* Help Content Formatting */
+    #helpModalContent ul {
+        text-align: left;
+        padding-left: 20px;
+        margin-top: 10px;
+    }
+    #helpModalContent li {
+        margin-bottom: 8px;
+        font-size: 1em;
+        line-height: 1.4;
+    }
+    
+    #totalTimeInput {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1em;
+      text-align: center;
+    }
+
+  </style>
+
+</head>
+<body>
+
+  <h1>⏱️ Daily Taktgeber 🎲</h1>
+  
+  <div id="participantSelection">
+      </div>
+
+  <button id="shuffleButton" class="app-button">Würfeln</button>
+  
+  <div class="control-buttons-container">
+    <button id="editButton" class="app-button">Einstellungen</button>
+    <button id="helpButton" class="app-button">Anleitung</button>
+  </div>
+  
+  <div id="updateBanner" style="display: none;">
+    **NEU in V1.17:** Liste untereinander & Auto-Hide.
+  </div>
+  
+  <div id="timerContainer">
+    <span id="timerIconLeft" class="timer-icon"></span>
+    
+    <div id="timerDisplay">00:00</div>
+
+    <span id="timerIconRight" class="timer-icon"></span>
+  </div>
+
+  <ul id="teamList"></ul>
+  
+  <div id="configModal" class="modal">
+    <div class="modal-content">
+      <span class="close config-close">&times;</span>
+      
+      <h2>Daily-Dauer einstellen</h2>
+      <p>Gesamtdauer in Minuten, die auf alle Teilnehmer aufgeteilt wird (Standard: 15 Min.).</p>
+      <input type="number" id="totalTimeInput" min="1" value="15">
+      
+      <h2>Team-Mitglieder bearbeiten</h2>
+      <p>Gib die Namen der Teammitglieder ein, getrennt durch Kommas (oder Zeilenumbrüche). Leerzeichen werden automatisch entfernt.</p>
+      <textarea id="teamNamesInput"></textarea>
+      
+      <div class="modal-button-container">
+        <button id="resetNamesButton" class="app-button">Zurücksetzen</button>
+        <button id="saveConfigButton" class="app-button">Speichern</button>
+      </div>
+      
+    </div>
+  </div>
+  
+  <div id="helpModal" class="modal">
+    <div class="modal-content">
+      <span class="close help-close">&times;</span>
+      <h2>Anleitung: Daily-Reihenfolge</h2>
+      <div id="helpModalContent">
+          <p>Diese App hilft dir, eine faire und zufällige Reihenfolge für die Team-Updates in deinem Daily Meeting festzulegen.</p>
+          
+          <h3>Funktion & Bedienung</h3>
+          <ul>
+              <li>**Checklisten:** Wähle oben ab, wer heute fehlt (Urlaub/Krank).</li>
+              <li>**Würfeln:** Erstellt eine zufällige Reihenfolge der <b>aktiven</b> Teammitglieder und startet den Timer für den ersten.</li>
+              <li>**Einstellungen:** Passt die generelle Liste der Teammitglieder (Stammdaten) an.</li>
+              <li>**Leertaste (Space):** Wechselt zum nächsten Teammitglied und setzt den Timer zurück.</li>
+              <li>**Strg/Shift + Leertaste:** Wechselt zum vorherigen Teammitglied (Rückgängig-Funktion).</li>
+          </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * Global Error Handler
+     * Prevents silent failures by providing visual feedback to the user on critical exceptions.
+     */
+    window.onerror = function(message, source, lineno, colno, error) {
+        alert("Ein Fehler ist aufgetreten: " + message + "\nBitte Seite neu laden oder Cache leeren.");
+    };
+
+    // --- Configuration & Constants ---
+    const STORAGE_KEY = 'dailyTeamNames';
+    const TOTAL_TIME_KEY = 'dailyTotalTime';
+    const VERSION_KEY = 'dailyAppVersion';
+    const CURRENT_VERSION = '1.17'; 
+    
+    const initialTeamMembers = [
+      "Bastian", "Elias", "Mia", "Felix", "Hannah", "Leon", "Sophie", "Lukas", "Emma", "Julian"
+    ];
+    const DEFAULT_TOTAL_TIME_MINUTES = 15;
+    
+    // --- Application State ---
+    let currentTeamMembers = [];
+    let totalDailyTimeMinutes = DEFAULT_TOTAL_TIME_MINUTES; 
+    let activeIndex = -1;
+    let currentShuffledList = [];
+    
+    let individualTimeSeconds = 0; 
+    let timeRemainingSeconds = 0; 
+    let timerInterval = null; 
+
+    // --- DOM Elements ---
+    const teamList = document.getElementById('teamList');
+    const shuffleButton = document.getElementById('shuffleButton');
+    const editButton = document.getElementById('editButton');
+    const helpButton = document.getElementById('helpButton');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const timerIconLeft = document.getElementById('timerIconLeft'); 
+    const timerIconRight = document.getElementById('timerIconRight'); 
+    
+    const participantSelection = document.getElementById('participantSelection');
+
+    const configModal = document.getElementById('configModal');
+    const helpModal = document.getElementById('helpModal');
+    
+    const configClose = document.querySelector('.config-close');
+    const helpClose = document.querySelector('.help-close');
+    
+    const teamNamesInput = document.getElementById('teamNamesInput');
+    const totalTimeInput = document.getElementById('totalTimeInput');
+    const saveConfigButton = document.getElementById('saveConfigButton');
+    const resetNamesButton = document.getElementById('resetNamesButton'); 
+    const updateBanner = document.getElementById('updateBanner');
+
+    // --- Timer Module ---
+    
+    /**
+     * Formats a given time in seconds to a MM:SS string representation.
+     * Includes sign handling for negative values (overtime).
+     * * @param {number} totalSeconds - The time in seconds.
+     * @returns {string} Formatted time string.
+     */
+    function formatTime(totalSeconds) {
+        const sign = totalSeconds < 0 ? '+' : '';
+        const absSeconds = Math.abs(totalSeconds);
+        const minutes = Math.floor(absSeconds / 60);
+        const seconds = absSeconds % 60;
+        
+        const formattedMinutes = String(minutes).padStart(2, '0');
+        const formattedSeconds = String(seconds).padStart(2, '0');
+        
+        return `${sign}${formattedMinutes}:${formattedSeconds}`;
+    }
+    
+    /**
+     * Clears the current timer interval if one is active.
+     */
+    function stopTimer() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+    }
+    
+    /**
+     * Resets the visual state classes of the timer display.
+     */
+    function clearColorClasses() {
+        timerDisplay.classList.remove('color-20s', 'color-15s', 'color-10s', 'color-05s', 'overtime');
+    }
+
+    /**
+     * Toggles the visibility of the overtime indicators (Emojis).
+     * * @param {boolean} show - Indicates whether the icons should be displayed.
+     */
+    function toggleOvertimeIcons(show) {
+        if (show) {
+            timerIconLeft.textContent = '🤯'; 
+            timerIconRight.textContent = '⏰'; 
+            timerIconLeft.style.display = 'inline';
+            timerIconRight.style.display = 'inline';
+        } else {
+            timerIconLeft.style.display = 'none';
+            timerIconRight.style.display = 'none';
+            timerIconLeft.textContent = '';
+            timerIconRight.textContent = '';
+        }
+    }
+
+    /**
+     * Updates the DOM node of the timer and applies state-specific CSS classes
+     * based on the remaining time threshold.
+     */
+    function updateTimerDisplay() {
+        timerDisplay.textContent = formatTime(timeRemainingSeconds);
+        clearColorClasses();
+        toggleOvertimeIcons(false);
+        
+        if (timeRemainingSeconds < 0) {
+            timerDisplay.classList.add('overtime');
+            toggleOvertimeIcons(true);
+        } else if (timeRemainingSeconds <= 4) { 
+            timerDisplay.classList.add('color-05s');
+        } else if (timeRemainingSeconds <= 10) { 
+            timerDisplay.classList.add('color-10s');
+        } else if (timeRemainingSeconds <= 15) { 
+            timerDisplay.classList.add('color-15s');
+        } else if (timeRemainingSeconds <= 20) { 
+            timerDisplay.classList.add('color-20s');
+        } 
+    }
+    
+    /**
+     * Timer callback function executed every second.
+     */
+    function tick() {
+        timeRemainingSeconds--;
+        updateTimerDisplay();
+    }
+    
+    /**
+     * Initializes and starts the timer for the currently active participant.
+     * Time limits are derived dynamically from the number of active participants.
+     */
+    function startTimer() {
+        stopTimer();
+        
+        const teamSize = currentShuffledList.length; 
+        
+        if (teamSize === 0) {
+            timerDisplay.style.display = 'none';
+            toggleOvertimeIcons(false);
+            return;
+        }
+        
+        individualTimeSeconds = Math.floor((totalDailyTimeMinutes * 60) / teamSize);
+        timeRemainingSeconds = individualTimeSeconds;
+        
+        timerDisplay.style.display = 'block';
+        updateTimerDisplay(); 
+        
+        timerInterval = setInterval(tick, 1000);
+    }
+    
+    // --- Core Logic Module ---
+
+    /**
+     * Shuffles an array in place using the Fisher-Yates algorithm.
+     * * @param {Array} array - The array to shuffle.
+     * @returns {Array} The shuffled array.
+     */
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    /**
+     * Updates the DOM to reflect the active participant based on the current activeIndex.
+     */
+    function updateHighlights() {
+      const listItems = teamList.querySelectorAll('li');
+
+      listItems.forEach(li => {
+        li.classList.remove('active-participant');
+      });
+
+      if (activeIndex >= 0 && activeIndex < listItems.length) {
+        listItems[activeIndex].classList.add('active-participant');
+      }
+    }
+
+    /**
+     * Sets a new active participant index and triggers the highlight update.
+     * Ensures the bounds of the array are respected.
+     * * @param {number} newIndex - The targeted index in the participant list.
+     */
+    function updateActiveParticipant(newIndex) {
+      const listItems = teamList.querySelectorAll('li');
+      if (listItems.length === 0) return;
+
+      activeIndex = Math.max(0, Math.min(listItems.length - 1, newIndex));
+      updateHighlights();
+    }
+
+    /**
+     * Renders the shuffled participant list to the DOM and initiates the first selection.
+     * * @param {Array<string>} list - The randomized list of active participants.
+     */
+    function displayTeam(list) {
+      currentShuffledList = list.filter(name => name.trim() !== '');
+
+      teamList.style.opacity = '0';
+      teamList.style.display = 'block';
+
+      setTimeout(() => {
+        teamList.innerHTML = '';
+
+        if (currentShuffledList.length === 0) {
+          teamList.innerHTML = '<li>Keine aktiven Teilnehmer ausgewählt.</li>';
+          activeIndex = -1;
+        } else {
+          currentShuffledList.forEach(name => {
+            const li = document.createElement('li');
+            li.textContent = name;
+            teamList.appendChild(li);
+          });
+          
+          activeIndex = 0;
+          updateHighlights();
+        }
+        
+        teamList.style.opacity = '1';
+      }, 300);
+    }
+
+    /**
+     * Renders the checkbox selection for participants before the daily starts.
+     */
+    function renderParticipantSelection() {
+        if (!participantSelection) return; 
+        
+        participantSelection.innerHTML = '';
+        
+        if (!Array.isArray(currentTeamMembers)) {
+            currentTeamMembers = [...initialTeamMembers];
+        }
+
+        if (currentTeamMembers.length === 0) {
+            participantSelection.textContent = "Keine Namen in den Einstellungen hinterlegt.";
+            return;
+        }
+
+        currentTeamMembers.forEach(name => {
+            if (!name) return; 
+            
+            const label = document.createElement('label');
+            label.className = 'participant-label';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = name;
+            checkbox.checked = true; // Default state: present
+            checkbox.className = 'participant-checkbox';
+            
+            checkbox.addEventListener('change', (e) => {
+                if(e.target.checked) {
+                    label.classList.remove('unchecked');
+                } else {
+                    label.classList.add('unchecked');
+                }
+            });
+
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(name));
+            
+            participantSelection.appendChild(label);
+        });
+    }
+    
+    // --- Configuration Modal Module ---
+
+    /**
+     * Opens the configuration modal and populates it with current state data.
+     */
+    function openConfig() {
+      if(Array.isArray(currentTeamMembers)) {
+          teamNamesInput.value = currentTeamMembers.join(', ');
+      }
+      totalTimeInput.value = totalDailyTimeMinutes; 
+      configModal.style.display = 'block';
+    }
+    
+    /**
+     * Closes the configuration modal.
+     */
+    function closeConfig() {
+      configModal.style.display = 'none';
+    }
+    
+    /**
+     * Opens the help modal.
+     */
+    function openHelp() {
+        helpModal.style.display = 'block';
+    }
+    
+    /**
+     * Closes the help modal.
+     */
+    function closeHelp() {
+        helpModal.style.display = 'none';
+    }
+
+    /**
+     * Persists modal inputs to local storage and updates the application state.
+     */
+    function saveConfig() {
+      const newNames = teamNamesInput.value
+        .split(/[, \n]+/) 
+        .map(name => name.trim())
+        .filter(name => name.length > 0);
+        
+      currentTeamMembers = newNames.length > 0 ? newNames : [...initialTeamMembers]; 
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(currentTeamMembers));
+
+      const newTotalTime = parseInt(totalTimeInput.value, 10);
+      if (newTotalTime > 0) {
+          totalDailyTimeMinutes = newTotalTime;
+          localStorage.setItem(TOTAL_TIME_KEY, totalDailyTimeMinutes);
+      } else {
+          totalTimeInput.value = totalDailyTimeMinutes; 
+      }
+      
+      // Reset UI state post-configuration
+      renderParticipantSelection();
+      
+      shuffleButton.textContent = "Würfeln";
+      teamList.style.display = 'none';
+      stopTimer(); 
+      timerDisplay.style.display = 'none';
+      clearColorClasses();
+      toggleOvertimeIcons(false);
+      activeIndex = -1;
+      currentShuffledList = [];
+
+      // Provide visual feedback for successful save operation
+      const originalText = saveConfigButton.textContent;
+      saveConfigButton.textContent = "Gespeichert! ✅";
+      saveConfigButton.classList.add('saved-feedback');
+
+      setTimeout(() => {
+        closeConfig();
+        saveConfigButton.textContent = originalText;
+        saveConfigButton.classList.remove('saved-feedback');
+      }, 1000);
+    }
+    
+    /**
+     * Resets the input field to the system default configuration.
+     */
+    function resetToInitialNames() {
+      teamNamesInput.value = initialTeamMembers.join(', ');
+    }
+    
+    // --- Application Initialization Module ---
+
+    /**
+     * Bootstraps the application state by pulling existing configuration from local storage.
+     * Provides fallback to standard configuration in case of corrupted local data.
+     */
+    function loadInitialConfig() {
+      const storedNames = localStorage.getItem(STORAGE_KEY);
+      
+      try {
+          if (storedNames) {
+              const parsed = JSON.parse(storedNames);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                  currentTeamMembers = parsed;
+              } else {
+                  console.warn("Gespeicherte Daten waren ungültig, lade Standards.");
+                  currentTeamMembers = [...initialTeamMembers];
+              }
+          } else {
+              currentTeamMembers = [...initialTeamMembers];
+          }
+      } catch (e) {
+          console.error("Fehler beim Laden (LocalStorage Reset):", e);
+          currentTeamMembers = [...initialTeamMembers];
+          localStorage.removeItem(STORAGE_KEY);
+      }
+      
+      renderParticipantSelection();
+      
+      const storedTime = localStorage.getItem(TOTAL_TIME_KEY);
+      if (storedTime) {
+          totalDailyTimeMinutes = parseInt(storedTime, 10);
+      } else {
+          totalDailyTimeMinutes = DEFAULT_TOTAL_TIME_MINUTES;
+      }
+    }
+    
+    /**
+     * Handles version checking to display update banners to returning users.
+     */
+    function checkVersionAndShowBanner() {
+        const storedVersion = localStorage.getItem(VERSION_KEY);
+        
+        if (storedVersion !== CURRENT_VERSION) {
+            updateBanner.textContent = `**NEU in V${CURRENT_VERSION}:** Teilnehmer-Checkliste steht jetzt ordentlich untereinander und verschwindet nach dem Start.`;
+            updateBanner.style.display = 'block';
+            
+            localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
+
+            setTimeout(() => {
+                updateBanner.style.opacity = '0';
+                setTimeout(() => {
+                    updateBanner.style.display = 'none';
+                    updateBanner.style.opacity = '1';
+                }, 500);
+            }, 8000);
+            
+        } else {
+            updateBanner.style.display = 'none';
+        }
+    }
+
+    // --- Event Listeners ---
+
+    /**
+     * Keyboard bindings for navigation.
+     * Space: Next participant
+     * Modifier + Space: Previous participant
+     */
+    document.addEventListener('keydown', (event) => {
+        if (configModal.style.display === 'block' || helpModal.style.display === 'block' || teamList.style.display !== 'block' || currentShuffledList.length === 0) {
+            return;
+        }
+
+        if (event.code === 'Space') {
+            event.preventDefault();
+
+            const listItems = teamList.querySelectorAll('li');
+            if (listItems.length === 0) return;
+
+            if (event.ctrlKey || event.shiftKey || event.metaKey) {
+                if (activeIndex > 0) {
+                    updateActiveParticipant(activeIndex - 1);
+                    startTimer();
+                }
+            } else {
+                if (activeIndex < listItems.length - 1) {
+                    updateActiveParticipant(activeIndex + 1);
+                    startTimer(); 
+                } else {
+                    stopTimer(); 
+                    updateActiveParticipant(activeIndex); 
+                    timerDisplay.textContent = "✅ Daily beendet"; 
+                    clearColorClasses();
+                    toggleOvertimeIcons(false); 
+                }
+            }
+        }
+    });
+
+    /**
+     * Primary action: Collects active participants, shuffles the set, and initializes the meeting.
+     */
+    shuffleButton.addEventListener('click', () => {
+      const checkboxes = document.querySelectorAll('.participant-checkbox');
+      const activeNames = [];
+      
+      checkboxes.forEach(box => {
+          if (box.checked) {
+              activeNames.push(box.value);
+          }
+      });
+      
+      if (activeNames.length === 0) {
+          alert("Bitte wähle mindestens einen Teilnehmer aus!");
+          return;
+      }
+      
+      participantSelection.style.display = 'none';
+      
+      const shuffled = shuffle([...activeNames]); 
+      displayTeam(shuffled);
+      shuffleButton.textContent = "Erneut würfeln";
+      
+      startTimer();
+    });
+
+    // Modal Triggers
+    editButton.addEventListener('click', openConfig);
+    helpButton.addEventListener('click', openHelp);
+    
+    // Configuration Actions
+    saveConfigButton.addEventListener('click', saveConfig);
+    resetNamesButton.addEventListener('click', resetToInitialNames);
+    
+    // Modal Close Triggers
+    if (configClose) configClose.addEventListener('click', closeConfig);
+    if (helpClose) helpClose.addEventListener('click', closeHelp);
+    
+    window.addEventListener('click', (event) => {
+      if (event.target === configModal) closeConfig();
+      if (event.target === helpModal) closeHelp();
+    });
+    
+    // --- Application Entry Point ---
+    
+    try {
+        loadInitialConfig();
+        checkVersionAndShowBanner();
+    } catch (e) {
+        alert("Kritischer Start-Fehler: " + e.message);
+    }
+
+  </script>
+</body>
+</html>
