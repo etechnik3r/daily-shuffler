@@ -17,7 +17,7 @@ Da das Tool ohne Backend auskommt und Daten nur lokal speichert, ist es besonder
 
 Da das Projekt aus einer einzigen HTML-Datei besteht, kann es direkt im Browser ausgeführt werden.
 
-👉 **[Hier geht es zur Live-Version](https://etechnik3r.github.io/daily-shuffler/)
+👉 **[Hier geht es zur Live-Version](https://etechnik3r.github.io/daily-shuffler/daily_timer.html)
 
 ## ⚙️ Einstellungen (Konfiguration)
 
