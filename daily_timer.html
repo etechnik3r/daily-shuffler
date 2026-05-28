@@ -216,6 +216,158 @@
         border-bottom-right-radius: 8px;
     }
 
+    /* --- Slot Machine View --- */
+    #slotContainer {
+      width: 100%;
+      max-width: 360px;
+      margin: 20px auto;
+      position: relative;
+      display: none;
+    }
+    #slotTrackWrapper {
+      position: relative;
+      width: 100%;
+      height: 190px;
+      margin: 0 auto;
+      overflow: hidden;
+      border-radius: 18px;
+      border: 12px solid #002878;
+      background: linear-gradient(180deg, #e7eef8 0%, #f7f9fc 100%);
+      box-shadow: inset 0 3px 8px rgba(0,0,0,0.08);
+    }
+    #slotTrack {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      transition: transform 3.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+    .slot-item {
+      width: 100%;
+      padding: 18px 10px;
+      background: white;
+      border-bottom: 1px solid #dde4ef;
+      box-sizing: border-box;
+      font-size: 1.4em;
+      font-weight: 800;
+      color: #002878;
+      text-transform: uppercase;
+      text-align: center;
+      letter-spacing: 0.02em;
+    }
+    .slot-item.used-participant {
+      color: #8a8a8a;
+      opacity: 0.6;
+    }
+    #slotStatus,
+    #slotNameDisplay {
+      display: none;
+    }
+    #slotOverlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 20%, rgba(255,255,255,0) 80%, rgba(255,255,255,0.75) 100%);
+    }
+    #slotIndicator {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 56px;
+      transform: translateY(-50%);
+      border-top: 2px solid rgba(0,0,0,0.08);
+      border-bottom: 2px solid rgba(0,0,0,0.08);
+      pointer-events: none;
+    }
+    #slotStatus {
+      margin-top: 12px;
+      font-size: 0.95em;
+      color: #555;
+      text-align: center;
+    }
+    #slotNameDisplay {
+      margin-top: 6px;
+      font-size: 1.25em;
+      font-weight: bold;
+      color: #002878;
+      text-align: center;
+      min-height: 1.2em;
+    }
+    .slot-history {
+      margin-top: 18px;
+      background: #f4f7ff;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid #d3dcf1;
+    }
+    .slot-history-title {
+      margin-bottom: 10px;
+      font-size: 0.95em;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #1c317e;
+    }
+    .slot-history ol {
+      padding-left: 1.1em;
+      margin: 0;
+      color: #243b6a;
+      font-size: 0.95em;
+    }
+    .slot-history li {
+      margin-bottom: 4px;
+      line-height: 1.4;
+    }
+    .slot-controls {
+      display: flex;
+      justify-content: center;
+      margin-top: 16px;
+    }
+    .slot-spin-button {
+      margin: 0 auto;
+      width: 160px;
+      font-size: 1em;
+      padding: 12px 16px;
+      border-radius: 12px;
+    }
+    .slot-empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #666;
+      font-size: 0.95em;
+      padding: 15px;
+      text-align: center;
+    }
+    .view-mode-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .view-mode-options label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f5f7fb;
+      border: 1px solid #d0d7e5;
+      border-radius: 8px;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    .view-mode-options input[type="radio"] {
+      accent-color: #002878;
+      width: 18px;
+      height: 18px;
+    }
+    @media (max-width: 520px) {
+      #slotContainer { max-width: 100%; }
+      .slot-item { font-size: 1em; padding: 14px 8px; }
+    }
+
     /* --- Notifications & Banners --- */
     #updateBanner {
       background-color: #007bff;
@@ -366,6 +518,23 @@
     <span id="timerIconRight" class="timer-icon"></span>
   </div>
 
+  <div id="slotContainer" style="display: none;">
+    <div id="slotTrackWrapper">
+      <div id="slotTrack"></div>
+      <div id="slotOverlay"></div>
+      <div id="slotIndicator"></div>
+    </div>
+    <div id="slotStatus">Drücke Würfeln für den Zufall.</div>
+    <div id="slotNameDisplay">—</div>
+    <div class="slot-controls">
+      <button id="slotSpinButton" class="app-button slot-spin-button">Drehen</button>
+    </div>
+    <div id="slotHistory" class="slot-history">
+      <div class="slot-history-title">Letzte Gewinner</div>
+      <ol id="slotHistoryList"></ol>
+    </div>
+  </div>
+
   <ul id="teamList"></ul>
   
   <div id="configModal" class="modal">
@@ -379,6 +548,13 @@
       <h2>Team-Mitglieder bearbeiten</h2>
       <p>Gib die Namen der Teammitglieder ein, getrennt durch Kommas (oder Zeilenumbrüche). Leerzeichen werden automatisch entfernt.</p>
       <textarea id="teamNamesInput"></textarea>
+
+      <h2>Anzeigemodus</h2>
+      <p>Wähle den bevorzugten Modus für die Teilnehmerauswahl.</p>
+      <div class="view-mode-options">
+        <label><input type="radio" name="viewMode" value="classic"> Classic View</label>
+        <label><input type="radio" name="viewMode" value="slot"> Slot Machine View</label>
+      </div>
       
       <div class="modal-button-container">
         <button id="resetNamesButton" class="app-button">Zurücksetzen</button>
@@ -399,6 +575,7 @@
           <ul>
               <li>**Checklisten:** Wähle oben ab, wer heute fehlt (Urlaub/Krank).</li>
               <li>**Würfeln:** Erstellt eine zufällige Reihenfolge der <b>aktiven</b> Teammitglieder und startet den Timer für den ersten.</li>
+              <li>**Slot Machine View:** In den Einstellungen kannst du zwischen dem klassischen Listenmodus und der neuen animierten Slot Machine wählen.</li>
               <li>**Einstellungen:** Passt die generelle Liste der Teammitglieder (Stammdaten) an.</li>
               <li>**Leertaste (Space):** Wechselt zum nächsten Teammitglied und setzt den Timer zurück.</li>
               <li>**Strg/Shift + Leertaste:** Wechselt zum vorherigen Teammitglied (Rückgängig-Funktion).</li>
@@ -420,7 +597,10 @@
     const STORAGE_KEY = 'dailyTeamNames';
     const TOTAL_TIME_KEY = 'dailyTotalTime';
     const VERSION_KEY = 'dailyAppVersion';
+    const VIEW_MODE_KEY = 'dailyViewMode';
     const CURRENT_VERSION = '1.17'; 
+    const VIEW_MODE_CLASSIC = 'classic';
+    const VIEW_MODE_SLOT = 'slot';
     
     const initialTeamMembers = [
       "Bastian", "Elias", "Mia", "Felix", "Hannah", "Leon", "Sophie", "Lukas", "Emma", "Julian"
@@ -432,10 +612,16 @@
     let totalDailyTimeMinutes = DEFAULT_TOTAL_TIME_MINUTES; 
     let activeIndex = -1;
     let currentShuffledList = [];
+    let remainingSlotParticipants = [];
+    let previousSlotWinners = [];
+    let currentSlotWinner = null;
+    let slotSessionActive = false;
     
     let individualTimeSeconds = 0; 
     let timeRemainingSeconds = 0; 
     let timerInterval = null; 
+    let viewMode = VIEW_MODE_CLASSIC;
+    let slotAnimating = false;
 
     // --- DOM Elements ---
     const teamList = document.getElementById('teamList');
@@ -447,6 +633,17 @@
     const timerIconRight = document.getElementById('timerIconRight'); 
     
     const participantSelection = document.getElementById('participantSelection');
+    const slotContainer = document.getElementById('slotContainer');
+    const slotTrack = document.getElementById('slotTrack');
+    const slotStatus = document.getElementById('slotStatus');
+    const slotNameDisplay = document.getElementById('slotNameDisplay');
+    const slotSpinButton = document.getElementById('slotSpinButton');
+    const slotHistoryList = document.getElementById('slotHistoryList');
+    const viewModeInputs = document.querySelectorAll('input[name="viewMode"]');
+
+    if (slotSpinButton) {
+      slotSpinButton.disabled = true;
+    }
 
     const configModal = document.getElementById('configModal');
     const helpModal = document.getElementById('helpModal');
@@ -600,6 +797,21 @@
       }
     }
 
+    function updateSlotUsedState() {
+      if (!slotTrack || currentShuffledList.length === 0) return;
+
+      const usedNames = new Set(
+        currentShuffledList
+          .slice(0, Math.max(0, activeIndex))
+          .map(name => name.trim().toUpperCase())
+      );
+
+      slotTrack.querySelectorAll('.slot-item').forEach(item => {
+        const itemName = (item.dataset.name || item.textContent || '').trim().toUpperCase();
+        item.classList.toggle('used-participant', usedNames.has(itemName));
+      });
+    }
+
     /**
      * Sets a new active participant index and triggers the highlight update.
      * Ensures the bounds of the array are respected.
@@ -611,15 +823,17 @@
 
       activeIndex = Math.max(0, Math.min(listItems.length - 1, newIndex));
       updateHighlights();
+      updateSlotUsedState();
     }
 
     /**
      * Renders the shuffled participant list to the DOM and initiates the first selection.
      * * @param {Array<string>} list - The randomized list of active participants.
      */
-    function displayTeam(list) {
+    function displayClassicTeam(list) {
       currentShuffledList = list.filter(name => name.trim() !== '');
 
+      slotContainer.style.display = 'none';
       teamList.style.opacity = '0';
       teamList.style.display = 'block';
 
@@ -642,6 +856,144 @@
         
         teamList.style.opacity = '1';
       }, 300);
+    }
+
+    function buildSlotMachine(list) {
+      if (!slotTrack) return null;
+      slotTrack.innerHTML = '';
+      slotTrack.style.transition = 'none';
+      slotTrack.style.transform = 'translateY(0)';
+
+      const itemHeight = 56;
+      const repetitions = 6;
+      const payload = [];
+
+      for (let rep = 0; rep < repetitions; rep++) {
+        list.forEach(name => payload.push(name));
+      }
+
+      payload.forEach(name => {
+        const item = document.createElement('div');
+        item.className = 'slot-item';
+        const upperName = name.trim().toUpperCase();
+        item.textContent = upperName;
+        item.dataset.name = upperName;
+        item.style.height = `${itemHeight}px`;
+        slotTrack.appendChild(item);
+      });
+
+      return itemHeight;
+    }
+
+    function updateSlotHistory() {
+      if (!slotHistoryList) return;
+      slotHistoryList.innerHTML = '';
+      previousSlotWinners.forEach((name) => {
+        const item = document.createElement('li');
+        item.textContent = name;
+        slotHistoryList.appendChild(item);
+      });
+    }
+
+    function chooseRandomSlotIndex() {
+      return Math.floor(Math.random() * remainingSlotParticipants.length);
+    }
+
+    function spinSlotMachine() {
+      if (!slotSessionActive || slotAnimating || remainingSlotParticipants.length === 0) return;
+      const itemHeight = buildSlotMachine(remainingSlotParticipants);
+      const nextIndex = chooseRandomSlotIndex();
+      animateSlotToWinner(nextIndex, itemHeight);
+    }
+
+    function animateSlotToWinner(index, itemHeight) {
+      if (!slotTrack || slotAnimating || remainingSlotParticipants.length === 0) return;
+
+      slotAnimating = true;
+      const visibleHeight = 190;
+      const listLength = remainingSlotParticipants.length;
+      const winnerPosition = listLength * 3 + index;
+      const finalTranslate = -(winnerPosition * itemHeight - visibleHeight / 2 + itemHeight / 2);
+
+      slotTrack.style.transition = 'none';
+      slotTrack.style.transform = 'translateY(0px)';
+      slotTrack.getBoundingClientRect();
+
+      const onSlotEnd = (event) => {
+        if (event && event.propertyName !== 'transform') return;
+        clearTimeout(transitionTimeout);
+        slotTrack.removeEventListener('transitionend', onSlotEnd);
+        slotTrack.style.transition = 'none';
+        slotAnimating = false;
+
+        const winnerName = remainingSlotParticipants[index];
+        previousSlotWinners.unshift(winnerName);
+        remainingSlotParticipants.splice(index, 1);
+        currentSlotWinner = winnerName;
+        updateSlotHistory();
+        slotSpinButton.disabled = remainingSlotParticipants.length === 0;
+        startTimer();
+      };
+
+      const transitionTimeout = setTimeout(() => {
+        onSlotEnd();
+      }, 3800);
+
+      slotTrack.style.transition = 'transform 3.5s cubic-bezier(0.25, 0.1, 0.25, 1)';
+      slotTrack.style.transform = `translateY(${finalTranslate}px)`;
+      slotTrack.addEventListener('transitionend', onSlotEnd);
+    }
+
+    function displaySlotTeam(list) {
+      currentShuffledList = list.filter(name => name.trim() !== '');
+      remainingSlotParticipants = currentShuffledList.map(name => name.trim());
+      previousSlotWinners = [];
+      currentSlotWinner = null;
+      slotSessionActive = true;
+
+      teamList.style.display = 'none';
+      slotContainer.style.display = 'block';
+      updateSlotHistory();
+
+      if (currentShuffledList.length === 0) {
+        slotTrack.innerHTML = '<div class="slot-empty">Keine aktiven Teilnehmer ausgewählt.</div>';
+        slotStatus.textContent = 'Keine Auswahl';
+        slotNameDisplay.textContent = '';
+        activeIndex = -1;
+        slotSpinButton.disabled = true;
+        return;
+      }
+
+      buildSlotMachine(remainingSlotParticipants);
+      slotSpinButton.disabled = false;
+      slotSpinButton.textContent = 'Drehen';
+      slotNameDisplay.textContent = '';
+    }
+
+    function displayTeam(list) {
+      if (viewMode === VIEW_MODE_SLOT) {
+        displaySlotTeam(list);
+      } else {
+        displayClassicTeam(list);
+      }
+    }
+
+    function setViewMode(mode) {
+      viewMode = mode === VIEW_MODE_SLOT ? VIEW_MODE_SLOT : VIEW_MODE_CLASSIC;
+      localStorage.setItem(VIEW_MODE_KEY, viewMode);
+      teamList.style.display = 'none';
+      slotContainer.style.display = 'none';
+    }
+
+    function hideResults() {
+      teamList.style.display = 'none';
+      slotContainer.style.display = 'none';
+      if (slotTrack) {
+        slotTrack.style.transition = 'none';
+      }
+      if (slotSpinButton) {
+        slotSpinButton.disabled = true;
+      }
     }
 
     /**
@@ -698,6 +1050,9 @@
           teamNamesInput.value = currentTeamMembers.join(', ');
       }
       totalTimeInput.value = totalDailyTimeMinutes; 
+      viewModeInputs.forEach(input => {
+        input.checked = input.value === viewMode;
+      });
       configModal.style.display = 'block';
     }
     
@@ -741,12 +1096,18 @@
       } else {
           totalTimeInput.value = totalDailyTimeMinutes; 
       }
+
+      const selectedViewMode = document.querySelector('input[name="viewMode"]:checked');
+      if (selectedViewMode && (selectedViewMode.value === VIEW_MODE_SLOT || selectedViewMode.value === VIEW_MODE_CLASSIC)) {
+          viewMode = selectedViewMode.value;
+          localStorage.setItem(VIEW_MODE_KEY, viewMode);
+      }
       
       // Reset UI state post-configuration
       renderParticipantSelection();
       
       shuffleButton.textContent = "Würfeln";
-      teamList.style.display = 'none';
+      hideResults();
       stopTimer(); 
       timerDisplay.style.display = 'none';
       clearColorClasses();
@@ -808,6 +1169,14 @@
       } else {
           totalDailyTimeMinutes = DEFAULT_TOTAL_TIME_MINUTES;
       }
+
+      const storedViewMode = localStorage.getItem(VIEW_MODE_KEY);
+      if (storedViewMode === VIEW_MODE_SLOT || storedViewMode === VIEW_MODE_CLASSIC) {
+        viewMode = storedViewMode;
+      } else {
+        viewMode = VIEW_MODE_CLASSIC;
+      }
+      setViewMode(viewMode);
     }
     
     /**
@@ -843,7 +1212,7 @@
      * Modifier + Space: Previous participant
      */
     document.addEventListener('keydown', (event) => {
-        if (configModal.style.display === 'block' || helpModal.style.display === 'block' || teamList.style.display !== 'block' || currentShuffledList.length === 0) {
+        if (configModal.style.display === 'block' || helpModal.style.display === 'block' || currentShuffledList.length === 0 || slotAnimating) {
             return;
         }
 
@@ -851,24 +1220,44 @@
             event.preventDefault();
 
             const listItems = teamList.querySelectorAll('li');
-            if (listItems.length === 0) return;
+            if (viewMode === VIEW_MODE_CLASSIC && listItems.length === 0) return;
 
+            let newIndex = activeIndex;
             if (event.ctrlKey || event.shiftKey || event.metaKey) {
                 if (activeIndex > 0) {
-                    updateActiveParticipant(activeIndex - 1);
-                    startTimer();
+                    newIndex = activeIndex - 1;
                 }
             } else {
-                if (activeIndex < listItems.length - 1) {
-                    updateActiveParticipant(activeIndex + 1);
-                    startTimer(); 
+                if (activeIndex < currentShuffledList.length - 1) {
+                    newIndex = activeIndex + 1;
                 } else {
-                    stopTimer(); 
-                    updateActiveParticipant(activeIndex); 
-                    timerDisplay.textContent = "✅ Daily beendet"; 
+                    stopTimer();
+                    updateActiveParticipant(activeIndex);
+                    timerDisplay.textContent = "✅ Daily beendet";
                     clearColorClasses();
-                    toggleOvertimeIcons(false); 
+                    toggleOvertimeIcons(false);
+                    return;
                 }
+            }
+
+            updateActiveParticipant(newIndex);
+
+            if (viewMode === VIEW_MODE_SLOT) {
+                if (remainingSlotParticipants.length === 0) {
+                  stopTimer();
+                  timerDisplay.textContent = "✅ Daily beendet";
+                  clearColorClasses();
+                  toggleOvertimeIcons(false);
+                  return;
+                }
+
+                if (slotAnimating) return;
+
+                const itemHeight = buildSlotMachine(remainingSlotParticipants);
+                const nextIndex = chooseRandomSlotIndex();
+                animateSlotToWinner(nextIndex, itemHeight);
+            } else {
+                startTimer();
             }
         }
     });
@@ -895,15 +1284,22 @@
       
       const shuffled = shuffle([...activeNames]); 
       displayTeam(shuffled);
-      shuffleButton.textContent = "Erneut würfeln";
-      
-      startTimer();
+      if (viewMode === VIEW_MODE_SLOT) {
+        shuffleButton.textContent = "Slot Machine Runde zurücksetzen";
+      } else {
+        shuffleButton.textContent = "Erneut würfeln";
+        startTimer();
+      }
     });
 
     // Modal Triggers
     editButton.addEventListener('click', openConfig);
     helpButton.addEventListener('click', openHelp);
     
+    if (slotSpinButton) {
+      slotSpinButton.addEventListener('click', spinSlotMachine);
+    }
+
     // Configuration Actions
     saveConfigButton.addEventListener('click', saveConfig);
     resetNamesButton.addEventListener('click', resetToInitialNames);
