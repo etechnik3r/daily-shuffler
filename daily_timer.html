@@ -240,7 +240,7 @@
       top: 0;
       left: 0;
       width: 100%;
-      transition: transform 3.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+      transition: transform 2.45s cubic-bezier(0.25, 0.1, 0.25, 1);
     }
     .slot-item {
       width: 100%;
@@ -552,8 +552,8 @@
       <h2>Anzeigemodus</h2>
       <p>Wähle den bevorzugten Modus für die Teilnehmerauswahl.</p>
       <div class="view-mode-options">
-        <label><input type="radio" name="viewMode" value="classic"> Classic View</label>
-        <label><input type="radio" name="viewMode" value="slot"> Slot Machine View</label>
+        <label><input type="radio" name="viewMode" value="classic"> Klassische Ansicht</label>
+        <label><input type="radio" name="viewMode" value="slot"> Slotmaschinen-Ansicht</label>
       </div>
       
       <div class="modal-button-container">
@@ -575,7 +575,7 @@
           <ul>
               <li>**Checklisten:** Wähle oben ab, wer heute fehlt (Urlaub/Krank).</li>
               <li>**Würfeln:** Erstellt eine zufällige Reihenfolge der <b>aktiven</b> Teammitglieder und startet den Timer für den ersten.</li>
-              <li>**Slot Machine View:** In den Einstellungen kannst du zwischen dem klassischen Listenmodus und der neuen animierten Slot Machine wählen.</li>
+              <li>**Slotmaschinen-Ansicht:** In den Einstellungen kannst du zwischen der klassischen Liste und der animierten Slotmaschinen-Ansicht wählen.</li>
               <li>**Einstellungen:** Passt die generelle Liste der Teammitglieder (Stammdaten) an.</li>
               <li>**Leertaste (Space):** Wechselt zum nächsten Teammitglied und setzt den Timer zurück.</li>
               <li>**Strg/Shift + Leertaste:** Wechselt zum vorherigen Teammitglied (Rückgängig-Funktion).</li>
@@ -606,6 +606,7 @@
       "Bastian", "Elias", "Mia", "Felix", "Hannah", "Leon", "Sophie", "Lukas", "Emma", "Julian"
     ];
     const DEFAULT_TOTAL_TIME_MINUTES = 15;
+    const SLOT_SPIN_DURATION_MS = 2450;
     
     // --- Application State ---
     let currentTeamMembers = [];
@@ -927,7 +928,8 @@
         slotAnimating = false;
 
         const winnerName = remainingSlotParticipants[index];
-        previousSlotWinners.unshift(winnerName);
+        // Append winner at the end so history reads oldest→newest top→bottom
+        previousSlotWinners.push(winnerName);
         remainingSlotParticipants.splice(index, 1);
         currentSlotWinner = winnerName;
         updateSlotHistory();
@@ -937,9 +939,9 @@
 
       const transitionTimeout = setTimeout(() => {
         onSlotEnd();
-      }, 3800);
+      }, SLOT_SPIN_DURATION_MS + 200);
 
-      slotTrack.style.transition = 'transform 3.5s cubic-bezier(0.25, 0.1, 0.25, 1)';
+      slotTrack.style.transition = `transform ${SLOT_SPIN_DURATION_MS / 1000}s cubic-bezier(0.25, 0.1, 0.25, 1)`;
       slotTrack.style.transform = `translateY(${finalTranslate}px)`;
       slotTrack.addEventListener('transitionend', onSlotEnd);
     }
@@ -983,6 +985,12 @@
       localStorage.setItem(VIEW_MODE_KEY, viewMode);
       teamList.style.display = 'none';
       slotContainer.style.display = 'none';
+      participantSelection.style.display = 'flex';
+      shuffleButton.style.display = 'inline-block';
+      shuffleButton.textContent = viewMode === VIEW_MODE_SLOT ? 'Slotmaschine starten' : 'Würfeln';
+      if (slotSpinButton) {
+        slotSpinButton.disabled = true;
+      }
     }
 
     function hideResults() {
@@ -1103,17 +1111,26 @@
           localStorage.setItem(VIEW_MODE_KEY, viewMode);
       }
       
-      // Reset UI state post-configuration
       renderParticipantSelection();
-      
-      shuffleButton.textContent = "Würfeln";
-      hideResults();
-      stopTimer(); 
+      participantSelection.style.display = 'flex';
+      stopTimer();
       timerDisplay.style.display = 'none';
       clearColorClasses();
       toggleOvertimeIcons(false);
       activeIndex = -1;
       currentShuffledList = [];
+      slotSessionActive = false;
+      hideResults();
+
+      shuffleButton.style.display = 'inline-block';
+      if (viewMode === VIEW_MODE_SLOT) {
+          shuffleButton.textContent = "Slotmaschine starten";
+          if (slotSpinButton) {
+              slotSpinButton.disabled = true;
+          }
+      } else {
+          shuffleButton.textContent = "Würfeln";
+      }
 
       // Provide visual feedback for successful save operation
       const originalText = saveConfigButton.textContent;
@@ -1162,6 +1179,7 @@
       }
       
       renderParticipantSelection();
+      participantSelection.style.display = 'flex';
       
       const storedTime = localStorage.getItem(TOTAL_TIME_KEY);
       if (storedTime) {
@@ -1285,7 +1303,7 @@
       const shuffled = shuffle([...activeNames]); 
       displayTeam(shuffled);
       if (viewMode === VIEW_MODE_SLOT) {
-        shuffleButton.textContent = "Slot Machine Runde zurücksetzen";
+        shuffleButton.textContent = "Slotmaschine Runde zurücksetzen";
       } else {
         shuffleButton.textContent = "Erneut würfeln";
         startTimer();
