@@ -216,10 +216,10 @@
         border-bottom-right-radius: 8px;
     }
 
-    /* --- Slot Machine View --- */
+    /* --- Slot Machine View (minimalist) --- */
     #slotContainer {
       width: 100%;
-      max-width: 360px;
+      max-width: 420px;
       margin: 20px auto;
       position: relative;
       display: none;
@@ -227,70 +227,172 @@
     #slotTrackWrapper {
       position: relative;
       width: 100%;
-      height: 190px;
+      height: 200px;
       margin: 0 auto;
       overflow: hidden;
-      border-radius: 18px;
-      border: 12px solid #002878;
-      background: linear-gradient(180deg, #e7eef8 0%, #f7f9fc 100%);
-      box-shadow: inset 0 3px 8px rgba(0,0,0,0.08);
+      border-radius: 12px;
+      border: 4px solid rgba(3,105,255,0.12); /* subtle neon edge */
+      background: linear-gradient(180deg,#ffffff 0%, #fbfdff 100%);
+      box-shadow: 0 8px 18px rgba(3,21,60,0.06);
     }
-    #slotTrack {
+    #slotTrackWrapper::before,
+    #slotTrackWrapper::after {
+      content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      transition: transform 2.45s cubic-bezier(0.25, 0.1, 0.25, 1);
+      top: 50%;
+      width: 26px;
+      height: 26px;
+      transform: translateY(-50%);
+      border-radius: 50%;
+      background: #002d7a;
+      border: 2px solid #002d7a;
+      box-shadow: 0 0 6px rgba(0,45,122,0.5);
     }
-    .slot-item {
-      width: 100%;
-      padding: 18px 10px;
-      background: white;
-      border-bottom: 1px solid #dde4ef;
-      box-sizing: border-box;
-      font-size: 1.4em;
-      font-weight: 800;
-      color: #002878;
-      text-transform: uppercase;
-      text-align: center;
-      letter-spacing: 0.02em;
+    #slotTrackWrapper::before {
+      left: 10px;
+      clip-path: polygon(25% 15%, 25% 85%, 100% 50%);
     }
-    .slot-item.used-participant {
-      color: #8a8a8a;
-      opacity: 0.6;
-    }
-    #slotStatus,
-    #slotNameDisplay {
-      display: none;
-    }
-    #slotOverlay {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background: linear-gradient(180deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 20%, rgba(255,255,255,0) 80%, rgba(255,255,255,0.75) 100%);
+    #slotTrackWrapper::after {
+      right: 10px;
+      clip-path: polygon(0 50%, 75% 15%, 75% 85%);
     }
     #slotIndicator {
       position: absolute;
       top: 50%;
       left: 0;
       width: 100%;
-      height: 56px;
+      height: 66px;
       transform: translateY(-50%);
-      border-top: 2px solid rgba(0,0,0,0.08);
-      border-bottom: 2px solid rgba(0,0,0,0.08);
+      border-top: 2px solid #002d7a;
+      border-bottom: 2px solid #002d7a;
+      background: transparent;
+      box-shadow: inset 0 0 0 1px rgba(0,45,122,0.15);
       pointer-events: none;
     }
+    #slotTrack {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      transition: transform 1.7s cubic-bezier(0.22, 0.9, 0.28, 1);
+      will-change: transform;
+    }
+    .slot-item {
+      width: 100%;
+      padding: 20px 12px;
+      background: transparent;
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+      box-sizing: border-box;
+      font-size: 1.3em;
+      font-weight: 700;
+      color: #042a5f;
+      text-transform: uppercase;
+      text-align: center;
+      letter-spacing: 0.06em;
+    }
+    .slot-item.used-participant {
+      color: rgba(4,42,95,0.35);
+      opacity: 0.6;
+    }
+    #slotStatus,
+    #slotNameDisplay {
+      display: block;
+    }
     #slotStatus {
-      margin-top: 12px;
-      font-size: 0.95em;
-      color: #555;
+      margin-bottom: 14px;
+      font-size: 1em;
+      font-weight: 700;
+      color: #003c88;
       text-align: center;
     }
     #slotNameDisplay {
       margin-top: 6px;
-      font-size: 1.25em;
-      font-weight: bold;
+      font-size: 1.15em;
+      font-weight: 700;
+      color: #042a5f;
+      text-align: center;
+      min-height: 1.2em;
+    }
+    #slotIndicator {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 64px;
+      transform: translateY(-50%);
+      border-top: 1px solid rgba(3,21,60,0.04);
+      border-bottom: 1px solid rgba(3,21,60,0.04);
+      pointer-events: none;
+    }
+    .slot-handle-container {
+      position: relative;
+      width: 48px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .slot-handle {
+      width: 36px;
+      height: 120px;
+      background: linear-gradient(180deg,#e6eefc 0%, #cfe3ff 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 10px;
+      box-shadow: 0 6px 12px rgba(3,21,60,0.06);
+      transform-origin: bottom center;
+      transform: rotate(-14deg);
+      transition: transform 0.35s cubic-bezier(0.22,1,0.36,1);
+    }
+    .slot-handle-knob {
+      width: 20px;
+      height: 20px;
+      background: radial-gradient(circle at 30% 30%, #fff 0%, #d0e7ff 30%, #6aa2ff 100%);
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(3,21,60,0.15);
+    }
+    .slot-handle.pulled { transform: rotate(24deg); }
+    .slot-end-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.88);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+      z-index: 15;
+    }
+    .slot-end-overlay.active {
+      opacity: 1;
+    }
+    .slot-end-message {
+      background: rgba(255,255,255,0.96);
+      border: 1px solid rgba(0,40,120,0.15);
+      border-radius: 18px;
+      padding: 18px 24px;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.12);
       color: #002878;
+      font-size: 1.35em;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      max-width: 90%;
+    }
+    #slotStatus {
+      margin-top: 12px;
+      font-size: 0.95em;
+      color: #556;
+      text-align: center;
+    }
+    #slotNameDisplay {
+      margin-top: 6px;
+      font-size: 1.15em;
+      font-weight: 700;
+      color: #042a5f;
       text-align: center;
       min-height: 1.2em;
     }
@@ -322,14 +424,38 @@
     .slot-controls {
       display: flex;
       justify-content: center;
+      gap: 12px;
       margin-top: 16px;
+      flex-wrap: wrap;
+      align-items: center;
     }
     .slot-spin-button {
-      margin: 0 auto;
-      width: 160px;
-      font-size: 1em;
-      padding: 12px 16px;
+      flex: 1 1 260px;
+      width: 260px;
+      max-width: 320px;
+      font-size: 1.3em;
+      font-weight: 800;
+      padding: 18px 28px;
+      border-radius: 18px;
+      height: 72px;
+    }
+    .slot-restart-button {
+      display: none;
+      flex: 0 0 90px;
+      width: 90px;
+      min-width: 90px;
+      font-size: 0.95em;
+      padding: 10px 12px;
       border-radius: 12px;
+      background-color: #4d6de0;
+      height: 48px;
+    }
+    .slot-machine-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      justify-content: center;
+      position: relative;
     }
     .slot-empty {
       display: flex;
@@ -491,7 +617,13 @@
 
   </style>
 
-</head>
+<style>
+/* OVERRIDE: handle left, indicator frame, small shuffle button */
+#slotIndicator { border: 3px solid #007aff !important; border-radius: 10px !important; box-shadow: 0 6px 18px rgba(0,122,255,0.06), inset 0 0 0 1px rgba(0,45,122,0.06) !important; background: rgba(255,255,255,0.02) !important; }
+.slot-handle-container { position: absolute !important; top: 50% !important; left: 50% !important; transform: translate(-220px, -50%) !important; z-index: 8 !important; }
+@media (max-width:520px) { .slot-handle-container { transform: translate(-140px, -50%) !important; } }
+#shuffleButton { max-width: 180px !important; width: auto !important; padding: 10px 16px !important; font-size: 1em !important; }
+</style></head>
 <body>
 
   <h1>⏱️ Daily Taktgeber 🎲</h1>
@@ -518,16 +650,23 @@
     <span id="timerIconRight" class="timer-icon"></span>
   </div>
 
-  <div id="slotContainer" style="display: none;">
-    <div id="slotTrackWrapper">
-      <div id="slotTrack"></div>
-      <div id="slotOverlay"></div>
-      <div id="slotIndicator"></div>
+  <div id="slotContainer" style="display: none; position: relative;">
+    <div id="slotStatus">Drücke Starten für Zufall.</div>
+    <div class="slot-machine-row">
+      <div class="slot-handle-container">
+        <div id="slotHandle" class="slot-handle" title="Hebel">
+          <div class="slot-handle-knob"></div>
+        </div>
+      </div>
+      <div id="slotTrackWrapper">
+        <div id="slotTrack"></div>
+        <div id="slotIndicator"></div>
+      </div>
     </div>
-    <div id="slotStatus">Drücke Würfeln für den Zufall.</div>
     <div id="slotNameDisplay">—</div>
     <div class="slot-controls">
       <button id="slotSpinButton" class="app-button slot-spin-button">Drehen</button>
+      <button id="slotRestartButton" class="app-button slot-spin-button slot-restart-button">Neu starten</button>
     </div>
     <div id="slotHistory" class="slot-history">
       <div class="slot-history-title">Letzte Gewinner</div>
@@ -590,7 +729,8 @@
      * Prevents silent failures by providing visual feedback to the user on critical exceptions.
      */
     window.onerror = function(message, source, lineno, colno, error) {
-        alert("Ein Fehler ist aufgetreten: " + message + "\nBitte Seite neu laden oder Cache leeren.");
+        alert("Ein Fehler ist aufgetreten: " + message + "
+Bitte Seite neu laden oder Cache leeren.");
     };
 
     // --- Configuration & Constants ---
@@ -606,7 +746,7 @@
       "Bastian", "Elias", "Mia", "Felix", "Hannah", "Leon", "Sophie", "Lukas", "Emma", "Julian"
     ];
     const DEFAULT_TOTAL_TIME_MINUTES = 15;
-    const SLOT_SPIN_DURATION_MS = 2450;
+    const SLOT_SPIN_DURATION_MS = 1700; // shorter, snappier spin for minimalist mode
     
     // --- Application State ---
     let currentTeamMembers = [];
@@ -901,6 +1041,11 @@
     }
 
     function spinSlotMachine() {
+      // If last round finished and button repurposed, finish the daily
+      if (slotSpinButton && slotSpinButton.textContent === 'Daily beenden') {
+        finishDaily();
+        return;
+      }
       if (!slotSessionActive || slotAnimating || remainingSlotParticipants.length === 0) return;
       const itemHeight = buildSlotMachine(remainingSlotParticipants);
       const nextIndex = chooseRandomSlotIndex();
@@ -935,11 +1080,25 @@
         updateSlotHistory();
         slotSpinButton.disabled = remainingSlotParticipants.length === 0;
         startTimer();
+
+        // remove handle pull visual
+        const handleEl = document.getElementById('slotHandle');
+        if (handleEl) handleEl.classList.remove('pulled');
+
+        // If no participants remain, repurpose the spin button to end the daily.
+        if (remainingSlotParticipants.length === 0) {
+          slotSpinButton.textContent = 'Daily beenden';
+          slotSpinButton.disabled = false;
+        }
       };
 
       const transitionTimeout = setTimeout(() => {
         onSlotEnd();
       }, SLOT_SPIN_DURATION_MS + 200);
+
+      // visual handle pull
+      const handle = document.getElementById('slotHandle');
+      if (handle) handle.classList.add('pulled');
 
       slotTrack.style.transition = `transform ${SLOT_SPIN_DURATION_MS / 1000}s cubic-bezier(0.25, 0.1, 0.25, 1)`;
       slotTrack.style.transform = `translateY(${finalTranslate}px)`;
@@ -955,12 +1114,24 @@
 
       teamList.style.display = 'none';
       slotContainer.style.display = 'block';
+      hideSlotEndOverlay();
       updateSlotHistory();
+      const restartBtn = document.getElementById('slotRestartButton');
+      if (restartBtn) {
+        restartBtn.style.display = 'none';
+      }
+      if (currentShuffledList.length > 0) {
+        timerDisplay.style.display = 'block';
+        individualTimeSeconds = Math.floor((totalDailyTimeMinutes * 60) / currentShuffledList.length);
+        timeRemainingSeconds = individualTimeSeconds;
+        updateTimerDisplay();
+      }
+      slotStatus.textContent = '';
+      slotNameDisplay.textContent = '';
 
       if (currentShuffledList.length === 0) {
         slotTrack.innerHTML = '<div class="slot-empty">Keine aktiven Teilnehmer ausgewählt.</div>';
         slotStatus.textContent = 'Keine Auswahl';
-        slotNameDisplay.textContent = '';
         activeIndex = -1;
         slotSpinButton.disabled = true;
         return;
@@ -987,7 +1158,7 @@
       slotContainer.style.display = 'none';
       participantSelection.style.display = 'flex';
       shuffleButton.style.display = 'inline-block';
-      shuffleButton.textContent = viewMode === VIEW_MODE_SLOT ? 'Slotmaschine starten' : 'Würfeln';
+      shuffleButton.textContent = viewMode === VIEW_MODE_SLOT ? 'Starten' : 'Würfeln';
       if (slotSpinButton) {
         slotSpinButton.disabled = true;
       }
@@ -1002,6 +1173,109 @@
       if (slotSpinButton) {
         slotSpinButton.disabled = true;
       }
+    }
+
+    function finishDaily() {
+      stopTimer();
+      clearColorClasses();
+      toggleOvertimeIcons(false);
+      timerDisplay.textContent = '';
+      slotStatus.textContent = '✅ Daily beendet';
+      slotNameDisplay.textContent = '';
+      showConfetti();
+
+      slotSessionActive = false;
+      if (shuffleButton) {
+        shuffleButton.style.display = 'inline-block';
+        shuffleButton.textContent = 'Neu starten';
+      }
+      if (slotSpinButton) {
+        slotSpinButton.disabled = true;
+        slotSpinButton.textContent = 'Daily beendet';
+      }
+      const restartBtn = document.getElementById('slotRestartButton');
+      if (restartBtn) {
+        restartBtn.style.display = 'inline-block';
+      }
+    }
+
+    function hideSlotEndOverlay() {
+      return;
+    }
+
+    function resetSlotMachine() {
+      slotSessionActive = false;
+      if (slotSpinButton) {
+        slotSpinButton.disabled = true;
+        slotSpinButton.textContent = 'Drehen';
+      }
+      const restartBtn = document.getElementById('slotRestartButton');
+      if (restartBtn) {
+        restartBtn.style.display = 'none';
+      }
+      hideSlotEndOverlay();
+      slotStatus.textContent = 'Wähle neue Teilnehmer und starte erneut.';
+      slotNameDisplay.textContent = '';
+      slotContainer.style.display = 'none';
+      participantSelection.style.display = 'flex';
+      if (shuffleButton) {
+        shuffleButton.textContent = 'Starten';
+      }
+    }
+
+    function showConfetti(duration = 3000) {
+      const container = document.getElementById('slotContainer') || document.body;
+      const canvas = document.createElement('canvas');
+      canvas.style.position = 'absolute';
+      canvas.style.left = '0';
+      canvas.style.top = '0';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.pointerEvents = 'none';
+      canvas.style.zIndex = '12';
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+      container.appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+      const colors = ['#ff3b30','#ff9500','#ffcc00','#4cd964','#5ac8fa','#007aff','#5856d6'];
+      const pieces = [];
+      for (let i = 0; i < 80; i++) {
+        pieces.push({
+          x: Math.random() * canvas.width,
+          y: -20 - Math.random() * 200,
+          vx: (Math.random() - 0.5) * 6,
+          vy: Math.random() * 6 + 2,
+          size: 6 + Math.random() * 10,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rot: Math.random() * Math.PI * 2,
+          vrotn: (Math.random() - 0.5) * 0.2
+        });
+      }
+
+      let start = null;
+      function frame(t) {
+        if (!start) start = t;
+        const elapsed = t - start;
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        pieces.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.15;
+          p.rot += p.vrotn;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+          ctx.restore();
+        });
+        if (elapsed < duration) {
+          requestAnimationFrame(frame);
+        } else {
+          if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+        }
+      }
+      requestAnimationFrame(frame);
     }
 
     /**
@@ -1090,7 +1364,8 @@
      */
     function saveConfig() {
       const newNames = teamNamesInput.value
-        .split(/[, \n]+/) 
+        .split(/[, 
+]+/) 
         .map(name => name.trim())
         .filter(name => name.length > 0);
         
@@ -1124,7 +1399,7 @@
 
       shuffleButton.style.display = 'inline-block';
       if (viewMode === VIEW_MODE_SLOT) {
-          shuffleButton.textContent = "Slotmaschine starten";
+          shuffleButton.textContent = "Starten";
           if (slotSpinButton) {
               slotSpinButton.disabled = true;
           }
@@ -1317,6 +1592,10 @@
     if (slotSpinButton) {
       slotSpinButton.addEventListener('click', spinSlotMachine);
     }
+    const slotRestartButton = document.getElementById('slotRestartButton');
+    if (slotRestartButton) {
+      slotRestartButton.addEventListener('click', resetSlotMachine);
+    }
 
     // Configuration Actions
     saveConfigButton.addEventListener('click', saveConfig);
@@ -1343,3 +1622,5 @@
   </script>
 </body>
 </html>
+
+
