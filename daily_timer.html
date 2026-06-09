@@ -226,6 +226,8 @@
     }
     #slotTrackWrapper {
       position: relative;
+      flex: 1 1 auto;
+      min-width: 0;
       width: 100%;
       height: 200px;
       margin: 0 auto;
@@ -261,7 +263,7 @@
       top: 50%;
       left: 0;
       width: 100%;
-      height: 66px;
+      height: 56px;
       transform: translateY(-50%);
       border-top: 2px solid #002d7a;
       border-bottom: 2px solid #002d7a;
@@ -318,18 +320,19 @@
       top: 50%;
       left: 0;
       width: 100%;
-      height: 64px;
+      height: 56px;
       transform: translateY(-50%);
       border-top: 1px solid rgba(3,21,60,0.04);
       border-bottom: 1px solid rgba(3,21,60,0.04);
       pointer-events: none;
     }
     .slot-handle-container {
-      position: relative;
-      width: 48px;
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       justify-content: center;
+      flex: 0 0 40px;
+      height: 200px;
+      z-index: 8;
     }
     .slot-handle {
       width: 36px;
@@ -452,8 +455,8 @@
     }
     .slot-machine-row {
       display: flex;
-      align-items: flex-end;
-      gap: 12px;
+      align-items: center;
+      gap: 8px;
       justify-content: center;
       position: relative;
     }
@@ -618,10 +621,8 @@
   </style>
 
 <style>
-/* OVERRIDE: handle left, indicator frame, small shuffle button */
-#slotIndicator { border: 3px solid #007aff !important; border-radius: 10px !important; box-shadow: 0 6px 18px rgba(0,122,255,0.06), inset 0 0 0 1px rgba(0,45,122,0.06) !important; background: rgba(255,255,255,0.02) !important; }
-.slot-handle-container { position: absolute !important; top: 50% !important; left: 50% !important; transform: translate(-220px, -50%) !important; z-index: 8 !important; }
-@media (max-width:520px) { .slot-handle-container { transform: translate(-140px, -50%) !important; } }
+/* OVERRIDE: refined indicator frame + compact shuffle button */
+#slotIndicator { border: 2px solid rgba(0,122,255,0.6) !important; border-radius: 10px !important; box-shadow: 0 6px 18px rgba(0,122,255,0.08), inset 0 0 0 1px rgba(0,45,122,0.06) !important; background: rgba(255,255,255,0.02) !important; }
 #shuffleButton { max-width: 180px !important; width: auto !important; padding: 10px 16px !important; font-size: 1em !important; }
 </style></head>
 <body>
@@ -653,14 +654,14 @@
   <div id="slotContainer" style="display: none; position: relative;">
     <div id="slotStatus">Drücke Starten für Zufall.</div>
     <div class="slot-machine-row">
+      <div id="slotTrackWrapper">
+        <div id="slotTrack"></div>
+        <div id="slotIndicator"></div>
+      </div>
       <div class="slot-handle-container">
         <div id="slotHandle" class="slot-handle" title="Hebel">
           <div class="slot-handle-knob"></div>
         </div>
-      </div>
-      <div id="slotTrackWrapper">
-        <div id="slotTrack"></div>
-        <div id="slotIndicator"></div>
       </div>
     </div>
     <div id="slotNameDisplay">—</div>
@@ -729,8 +730,7 @@
      * Prevents silent failures by providing visual feedback to the user on critical exceptions.
      */
     window.onerror = function(message, source, lineno, colno, error) {
-        alert("Ein Fehler ist aufgetreten: " + message + "
-Bitte Seite neu laden oder Cache leeren.");
+        alert("Ein Fehler ist aufgetreten: " + message + "\nBitte Seite neu laden oder Cache leeren.");
     };
 
     // --- Configuration & Constants ---
@@ -746,7 +746,7 @@ Bitte Seite neu laden oder Cache leeren.");
       "Bastian", "Elias", "Mia", "Felix", "Hannah", "Leon", "Sophie", "Lukas", "Emma", "Julian"
     ];
     const DEFAULT_TOTAL_TIME_MINUTES = 15;
-    const SLOT_SPIN_DURATION_MS = 1700; // shorter, snappier spin for minimalist mode
+    const SLOT_SPIN_DURATION_MS = 2000; // spin length – long enough for a smooth decelerate
     
     // --- Application State ---
     let currentTeamMembers = [];
@@ -776,6 +776,7 @@ Bitte Seite neu laden oder Cache leeren.");
     const participantSelection = document.getElementById('participantSelection');
     const slotContainer = document.getElementById('slotContainer');
     const slotTrack = document.getElementById('slotTrack');
+    const slotTrackWrapper = document.getElementById('slotTrackWrapper');
     const slotStatus = document.getElementById('slotStatus');
     const slotNameDisplay = document.getElementById('slotNameDisplay');
     const slotSpinButton = document.getElementById('slotSpinButton');
@@ -1006,7 +1007,7 @@ Bitte Seite neu laden oder Cache leeren.");
       slotTrack.style.transform = 'translateY(0)';
 
       const itemHeight = 56;
-      const repetitions = 6;
+      const repetitions = 8;
       const payload = [];
 
       for (let rep = 0; rep < repetitions; rep++) {
@@ -1056,11 +1057,21 @@ Bitte Seite neu laden oder Cache leeren.");
       if (!slotTrack || slotAnimating || remainingSlotParticipants.length === 0) return;
 
       slotAnimating = true;
-      const visibleHeight = 190;
       const listLength = remainingSlotParticipants.length;
-      const winnerPosition = listLength * 3 + index;
-      const finalTranslate = -(winnerPosition * itemHeight - visibleHeight / 2 + itemHeight / 2);
 
+      // Measure the real geometry so the winner always lands dead-centre in the
+      // indicator frame, regardless of font size or responsive breakpoints.
+      const wrapperHeight = slotTrackWrapper ? slotTrackWrapper.clientHeight : 200;
+      const firstItem = slotTrack.querySelector('.slot-item');
+      const ih = firstItem ? firstItem.offsetHeight : itemHeight;
+
+      // Land several full passes in so the reel really "spins" before settling.
+      const fullPasses = 5;
+      const winnerPosition = listLength * fullPasses + index;
+      const finalTranslate = -(winnerPosition * ih + ih / 2 - wrapperHeight / 2);
+
+      // Reset to the top without animation, then force a reflow so the browser
+      // registers the starting point before the transition begins.
       slotTrack.style.transition = 'none';
       slotTrack.style.transform = 'translateY(0px)';
       slotTrack.getBoundingClientRect();
@@ -1077,11 +1088,12 @@ Bitte Seite neu laden oder Cache leeren.");
         previousSlotWinners.push(winnerName);
         remainingSlotParticipants.splice(index, 1);
         currentSlotWinner = winnerName;
+        if (slotNameDisplay) slotNameDisplay.textContent = '🎉 ' + winnerName;
         updateSlotHistory();
         slotSpinButton.disabled = remainingSlotParticipants.length === 0;
         startTimer();
 
-        // remove handle pull visual
+        // release the handle
         const handleEl = document.getElementById('slotHandle');
         if (handleEl) handleEl.classList.remove('pulled');
 
@@ -1092,17 +1104,24 @@ Bitte Seite neu laden oder Cache leeren.");
         }
       };
 
-      const transitionTimeout = setTimeout(() => {
-        onSlotEnd();
-      }, SLOT_SPIN_DURATION_MS + 200);
+      // Fallback in case transitionend never fires (e.g. tab in background).
+      const transitionTimeout = setTimeout(onSlotEnd, SLOT_SPIN_DURATION_MS + 250);
 
-      // visual handle pull
+      // pull the handle in sync with the spin
       const handle = document.getElementById('slotHandle');
       if (handle) handle.classList.add('pulled');
-
-      slotTrack.style.transition = `transform ${SLOT_SPIN_DURATION_MS / 1000}s cubic-bezier(0.25, 0.1, 0.25, 1)`;
-      slotTrack.style.transform = `translateY(${finalTranslate}px)`;
       slotTrack.addEventListener('transitionend', onSlotEnd);
+
+      // requestAnimationFrame guarantees the reset above is painted first, so the
+      // transition runs smoothly instead of being collapsed into a single frame.
+      requestAnimationFrame(() => {
+        // Strong decelerate with a tiny overshoot (y2 > 1) for a satisfying
+        // "settle" – starts fast, eases to a soft stop instead of a sluggish
+        // ease-in/ease-out slide.
+        slotTrack.style.transition =
+          `transform ${SLOT_SPIN_DURATION_MS / 1000}s cubic-bezier(0.18, 0.86, 0.26, 1.04)`;
+        slotTrack.style.transform = `translateY(${finalTranslate}px)`;
+      });
     }
 
     function displaySlotTeam(list) {
@@ -1364,8 +1383,7 @@ Bitte Seite neu laden oder Cache leeren.");
      */
     function saveConfig() {
       const newNames = teamNamesInput.value
-        .split(/[, 
-]+/) 
+        .split(/[,\s]+/)
         .map(name => name.trim())
         .filter(name => name.length > 0);
         
@@ -1497,7 +1515,8 @@ Bitte Seite neu laden oder Cache leeren.");
         }
     }
 
-    // --- Event Listeners ---
+
+// --- Event Listeners ---
 
     /**
      * Keyboard bindings for navigation.
@@ -1622,5 +1641,7 @@ Bitte Seite neu laden oder Cache leeren.");
   </script>
 </body>
 </html>
+
+
 
 
