@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daily Team-Zufallsgenerator & Timer</title>
+  <title data-i18n="docTitle">Daily Team-Zufallsgenerator & Timer</title>
   <style>
     /* --- Base Styles & Typography --- */
     @import url('https://fonts.googleapis.com/css2?family=Helvetica&display=swap');
@@ -492,6 +492,30 @@
       width: 18px;
       height: 18px;
     }
+    .lang-switch {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      margin-bottom: 18px;
+      background: #f5f7fb;
+      border: 1px solid #d0d7e5;
+      border-radius: 999px;
+    }
+    .lang-switch .lang-option {
+      border: none;
+      background: transparent;
+      padding: 8px 20px;
+      border-radius: 999px;
+      font-size: 0.95em;
+      font-weight: 700;
+      color: #556;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .lang-switch .lang-option.active {
+      background: #002878;
+      color: #fff;
+    }
     @media (max-width: 520px) {
       #slotContainer { max-width: 100%; }
       .slot-item { font-size: 1em; padding: 14px 8px; }
@@ -627,16 +651,16 @@
 </style></head>
 <body>
 
-  <h1>⏱️ Daily Taktgeber 🎲</h1>
+  <h1 data-i18n="appTitle">⏱️ Daily Taktgeber 🎲</h1>
   
   <div id="participantSelection">
       </div>
 
-  <button id="shuffleButton" class="app-button">Würfeln</button>
+  <button id="shuffleButton" class="app-button" data-i18n="btnRoll">Würfeln</button>
   
   <div class="control-buttons-container">
-    <button id="editButton" class="app-button">Einstellungen</button>
-    <button id="helpButton" class="app-button">Anleitung</button>
+    <button id="editButton" class="app-button" data-i18n="btnSettings">Einstellungen</button>
+    <button id="helpButton" class="app-button" data-i18n="btnHelp">Anleitung</button>
   </div>
   
   <div id="updateBanner" style="display: none;">
@@ -652,25 +676,25 @@
   </div>
 
   <div id="slotContainer" style="display: none; position: relative;">
-    <div id="slotStatus">Drücke Starten für Zufall.</div>
+    <div id="slotStatus" data-i18n="slotStatusInitial">Drücke Starten für Zufall.</div>
     <div class="slot-machine-row">
       <div id="slotTrackWrapper">
         <div id="slotTrack"></div>
         <div id="slotIndicator"></div>
       </div>
       <div class="slot-handle-container">
-        <div id="slotHandle" class="slot-handle" title="Hebel">
+        <div id="slotHandle" class="slot-handle" data-i18n-title="handleTitle" title="Hebel">
           <div class="slot-handle-knob"></div>
         </div>
       </div>
     </div>
     <div id="slotNameDisplay">—</div>
     <div class="slot-controls">
-      <button id="slotSpinButton" class="app-button slot-spin-button">Drehen</button>
-      <button id="slotRestartButton" class="app-button slot-spin-button slot-restart-button">Neu starten</button>
+      <button id="slotSpinButton" class="app-button slot-spin-button" data-i18n="btnSpin">Drehen</button>
+      <button id="slotRestartButton" class="app-button slot-spin-button slot-restart-button" data-i18n="btnRestart">Neu starten</button>
     </div>
     <div id="slotHistory" class="slot-history">
-      <div class="slot-history-title">Letzte Gewinner</div>
+      <div class="slot-history-title" data-i18n="slotHistoryTitle">Letzte Gewinner</div>
       <ol id="slotHistoryList"></ol>
     </div>
   </div>
@@ -680,25 +704,32 @@
   <div id="configModal" class="modal">
     <div class="modal-content">
       <span class="close config-close">&times;</span>
-      
-      <h2>Daily-Dauer einstellen</h2>
-      <p>Gesamtdauer in Minuten, die auf alle Teilnehmer aufgeteilt wird (Standard: 15 Min.).</p>
+
+      <h2 data-i18n="cfgLangTitle">Sprache</h2>
+      <p data-i18n="cfgLangDesc">Wähle die Sprache der Oberfläche.</p>
+      <div class="lang-switch" id="langSwitch">
+        <button type="button" class="lang-option" data-lang="de" data-i18n="langDe">Deutsch</button>
+        <button type="button" class="lang-option" data-lang="en" data-i18n="langEn">English</button>
+      </div>
+
+      <h2 data-i18n="cfgDurationTitle">Daily-Dauer einstellen</h2>
+      <p data-i18n="cfgDurationDesc">Gesamtdauer in Minuten, die auf alle Teilnehmer aufgeteilt wird (Standard: 15 Min.).</p>
       <input type="number" id="totalTimeInput" min="1" value="15">
-      
-      <h2>Team-Mitglieder bearbeiten</h2>
-      <p>Gib die Namen der Teammitglieder ein, getrennt durch Kommas (oder Zeilenumbrüche). Leerzeichen werden automatisch entfernt.</p>
+
+      <h2 data-i18n="cfgMembersTitle">Team-Mitglieder bearbeiten</h2>
+      <p data-i18n="cfgMembersDesc">Gib die Namen der Teammitglieder ein, getrennt durch Kommas (oder Zeilenumbrüche). Leerzeichen werden automatisch entfernt.</p>
       <textarea id="teamNamesInput"></textarea>
 
-      <h2>Anzeigemodus</h2>
-      <p>Wähle den bevorzugten Modus für die Teilnehmerauswahl.</p>
+      <h2 data-i18n="cfgViewTitle">Anzeigemodus</h2>
+      <p data-i18n="cfgViewDesc">Wähle den bevorzugten Modus für die Teilnehmerauswahl.</p>
       <div class="view-mode-options">
-        <label><input type="radio" name="viewMode" value="classic"> Klassische Ansicht</label>
-        <label><input type="radio" name="viewMode" value="slot"> Slotmaschinen-Ansicht</label>
+        <label><input type="radio" name="viewMode" value="classic"> <span data-i18n="viewClassic">Klassische Ansicht</span></label>
+        <label><input type="radio" name="viewMode" value="slot"> <span data-i18n="viewSlot">Slotmaschinen-Ansicht</span></label>
       </div>
-      
+
       <div class="modal-button-container">
-        <button id="resetNamesButton" class="app-button">Zurücksetzen</button>
-        <button id="saveConfigButton" class="app-button">Speichern</button>
+        <button id="resetNamesButton" class="app-button" data-i18n="btnReset">Zurücksetzen</button>
+        <button id="saveConfigButton" class="app-button" data-i18n="btnSave">Speichern</button>
       </div>
       
     </div>
@@ -707,12 +738,12 @@
   <div id="helpModal" class="modal">
     <div class="modal-content">
       <span class="close help-close">&times;</span>
-      <h2>Anleitung: Daily-Reihenfolge</h2>
+      <h2 data-i18n="helpTitle">Anleitung: Daily-Reihenfolge</h2>
       <div id="helpModalContent">
-          <p>Diese App hilft dir, eine faire und zufällige Reihenfolge für die Team-Updates in deinem Daily Meeting festzulegen.</p>
-          
-          <h3>Funktion & Bedienung</h3>
-          <ul>
+          <p data-i18n="helpIntro">Diese App hilft dir, eine faire und zufällige Reihenfolge für die Team-Updates in deinem Daily Meeting festzulegen.</p>
+
+          <h3 data-i18n="helpUsageTitle">Funktion & Bedienung</h3>
+          <ul data-i18n-html="helpList">
               <li>**Checklisten:** Wähle oben ab, wer heute fehlt (Urlaub/Krank).</li>
               <li>**Würfeln:** Erstellt eine zufällige Reihenfolge der <b>aktiven</b> Teammitglieder und startet den Timer für den ersten.</li>
               <li>**Slotmaschinen-Ansicht:** In den Einstellungen kannst du zwischen der klassischen Liste und der animierten Slotmaschinen-Ansicht wählen.</li>
@@ -730,7 +761,7 @@
      * Prevents silent failures by providing visual feedback to the user on critical exceptions.
      */
     window.onerror = function(message, source, lineno, colno, error) {
-        alert("Ein Fehler ist aufgetreten: " + message + "\nBitte Seite neu laden oder Cache leeren.");
+        alert(t('alertError', { msg: message }));
     };
 
     // --- Configuration & Constants ---
@@ -741,7 +772,171 @@
     const CURRENT_VERSION = '1.17'; 
     const VIEW_MODE_CLASSIC = 'classic';
     const VIEW_MODE_SLOT = 'slot';
-    
+    const LANG_KEY = 'dailyLang';
+    const SUPPORTED_LANGS = ['de', 'en'];
+    let currentLang = 'de';
+
+    // --- Internationalization (i18n) ---
+    // To make any UI string bilingual: add it once per language below, then
+    // reference it via data-i18n="key" in markup (or data-i18n-html /
+    // data-i18n-title / data-i18n-placeholder), or via setText(el, 'key') in
+    // code. applyLanguage() then localizes everything – including dynamically
+    // set text – and switches live, so future additions are bilingual for free.
+    const translations = {
+      de: {
+        docTitle: 'Daily Team-Zufallsgenerator & Timer',
+        appTitle: '⏱️ Daily Taktgeber 🎲',
+        btnSettings: 'Einstellungen',
+        btnHelp: 'Anleitung',
+        btnRoll: 'Würfeln',
+        btnStart: 'Starten',
+        btnRollAgain: 'Erneut würfeln',
+        btnRestart: 'Neu starten',
+        btnSlotResetRound: 'Slotmaschine Runde zurücksetzen',
+        slotStatusInitial: 'Drücke Starten für Zufall.',
+        slotStatusRestart: 'Wähle neue Teilnehmer und starte erneut.',
+        slotStatusNoSelection: 'Keine Auswahl',
+        handleTitle: 'Hebel',
+        btnSpin: 'Drehen',
+        btnEndDaily: 'Daily beenden',
+        btnDailyDone: 'Daily beendet',
+        dailyFinished: '✅ Daily beendet',
+        winnerAnnounce: '🎉 {name}',
+        slotHistoryTitle: 'Letzte Gewinner',
+        noActiveParticipants: 'Keine aktiven Teilnehmer ausgewählt.',
+        noNamesStored: 'Keine Namen in den Einstellungen hinterlegt.',
+        cfgDurationTitle: 'Daily-Dauer einstellen',
+        cfgDurationDesc: 'Gesamtdauer in Minuten, die auf alle Teilnehmer aufgeteilt wird (Standard: 15 Min.).',
+        cfgMembersTitle: 'Team-Mitglieder bearbeiten',
+        cfgMembersDesc: 'Gib die Namen der Teammitglieder ein, getrennt durch Kommas (oder Zeilenumbrüche). Leerzeichen werden automatisch entfernt.',
+        cfgViewTitle: 'Anzeigemodus',
+        cfgViewDesc: 'Wähle den bevorzugten Modus für die Teilnehmerauswahl.',
+        viewClassic: 'Klassische Ansicht',
+        viewSlot: 'Slotmaschinen-Ansicht',
+        cfgLangTitle: 'Sprache',
+        cfgLangDesc: 'Wähle die Sprache der Oberfläche.',
+        langDe: 'Deutsch',
+        langEn: 'English',
+        btnReset: 'Zurücksetzen',
+        btnSave: 'Speichern',
+        btnSaved: 'Gespeichert! ✅',
+        helpTitle: 'Anleitung: Daily-Reihenfolge',
+        helpIntro: 'Diese App hilft dir, eine faire und zufällige Reihenfolge für die Team-Updates in deinem Daily Meeting festzulegen.',
+        helpUsageTitle: 'Funktion & Bedienung',
+        helpList: '<li>**Checklisten:** Wähle oben ab, wer heute fehlt (Urlaub/Krank).</li><li>**Würfeln:** Erstellt eine zufällige Reihenfolge der <b>aktiven</b> Teammitglieder und startet den Timer für den ersten.</li><li>**Slotmaschinen-Ansicht:** In den Einstellungen kannst du zwischen der klassischen Liste und der animierten Slotmaschinen-Ansicht wählen.</li><li>**Einstellungen:** Passt die generelle Liste der Teammitglieder (Stammdaten) an.</li><li>**Leertaste (Space):** Wechselt zum nächsten Teammitglied und setzt den Timer zurück.</li><li>**Strg/Shift + Leertaste:** Wechselt zum vorherigen Teammitglied (Rückgängig-Funktion).</li>',
+        alertPickOne: 'Bitte wähle mindestens einen Teilnehmer aus!',
+        alertError: 'Ein Fehler ist aufgetreten: {msg}\nBitte Seite neu laden oder Cache leeren.',
+        alertStartError: 'Kritischer Start-Fehler: {msg}',
+        updateBanner: '**NEU in V{version}:** Teilnehmer-Checkliste steht jetzt ordentlich untereinander und verschwindet nach dem Start.'
+      },
+      en: {
+        docTitle: 'Daily Team Randomizer & Timer',
+        appTitle: '⏱️ Daily Pacemaker 🎲',
+        btnSettings: 'Settings',
+        btnHelp: 'Guide',
+        btnRoll: 'Roll',
+        btnStart: 'Start',
+        btnRollAgain: 'Roll again',
+        btnRestart: 'Restart',
+        btnSlotResetRound: 'Reset slot machine round',
+        slotStatusInitial: 'Press Start for a random pick.',
+        slotStatusRestart: 'Pick new participants and start again.',
+        slotStatusNoSelection: 'No selection',
+        handleTitle: 'Lever',
+        btnSpin: 'Spin',
+        btnEndDaily: 'End daily',
+        btnDailyDone: 'Daily finished',
+        dailyFinished: '✅ Daily finished',
+        winnerAnnounce: '🎉 {name}',
+        slotHistoryTitle: 'Recent winners',
+        noActiveParticipants: 'No active participants selected.',
+        noNamesStored: 'No names saved in settings.',
+        cfgDurationTitle: 'Set daily duration',
+        cfgDurationDesc: 'Total time in minutes, divided among all participants (default: 15 min).',
+        cfgMembersTitle: 'Edit team members',
+        cfgMembersDesc: 'Enter the team member names, separated by commas (or line breaks). Spaces are removed automatically.',
+        cfgViewTitle: 'Display mode',
+        cfgViewDesc: 'Choose your preferred mode for picking participants.',
+        viewClassic: 'Classic view',
+        viewSlot: 'Slot machine view',
+        cfgLangTitle: 'Language',
+        cfgLangDesc: 'Choose the interface language.',
+        langDe: 'Deutsch',
+        langEn: 'English',
+        btnReset: 'Reset',
+        btnSave: 'Save',
+        btnSaved: 'Saved! ✅',
+        helpTitle: 'Guide: Daily order',
+        helpIntro: 'This app helps you set a fair, random order for team updates in your daily meeting.',
+        helpUsageTitle: 'Features & usage',
+        helpList: '<li>**Checklists:** Uncheck above whoever is absent today (vacation/sick).</li><li>**Roll:** Creates a random order of the <b>active</b> team members and starts the timer for the first one.</li><li>**Slot machine view:** In the settings you can switch between the classic list and the animated slot machine view.</li><li>**Settings:** Adjusts the general list of team members (master data).</li><li>**Spacebar:** Moves to the next team member and resets the timer.</li><li>**Ctrl/Shift + Space:** Moves to the previous team member (undo function).</li>',
+        alertPickOne: 'Please select at least one participant!',
+        alertError: 'An error occurred: {msg}\nPlease reload the page or clear the cache.',
+        alertStartError: 'Critical startup error: {msg}',
+        updateBanner: '**NEW in V{version}:** The participant checklist is now neatly stacked and disappears after starting.'
+      }
+    };
+
+    function t(key, vars) {
+      const table = translations[currentLang] || translations.de;
+      let str = (table && table[key] != null) ? table[key]
+              : (translations.de[key] != null ? translations.de[key] : key);
+      if (vars) {
+        str = str.replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? vars[k] : m));
+      }
+      return str;
+    }
+
+    // Sets translatable text and remembers the key on the element so a later
+    // language switch can re-localize it automatically.
+    function setText(el, key, vars) {
+      if (!el) return;
+      el.dataset.i18n = key;
+      if (vars) el.dataset.i18nVars = JSON.stringify(vars);
+      else delete el.dataset.i18nVars;
+      el.textContent = t(key, vars);
+    }
+
+    // Clears text and drops the remembered key (so it is not re-populated).
+    function clearText(el) {
+      if (!el) return;
+      el.textContent = '';
+      delete el.dataset.i18n;
+      delete el.dataset.i18nVars;
+    }
+
+    function loadLanguage() {
+      let stored = null;
+      try { stored = localStorage.getItem(LANG_KEY); } catch (e) {}
+      currentLang = SUPPORTED_LANGS.indexOf(stored) !== -1 ? stored : 'de';
+    }
+
+    function applyLanguage(lang) {
+      if (SUPPORTED_LANGS.indexOf(lang) === -1) lang = 'de';
+      currentLang = lang;
+      try { localStorage.setItem(LANG_KEY, lang); } catch (e) {}
+      document.documentElement.lang = lang;
+      document.title = t('docTitle');
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const vars = el.dataset.i18nVars ? JSON.parse(el.dataset.i18nVars) : null;
+        el.textContent = t(el.dataset.i18n, vars);
+      });
+      document.querySelectorAll('[data-i18n-html]').forEach(el => {
+        el.innerHTML = t(el.dataset.i18nHtml);
+      });
+      document.querySelectorAll('[data-i18n-title]').forEach(el => {
+        el.title = t(el.dataset.i18nTitle);
+      });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        el.placeholder = t(el.dataset.i18nPlaceholder);
+      });
+
+      document.querySelectorAll('#langSwitch .lang-option').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+    }
+
     const initialTeamMembers = [
       "Bastian", "Elias", "Mia", "Felix", "Hannah", "Leon", "Sophie", "Lukas", "Emma", "Julian"
     ];
@@ -983,7 +1178,7 @@
         teamList.innerHTML = '';
 
         if (currentShuffledList.length === 0) {
-          teamList.innerHTML = '<li>Keine aktiven Teilnehmer ausgewählt.</li>';
+          teamList.innerHTML = '<li data-i18n="noActiveParticipants">' + t('noActiveParticipants') + '</li>';
           activeIndex = -1;
         } else {
           currentShuffledList.forEach(name => {
@@ -1043,7 +1238,7 @@
 
     function spinSlotMachine() {
       // If last round finished and button repurposed, finish the daily
-      if (slotSpinButton && slotSpinButton.textContent === 'Daily beenden') {
+      if (slotSpinButton && slotSpinButton.dataset.i18n === 'btnEndDaily') {
         finishDaily();
         return;
       }
@@ -1088,7 +1283,7 @@
         previousSlotWinners.push(winnerName);
         remainingSlotParticipants.splice(index, 1);
         currentSlotWinner = winnerName;
-        if (slotNameDisplay) slotNameDisplay.textContent = '🎉 ' + winnerName;
+        if (slotNameDisplay) setText(slotNameDisplay, 'winnerAnnounce', { name: winnerName });
         updateSlotHistory();
         slotSpinButton.disabled = remainingSlotParticipants.length === 0;
         startTimer();
@@ -1099,7 +1294,7 @@
 
         // If no participants remain, repurpose the spin button to end the daily.
         if (remainingSlotParticipants.length === 0) {
-          slotSpinButton.textContent = 'Daily beenden';
+          setText(slotSpinButton, 'btnEndDaily');
           slotSpinButton.disabled = false;
         }
       };
@@ -1145,12 +1340,12 @@
         timeRemainingSeconds = individualTimeSeconds;
         updateTimerDisplay();
       }
-      slotStatus.textContent = '';
-      slotNameDisplay.textContent = '';
+      clearText(slotStatus);
+      clearText(slotNameDisplay);
 
       if (currentShuffledList.length === 0) {
-        slotTrack.innerHTML = '<div class="slot-empty">Keine aktiven Teilnehmer ausgewählt.</div>';
-        slotStatus.textContent = 'Keine Auswahl';
+        slotTrack.innerHTML = '<div class="slot-empty" data-i18n="noActiveParticipants">' + t('noActiveParticipants') + '</div>';
+        setText(slotStatus, 'slotStatusNoSelection');
         activeIndex = -1;
         slotSpinButton.disabled = true;
         return;
@@ -1158,8 +1353,8 @@
 
       buildSlotMachine(remainingSlotParticipants);
       slotSpinButton.disabled = false;
-      slotSpinButton.textContent = 'Drehen';
-      slotNameDisplay.textContent = '';
+      setText(slotSpinButton, 'btnSpin');
+      clearText(slotNameDisplay);
     }
 
     function displayTeam(list) {
@@ -1177,7 +1372,7 @@
       slotContainer.style.display = 'none';
       participantSelection.style.display = 'flex';
       shuffleButton.style.display = 'inline-block';
-      shuffleButton.textContent = viewMode === VIEW_MODE_SLOT ? 'Starten' : 'Würfeln';
+      setText(shuffleButton, viewMode === VIEW_MODE_SLOT ? 'btnStart' : 'btnRoll');
       if (slotSpinButton) {
         slotSpinButton.disabled = true;
       }
@@ -1198,19 +1393,19 @@
       stopTimer();
       clearColorClasses();
       toggleOvertimeIcons(false);
-      timerDisplay.textContent = '';
-      slotStatus.textContent = '✅ Daily beendet';
-      slotNameDisplay.textContent = '';
+      clearText(timerDisplay);
+      setText(slotStatus, 'dailyFinished');
+      clearText(slotNameDisplay);
       showConfetti();
 
       slotSessionActive = false;
       if (shuffleButton) {
         shuffleButton.style.display = 'inline-block';
-        shuffleButton.textContent = 'Neu starten';
+        setText(shuffleButton, 'btnRestart');
       }
       if (slotSpinButton) {
         slotSpinButton.disabled = true;
-        slotSpinButton.textContent = 'Daily beendet';
+        setText(slotSpinButton, 'btnDailyDone');
       }
       const restartBtn = document.getElementById('slotRestartButton');
       if (restartBtn) {
@@ -1226,19 +1421,19 @@
       slotSessionActive = false;
       if (slotSpinButton) {
         slotSpinButton.disabled = true;
-        slotSpinButton.textContent = 'Drehen';
+        setText(slotSpinButton, 'btnSpin');
       }
       const restartBtn = document.getElementById('slotRestartButton');
       if (restartBtn) {
         restartBtn.style.display = 'none';
       }
       hideSlotEndOverlay();
-      slotStatus.textContent = 'Wähle neue Teilnehmer und starte erneut.';
-      slotNameDisplay.textContent = '';
+      setText(slotStatus, 'slotStatusRestart');
+      clearText(slotNameDisplay);
       slotContainer.style.display = 'none';
       participantSelection.style.display = 'flex';
       if (shuffleButton) {
-        shuffleButton.textContent = 'Starten';
+        setText(shuffleButton, 'btnStart');
       }
     }
 
@@ -1310,7 +1505,7 @@
         }
 
         if (currentTeamMembers.length === 0) {
-            participantSelection.textContent = "Keine Namen in den Einstellungen hinterlegt.";
+            setText(participantSelection, 'noNamesStored');
             return;
         }
 
@@ -1417,22 +1612,21 @@
 
       shuffleButton.style.display = 'inline-block';
       if (viewMode === VIEW_MODE_SLOT) {
-          shuffleButton.textContent = "Starten";
+          setText(shuffleButton, 'btnStart');
           if (slotSpinButton) {
               slotSpinButton.disabled = true;
           }
       } else {
-          shuffleButton.textContent = "Würfeln";
+          setText(shuffleButton, 'btnRoll');
       }
 
       // Provide visual feedback for successful save operation
-      const originalText = saveConfigButton.textContent;
-      saveConfigButton.textContent = "Gespeichert! ✅";
+      setText(saveConfigButton, 'btnSaved');
       saveConfigButton.classList.add('saved-feedback');
 
       setTimeout(() => {
         closeConfig();
-        saveConfigButton.textContent = originalText;
+        setText(saveConfigButton, 'btnSave');
         saveConfigButton.classList.remove('saved-feedback');
       }, 1000);
     }
@@ -1497,7 +1691,7 @@
         const storedVersion = localStorage.getItem(VERSION_KEY);
         
         if (storedVersion !== CURRENT_VERSION) {
-            updateBanner.textContent = `**NEU in V${CURRENT_VERSION}:** Teilnehmer-Checkliste steht jetzt ordentlich untereinander und verschwindet nach dem Start.`;
+            setText(updateBanner, 'updateBanner', { version: CURRENT_VERSION });
             updateBanner.style.display = 'block';
             
             localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
@@ -1545,7 +1739,7 @@
                 } else {
                     stopTimer();
                     updateActiveParticipant(activeIndex);
-                    timerDisplay.textContent = "✅ Daily beendet";
+                    setText(timerDisplay, 'dailyFinished');
                     clearColorClasses();
                     toggleOvertimeIcons(false);
                     return;
@@ -1557,7 +1751,7 @@
             if (viewMode === VIEW_MODE_SLOT) {
                 if (remainingSlotParticipants.length === 0) {
                   stopTimer();
-                  timerDisplay.textContent = "✅ Daily beendet";
+                  setText(timerDisplay, 'dailyFinished');
                   clearColorClasses();
                   toggleOvertimeIcons(false);
                   return;
@@ -1588,7 +1782,7 @@
       });
       
       if (activeNames.length === 0) {
-          alert("Bitte wähle mindestens einen Teilnehmer aus!");
+          alert(t('alertPickOne'));
           return;
       }
       
@@ -1597,9 +1791,9 @@
       const shuffled = shuffle([...activeNames]); 
       displayTeam(shuffled);
       if (viewMode === VIEW_MODE_SLOT) {
-        shuffleButton.textContent = "Slotmaschine Runde zurücksetzen";
+        setText(shuffleButton, 'btnSlotResetRound');
       } else {
-        shuffleButton.textContent = "Erneut würfeln";
+        setText(shuffleButton, 'btnRollAgain');
         startTimer();
       }
     });
@@ -1619,6 +1813,11 @@
     // Configuration Actions
     saveConfigButton.addEventListener('click', saveConfig);
     resetNamesButton.addEventListener('click', resetToInitialNames);
+
+    // Language switch – applies the chosen language live across the whole UI.
+    document.querySelectorAll('#langSwitch .lang-option').forEach(btn => {
+      btn.addEventListener('click', () => applyLanguage(btn.dataset.lang));
+    });
     
     // Modal Close Triggers
     if (configClose) configClose.addEventListener('click', closeConfig);
@@ -1632,10 +1831,12 @@
     // --- Application Entry Point ---
     
     try {
+        loadLanguage();
         loadInitialConfig();
         checkVersionAndShowBanner();
+        applyLanguage(currentLang);
     } catch (e) {
-        alert("Kritischer Start-Fehler: " + e.message);
+        alert(t('alertStartError', { msg: e.message }));
     }
 
   </script>
