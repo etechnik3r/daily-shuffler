@@ -296,8 +296,7 @@
       color: rgba(4,42,95,0.35);
       opacity: 0.6;
     }
-    #slotStatus,
-    #slotNameDisplay {
+    #slotStatus {
       display: block;
     }
     #slotStatus {
@@ -306,14 +305,6 @@
       font-weight: 700;
       color: #003c88;
       text-align: center;
-    }
-    #slotNameDisplay {
-      margin-top: 6px;
-      font-size: 1.15em;
-      font-weight: 700;
-      color: #042a5f;
-      text-align: center;
-      min-height: 1.2em;
     }
     #slotIndicator {
       position: absolute;
@@ -390,14 +381,6 @@
       font-size: 0.95em;
       color: #556;
       text-align: center;
-    }
-    #slotNameDisplay {
-      margin-top: 6px;
-      font-size: 1.15em;
-      font-weight: 700;
-      color: #042a5f;
-      text-align: center;
-      min-height: 1.2em;
     }
     .slot-history {
       margin-top: 18px;
@@ -688,7 +671,6 @@
         </div>
       </div>
     </div>
-    <div id="slotNameDisplay">—</div>
     <div class="slot-controls">
       <button id="slotSpinButton" class="app-button slot-spin-button" data-i18n="btnSpin">Drehen</button>
       <button id="slotRestartButton" class="app-button slot-spin-button slot-restart-button" data-i18n="btnRestart">Neu starten</button>
@@ -801,7 +783,6 @@
         btnEndDaily: 'Daily beenden',
         btnDailyDone: 'Daily beendet',
         dailyFinished: '✅ Daily beendet',
-        winnerAnnounce: '🎉 {name}',
         slotHistoryTitle: 'Letzte Gewinner',
         noActiveParticipants: 'Keine aktiven Teilnehmer ausgewählt.',
         noNamesStored: 'Keine Namen in den Einstellungen hinterlegt.',
@@ -847,7 +828,6 @@
         btnEndDaily: 'End daily',
         btnDailyDone: 'Daily finished',
         dailyFinished: '✅ Daily finished',
-        winnerAnnounce: '🎉 {name}',
         slotHistoryTitle: 'Recent winners',
         noActiveParticipants: 'No active participants selected.',
         noNamesStored: 'No names saved in settings.',
@@ -973,7 +953,6 @@
     const slotTrack = document.getElementById('slotTrack');
     const slotTrackWrapper = document.getElementById('slotTrackWrapper');
     const slotStatus = document.getElementById('slotStatus');
-    const slotNameDisplay = document.getElementById('slotNameDisplay');
     const slotSpinButton = document.getElementById('slotSpinButton');
     const slotHistoryList = document.getElementById('slotHistoryList');
     const viewModeInputs = document.querySelectorAll('input[name="viewMode"]');
@@ -1283,7 +1262,6 @@
         previousSlotWinners.push(winnerName);
         remainingSlotParticipants.splice(index, 1);
         currentSlotWinner = winnerName;
-        if (slotNameDisplay) setText(slotNameDisplay, 'winnerAnnounce', { name: winnerName });
         updateSlotHistory();
         slotSpinButton.disabled = remainingSlotParticipants.length === 0;
         startTimer();
@@ -1341,7 +1319,6 @@
         updateTimerDisplay();
       }
       clearText(slotStatus);
-      clearText(slotNameDisplay);
 
       if (currentShuffledList.length === 0) {
         slotTrack.innerHTML = '<div class="slot-empty" data-i18n="noActiveParticipants">' + t('noActiveParticipants') + '</div>';
@@ -1354,7 +1331,6 @@
       buildSlotMachine(remainingSlotParticipants);
       slotSpinButton.disabled = false;
       setText(slotSpinButton, 'btnSpin');
-      clearText(slotNameDisplay);
     }
 
     function displayTeam(list) {
@@ -1395,7 +1371,6 @@
       toggleOvertimeIcons(false);
       clearText(timerDisplay);
       setText(slotStatus, 'dailyFinished');
-      clearText(slotNameDisplay);
       showConfetti();
 
       slotSessionActive = false;
@@ -1429,7 +1404,6 @@
       }
       hideSlotEndOverlay();
       setText(slotStatus, 'slotStatusRestart');
-      clearText(slotNameDisplay);
       slotContainer.style.display = 'none';
       participantSelection.style.display = 'flex';
       if (shuffleButton) {
