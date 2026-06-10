@@ -217,59 +217,37 @@
     }
 
     /* --- Slot Machine View (minimalist) --- */
+    /* The whole slot view lives in one centred column. */
     #slotContainer {
       width: 100%;
-      max-width: 420px;
-      margin: 20px auto;
+      max-width: 340px;
+      margin: 8px auto 0;
       position: relative;
       display: none;
     }
+    /* Positioning context for the reel + the absolutely placed handle, so the
+       handle never pushes the reel off the column's centre axis. */
+    .slot-machine-row {
+      position: relative;
+      width: 100%;
+      margin: 0 auto;
+    }
     #slotTrackWrapper {
       position: relative;
-      flex: 1 1 auto;
-      min-width: 0;
       width: 100%;
+      max-width: 300px;
       height: 200px;
       margin: 0 auto;
       overflow: hidden;
-      border-radius: 12px;
-      border: 4px solid rgba(3,105,255,0.12); /* subtle neon edge */
-      background: linear-gradient(180deg,#ffffff 0%, #fbfdff 100%);
-      box-shadow: 0 8px 18px rgba(3,21,60,0.06);
-    }
-    #slotTrackWrapper::before,
-    #slotTrackWrapper::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      width: 26px;
-      height: 26px;
-      transform: translateY(-50%);
-      border-radius: 50%;
-      background: #002d7a;
-      border: 2px solid #002d7a;
-      box-shadow: 0 0 6px rgba(0,45,122,0.5);
-    }
-    #slotTrackWrapper::before {
-      left: 10px;
-      clip-path: polygon(25% 15%, 25% 85%, 100% 50%);
-    }
-    #slotTrackWrapper::after {
-      right: 10px;
-      clip-path: polygon(0 50%, 75% 15%, 75% 85%);
-    }
-    #slotIndicator {
-      position: absolute;
-      top: 50%;
-      left: 0;
-      width: 100%;
-      height: 56px;
-      transform: translateY(-50%);
-      border-top: 2px solid #002d7a;
-      border-bottom: 2px solid #002d7a;
-      background: transparent;
-      box-shadow: inset 0 0 0 1px rgba(0,45,122,0.15);
-      pointer-events: none;
+      border-radius: 16px;
+      border: 1px solid rgba(0,40,120,0.10);
+      background: linear-gradient(180deg,#ffffff 0%, #f4f8ff 100%);
+      /* outer lift + top/bottom inner vignette so names roll into the cabinet */
+      box-shadow:
+        0 14px 30px rgba(3,21,60,0.14),
+        0 2px 0 rgba(255,255,255,0.9) inset,
+        0 22px 22px -16px rgba(3,21,60,0.30) inset,
+        0 -22px 22px -16px rgba(3,21,60,0.30) inset;
     }
     #slotTrack {
       position: absolute;
@@ -298,31 +276,41 @@
     }
     #slotStatus {
       display: block;
-    }
-    #slotStatus {
       margin-bottom: 14px;
       font-size: 1em;
       font-weight: 700;
       color: #003c88;
       text-align: center;
     }
+    /* Highlight band marking the winning row. */
     #slotIndicator {
       position: absolute;
       top: 50%;
       left: 0;
       width: 100%;
-      height: 56px;
+      height: 58px;
       transform: translateY(-50%);
-      border-top: 1px solid rgba(3,21,60,0.04);
-      border-bottom: 1px solid rgba(3,21,60,0.04);
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(0,122,255,0.10), rgba(0,122,255,0.03));
+      box-shadow:
+        0 0 0 2px rgba(0,122,255,0.55),
+        0 6px 16px rgba(0,122,255,0.18);
       pointer-events: none;
     }
+    /* Lever, mounted on the right of the cabinet. Absolutely positioned so it
+       decorates the reel without affecting the column's horizontal centring. */
     .slot-handle-container {
+      position: absolute;
+      top: 50%;
+      /* Anchor to the reel's right edge (reel max-width 300, centred) and push
+         the lever just outside so it reads as mounted on the cabinet side. */
+      left: calc(50% + 150px - 14px);
+      transform: translateY(-50%);
       display: flex;
       align-items: center;
       justify-content: center;
-      flex: 0 0 40px;
-      height: 200px;
+      width: 40px;
+      height: 130px;
       z-index: 8;
     }
     .slot-handle {
@@ -383,11 +371,14 @@
       text-align: center;
     }
     .slot-history {
-      margin-top: 18px;
+      width: 100%;
+      max-width: 300px;
+      margin: 20px auto 0;
       background: #f4f7ff;
       padding: 14px 16px;
       border-radius: 14px;
       border: 1px solid #d3dcf1;
+      box-sizing: border-box;
     }
     .slot-history-title {
       margin-bottom: 10px;
@@ -411,19 +402,34 @@
       display: flex;
       justify-content: center;
       gap: 12px;
-      margin-top: 16px;
+      margin-top: 20px;
       flex-wrap: wrap;
       align-items: center;
     }
+    /* Primary call to action – matches the reel width for a clean column. */
     .slot-spin-button {
-      flex: 1 1 260px;
-      width: 260px;
-      max-width: 320px;
-      font-size: 1.3em;
+      flex: 1 1 auto;
+      width: 100%;
+      max-width: 300px;
+      margin: 0;
+      font-size: 1.2em;
       font-weight: 800;
-      padding: 18px 28px;
-      border-radius: 18px;
-      height: 72px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 16px 24px;
+      border-radius: 16px;
+      height: 60px;
+      background: linear-gradient(180deg, #1366ff 0%, #002878 100%);
+      box-shadow: 0 12px 24px rgba(0,40,120,0.28);
+    }
+    .slot-spin-button:hover { filter: brightness(1.07); }
+    .slot-spin-button:active { transform: translateY(1px); }
+    .slot-spin-button:disabled {
+      background: #b9c4dd;
+      box-shadow: none;
+      cursor: default;
+      filter: none;
+      transform: none;
     }
     .slot-restart-button {
       display: none;
@@ -435,13 +441,6 @@
       border-radius: 12px;
       background-color: #4d6de0;
       height: 48px;
-    }
-    .slot-machine-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      justify-content: center;
-      position: relative;
     }
     .slot-empty {
       display: flex;
@@ -628,9 +627,8 @@
   </style>
 
 <style>
-/* OVERRIDE: refined indicator frame + compact shuffle button */
-#slotIndicator { border: 2px solid rgba(0,122,255,0.6) !important; border-radius: 10px !important; box-shadow: 0 6px 18px rgba(0,122,255,0.08), inset 0 0 0 1px rgba(0,45,122,0.06) !important; background: rgba(255,255,255,0.02) !important; }
-#shuffleButton { max-width: 180px !important; width: auto !important; padding: 10px 16px !important; font-size: 1em !important; }
+/* OVERRIDE: compact, content-sized primary button (fits the long slot label). */
+#shuffleButton { max-width: 300px !important; width: auto !important; padding: 12px 22px !important; font-size: 1.05em !important; }
 </style></head>
 <body>
 
