@@ -9,9 +9,22 @@ Da das Tool ohne Backend auskommt und Daten nur lokal speichert, ist es besonder
 - **Zufallsgenerator:** Bestimmt jeden Tag eine neue, faire Reihenfolge der Teammitglieder.
 - **Abwesenheits-Checkliste:** Mit einem Klick können fehlende Teilnehmer (Urlaub/Krankheit) für das aktuelle Daily abgewählt werden.
 - **Smart Timer:** Berechnet die Zeit pro Person automatisch (z.B. 15 Minuten Gesamtzeit / 5 aktive Personen = 3 Minuten pro Person).
-- **Visuelles Feedback:** Der Timer ändert seine Farbe bei nahendem Zeitende (Gelb &rarr; Orange &rarr; Rot) und zeigt bei Überziehung einen Overtime-Indikator (🤯/⏰) an.
-- **Privacy by Design:** Es gibt kein Backend. Die Team-Stammdaten und Zeiteinstellungen werden ausschließlich lokal in deinem Browser (`Local Storage`) gespeichert.
+- **Drei Anzeigemodi:** Klassische Liste, animierte Slotmaschine oder die Roadtrip-Ansicht mit E-Auto (siehe unten).
+- **Visuelles Feedback:** Der Timer ändert seine Farbe bei nahendem Zeitende (Gelb &rarr; Orange &rarr; Rot) und zeigt bei Überziehung einen Overtime-Indikator an.
+- **Zweisprachig:** Die komplette Oberfläche ist auf Deutsch und Englisch verfügbar — umschaltbar in den Einstellungen, live und ohne Neuladen.
+- **Saisonale Events:** Im Oktober (Halloween 🎃) und Dezember (Winter ❄️) bekommen alle Ansichten automatisch ein passendes Thema.
+- **Touch-tauglich:** Ein „Nächster Teilnehmer“-Button ersetzt die Leertaste auf Geräten ohne Tastatur.
+- **Konfetti:** Wenn alle durch sind, wird das Daily mit grünem Haken und Konfettiregen beendet. 🎉
+- **Privacy by Design:** Es gibt kein Backend. Die Team-Stammdaten und Einstellungen werden ausschließlich lokal in deinem Browser (`Local Storage`) gespeichert.
 - **Tastatursteuerung:** Bequeme Navigation durch das Meeting ganz ohne Maus.
+
+## 🖥️ Anzeigemodi
+
+In den Einstellungen wählst du zwischen drei Darstellungen:
+
+- **Klassische Ansicht:** Die gewürfelte Reihenfolge als Liste; wer dran ist, wird hervorgehoben.
+- **Slotmaschinen-Ansicht:** Eine animierte Walze mit Hebel lost den nächsten Sprecher aus — inklusive Gewinner-Historie.
+- **Roadtrip-Ansicht (E-Auto):** Ein graues VW-ID.3-Auto fährt pro Sprecher die Strecke bis zur Zielflagge ab. Die Batterieanzeige (SoC) zeigt die verbleibende Redezeit; bei knapper Zeit erscheinen nacheinander die offiziellen VW-Warnsymbole (Batterie gelb &rarr; Schildkröte gelb &rarr; Schildkröte rot). Ist die Batterie leer, bleibt das Auto stehen. Die Reihenfolge mit den nächsten Teilnehmern wird darunter angezeigt.
 
 ## 🚀 Live Demo / Nutzung
 
@@ -23,14 +36,17 @@ Da das Projekt aus einer einzigen HTML-Datei besteht, kann es direkt im Browser 
 
 Klicke im Tool auf **Einstellungen**, um deine Stammdaten anzupassen:
 
+- **Sprache:** Deutsch oder Englisch.
 - **Daily-Dauer:** Gib die Gesamtzeit deines Meetings in Minuten an (Standard: 15).
 - **Team-Mitglieder:** Trage die Namen deines Teams ein (getrennt durch Kommas oder Zeilenumbrüche).
+- **Anzeigemodus:** Klassisch, Slotmaschine oder Roadtrip (E-Auto).
+- **Entwickler-Optionen** (ausklappbar): Saison-Override zum Testen der Halloween-/Winter-Themes unabhängig vom Systemdatum sowie ein Schnelltest-Button, der den laufenden Timer auf 3 Sekunden setzt.
 
 Diese Daten bleiben für deinen nächsten Besuch im Browser gespeichert.
 
 ## ⌨️ Tastenkürzel
 
-Sobald das Daily gestartet wurde (Klick auf *"Würfeln"*), kannst du das Tool bequem mit der Tastatur bedienen:
+Sobald das Daily gestartet wurde (Klick auf *„Würfeln“*), kannst du das Tool bequem mit der Tastatur bedienen:
 
 - <kbd>Leertaste</kbd> (`Space`): Springt zum nächsten Teammitglied und setzt den Timer zurück.
 - <kbd>Shift</kbd> + <kbd>Leertaste</kbd> (oder <kbd>Strg</kbd> + <kbd>Leertaste</kbd>): Springt zum vorherigen Teammitglied (Rückgängig-Funktion).
