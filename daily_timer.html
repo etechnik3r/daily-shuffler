@@ -467,16 +467,11 @@
       filter: none;
       transform: none;
     }
+    /* Inherits the full-width CTA sizing from .slot-spin-button; only the tint
+       differs so it reads as a fresh-start action. */
     .slot-restart-button {
       display: none;
-      flex: 0 0 90px;
-      width: 90px;
-      min-width: 90px;
-      font-size: 0.95em;
-      padding: 10px 12px;
-      border-radius: 12px;
-      background-color: #4d6de0;
-      height: 48px;
+      background: linear-gradient(180deg, #4d6de0 0%, #29327e 100%);
     }
     .slot-empty {
       display: flex;
@@ -1335,11 +1330,6 @@
     }
 
     function spinSlotMachine() {
-      // If last round finished and button repurposed, finish the daily
-      if (slotSpinButton && slotSpinButton.dataset.i18n === 'btnEndDaily') {
-        finishDaily();
-        return;
-      }
       if (!slotSessionActive || slotAnimating || remainingSlotParticipants.length === 0) return;
       const itemHeight = buildSlotMachine(remainingSlotParticipants);
       const nextIndex = chooseRandomSlotIndex();
@@ -1382,17 +1372,18 @@
         remainingSlotParticipants.splice(index, 1);
         currentSlotWinner = winnerName;
         updateSlotHistory();
-        slotSpinButton.disabled = remainingSlotParticipants.length === 0;
-        startTimer();
 
         // release the handle
         const handleEl = document.getElementById('slotHandle');
         if (handleEl) handleEl.classList.remove('pulled');
 
-        // If no participants remain, repurpose the spin button to end the daily.
         if (remainingSlotParticipants.length === 0) {
-          setText(slotSpinButton, 'btnEndDaily');
+          // Last participant just landed – end the daily in one step
+          // (confetti + restart button), no extra "end daily" click.
+          finishDaily();
+        } else {
           slotSpinButton.disabled = false;
+          startTimer();
         }
       };
 
@@ -1431,6 +1422,9 @@
       const restartBtn = document.getElementById('slotRestartButton');
       if (restartBtn) {
         restartBtn.style.display = 'none';
+      }
+      if (slotSpinButton) {
+        slotSpinButton.style.display = '';
       }
       if (currentShuffledList.length > 0) {
         timerDisplay.style.display = 'inline-flex';
@@ -1491,8 +1485,9 @@
       stopTimer();
       clearColorClasses();
       toggleOvertimeIcons(false);
-      clearText(timerDisplay);
-      setText(slotStatus, 'dailyFinished');
+      // Big celebration in the timer pill (consistent with the classic view).
+      setText(timerDisplay, 'dailyFinished');
+      clearText(slotStatus);
       showConfetti();
 
       slotSessionActive = false;
@@ -1500,9 +1495,9 @@
         shuffleButton.style.display = 'inline-block';
         setText(shuffleButton, 'btnRestart');
       }
+      // Hide the spin button and present a single clear restart CTA below.
       if (slotSpinButton) {
-        slotSpinButton.disabled = true;
-        setText(slotSpinButton, 'btnDailyDone');
+        slotSpinButton.style.display = 'none';
       }
       const restartBtn = document.getElementById('slotRestartButton');
       if (restartBtn) {
@@ -1518,6 +1513,7 @@
       slotSessionActive = false;
       if (slotSpinButton) {
         slotSpinButton.disabled = true;
+        slotSpinButton.style.display = '';
         setText(slotSpinButton, 'btnSpin');
       }
       const restartBtn = document.getElementById('slotRestartButton');
