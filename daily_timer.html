@@ -492,15 +492,6 @@
       position: relative;
       display: none;
     }
-    #evSpeakerName {
-      text-align: center;
-      font-size: 2em;
-      font-weight: 800;
-      color: var(--accent-deep);
-      margin-bottom: 14px;
-      min-height: 1.2em;
-      overflow-wrap: anywhere;
-    }
     /* Road = progress bar for the whole daily. overflow:hidden lets the car
        drive off-screen during the boost transition. */
     #evRoadWrap {
@@ -576,7 +567,7 @@
     /* Roof accessories (seasonal) */
     .ev-roof {
       position: absolute;
-      top: -5px; /* rests on the car roof (the svg has headroom for the hat) */
+      top: -8px; /* rests on the car roof (the svg has headroom for the hat) */
       left: 50%;
       transform: translateX(-50%);
       font-size: 1.25em;
@@ -682,8 +673,7 @@
       text-align: center;
     }
     #evQueue li.done {
-      opacity: 0.45;
-      text-decoration: line-through;
+      opacity: 0.4;
     }
     #evQueue li.current {
       background: var(--glow-bg);
@@ -730,6 +720,64 @@
     @keyframes ev-snowfall {
       from { background-position: 0 -240px; }
       to { background-position: 24px 240px; }
+    }
+
+    /* --- Seasonal themes for the classic list --- */
+    .season-halloween #teamList {
+      background: linear-gradient(180deg, #2a1a3d 0%, #41245c 100%);
+      border-color: rgba(255,140,0,0.35);
+    }
+    .season-halloween #teamList li { color: #f0c489; }
+    .season-halloween #teamList li.active-participant {
+      background: rgba(255,150,40,0.12);
+      box-shadow: 0 0 0 2px rgba(255,150,40,0.75), 0 6px 16px rgba(255,140,0,0.25);
+      color: #ffd9a0;
+    }
+    .season-halloween #teamList li.active-participant::before { content: '🎃 '; }
+    .season-winter #teamList {
+      position: relative;
+      border: 2px solid #ffffff;
+      background: linear-gradient(180deg, #eef5ff 0%, #dcebfb 100%);
+      overflow: hidden;
+    }
+    .season-winter #teamList li.active-participant::before { content: '⛄ '; }
+
+    /* --- Seasonal themes for the slot machine --- */
+    .season-halloween #slotTrackWrapper {
+      background: linear-gradient(180deg, #2a1a3d 0%, #41245c 100%);
+      border-color: rgba(255,140,0,0.35);
+    }
+    .season-halloween .slot-item { color: #f0c489; }
+    .season-halloween .slot-item.used-participant { color: rgba(240,196,137,0.4); }
+    .season-halloween #slotIndicator {
+      background: linear-gradient(180deg, rgba(255,150,40,0.16), rgba(255,150,40,0.05));
+      box-shadow: 0 0 0 2px rgba(255,150,40,0.8), 0 6px 16px rgba(255,140,0,0.3);
+    }
+    .season-halloween .slot-history-title::before { content: '🎃 '; }
+    .season-winter #slotTrackWrapper {
+      border: 2px solid #ffffff;
+      background: linear-gradient(180deg, #eef5ff 0%, #dcebfb 100%);
+    }
+    .season-winter .slot-history-title::before { content: '❄️ '; }
+
+    /* Falling snow over the classic list and the slot reel in winter. */
+    .season-winter #teamList::after,
+    .season-winter #slotTrackWrapper::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      z-index: 5;
+      background-image:
+        radial-gradient(2px 2px at 20% 30%, #fff 50%, transparent 51%),
+        radial-gradient(2px 2px at 70% 10%, #fff 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 45% 60%, #fff 50%, transparent 51%),
+        radial-gradient(2.5px 2.5px at 85% 45%, #fff 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 10% 75%, #fff 50%, transparent 51%);
+      background-size: 240px 240px;
+      animation: ev-snowfall 7s linear infinite;
+      opacity: 0.85;
     }
 
     /* --- Developer options (collapsed details in the settings modal) --- */
@@ -890,7 +938,7 @@
     /* Forms within Modals */
     textarea {
       width: 100%;
-      min-height: 150px;
+      min-height: 60px;
       padding: 12px;
       margin: 10px 0 20px 0;
       border: 1px solid #d3dcf1;
@@ -1059,51 +1107,51 @@
   <ul id="teamList"></ul>
 
   <div id="evContainer">
-    <div id="evSpeakerName">—</div>
     <div id="evRoadWrap">
       <div id="evRoad"></div>
       <div id="evGoal">🏁</div>
       <div id="evCar">
         <span class="ev-roof ev-sled">🛷</span>
-        <svg viewBox="0 -18 150 68" xmlns="http://www.w3.org/2000/svg" aria-label="VW ID.3">
-          <!-- body silhouette modelled on the ID.3 side profile, in grey -->
-          <path d="M10 40 C7 34 8 29 13 25 C18 20 24 16 32 14 C48 9 72 8 86 12 C98 16 108 21 116 26 C126 29 132 33 133 38 L133 40 L120 40 A13 13 0 0 1 96 40 L50 40 A13 13 0 0 1 26 40 Z"
+        <svg viewBox="0 -18 150 71" xmlns="http://www.w3.org/2000/svg" aria-label="VW ID.3">
+          <!-- ID.3 one-box profile: short nose, windscreen flowing into the
+               bonnet, high arched roof falling to a rear spoiler lip -->
+          <path d="M13 44 C10 40 9 33 11 27 C12 19 15 12 22 9 C38 3 62 2 78 6 C92 10 102 15 110 20 C120 23 128 28 132 33 C136 36 137 41 133 43 L121 44 A14 14 0 0 1 93 44 L52 44 A14 14 0 0 1 24 44 Z"
                 fill="#a9b2bc" stroke="#4a5562" stroke-width="2" stroke-linejoin="round"/>
-          <!-- glasshouse -->
-          <path d="M33 16 C48 11 70 10.5 84 14 C92 17 99 21 105 25 L38 25 C35 22 33 19 33 16 Z"
+          <!-- glasshouse hugging the roofline, rising beltline -->
+          <path d="M28 12 C45 6 65 5.5 79 8.5 C89 11 98 16 105 21 L96 23 C84 17.5 64 16 48 18 C39 19.2 32 21 29 23.5 C27.5 19.5 27 15 28 12 Z"
                 fill="#414b58" stroke="#4a5562" stroke-width="1.2"/>
           <!-- door seam -->
-          <path d="M70 14 L70 38" stroke="#7c8794" stroke-width="1.2" fill="none"/>
+          <path d="M72 8 L72 43" stroke="#7c8794" stroke-width="1.2" fill="none"/>
           <!-- headlight -->
-          <path d="M126 31 q5 2 6 6 l-7 0 z" fill="#eef4fa" stroke="#4a5562" stroke-width="1"/>
+          <path d="M125 30 q6 2 7 7 l-8 0 z" fill="#eef4fa" stroke="#4a5562" stroke-width="1"/>
           <!-- wheels with spokes; the groups rotate while the car drives -->
           <g class="ev-wheel">
-            <circle cx="38" cy="40" r="9.5" fill="#1f242c"/>
+            <circle cx="38" cy="42" r="10.5" fill="#1f242c"/>
             <g stroke="#cdd5de" stroke-width="2">
-              <line x1="38" y1="40" x2="38" y2="33"/>
-              <line x1="38" y1="40" x2="44.7" y2="37.8"/>
-              <line x1="38" y1="40" x2="42.1" y2="45.7"/>
-              <line x1="38" y1="40" x2="33.9" y2="45.7"/>
-              <line x1="38" y1="40" x2="31.3" y2="37.8"/>
+              <line x1="38" y1="42" x2="38" y2="34.5"/>
+              <line x1="38" y1="42" x2="45.1" y2="39.7"/>
+              <line x1="38" y1="42" x2="42.4" y2="48.1"/>
+              <line x1="38" y1="42" x2="33.6" y2="48.1"/>
+              <line x1="38" y1="42" x2="30.9" y2="39.7"/>
             </g>
-            <circle cx="38" cy="40" r="2.6" fill="#cdd5de"/>
+            <circle cx="38" cy="42" r="2.8" fill="#cdd5de"/>
           </g>
           <g class="ev-wheel">
-            <circle cx="108" cy="40" r="9.5" fill="#1f242c"/>
+            <circle cx="107" cy="42" r="10.5" fill="#1f242c"/>
             <g stroke="#cdd5de" stroke-width="2">
-              <line x1="108" y1="40" x2="108" y2="33"/>
-              <line x1="108" y1="40" x2="114.7" y2="37.8"/>
-              <line x1="108" y1="40" x2="112.1" y2="45.7"/>
-              <line x1="108" y1="40" x2="103.9" y2="45.7"/>
-              <line x1="108" y1="40" x2="101.3" y2="37.8"/>
+              <line x1="107" y1="42" x2="107" y2="34.5"/>
+              <line x1="107" y1="42" x2="114.1" y2="39.7"/>
+              <line x1="107" y1="42" x2="111.4" y2="48.1"/>
+              <line x1="107" y1="42" x2="102.6" y2="48.1"/>
+              <line x1="107" y1="42" x2="99.9" y2="39.7"/>
             </g>
-            <circle cx="108" cy="40" r="2.6" fill="#cdd5de"/>
+            <circle cx="107" cy="42" r="2.8" fill="#cdd5de"/>
           </g>
           <!-- witch hat (Halloween, toggled via CSS) -->
           <g class="ev-hat-svg" visibility="hidden">
-            <polygon points="46,10 58,-15 70,10" fill="#5b2a86" stroke="#3d1c5c" stroke-width="1.2"/>
-            <ellipse cx="58" cy="10" rx="17" ry="3.4" fill="#3d1c5c"/>
-            <rect x="52" y="-3" width="12" height="3.6" fill="#f5a623" rx="1"/>
+            <polygon points="44,3 56,-16 68,3" fill="#5b2a86" stroke="#3d1c5c" stroke-width="1.2"/>
+            <ellipse cx="56" cy="3" rx="17" ry="3.4" fill="#3d1c5c"/>
+            <rect x="50" y="-7" width="12" height="3.6" fill="#f5a623" rx="1"/>
           </g>
         </svg>
       </div>
@@ -1437,7 +1485,6 @@
     const slotSpinButton = document.getElementById('slotSpinButton');
     const slotHistoryList = document.getElementById('slotHistoryList');
     const evContainer = document.getElementById('evContainer');
-    const evSpeakerName = document.getElementById('evSpeakerName');
     const evCar = document.getElementById('evCar');
     const evGoal = document.getElementById('evGoal');
     const evBatteryFill = document.getElementById('evBatteryFill');
@@ -1628,7 +1675,7 @@
       if (viewMode === VIEW_MODE_EV) {
         if (currentShuffledList.length === 0) return;
         activeIndex = Math.max(0, Math.min(currentShuffledList.length - 1, newIndex));
-        updateEvSpeakerName();
+        updateEvQueue();
         return;
       }
       const listItems = teamList.querySelectorAll('li');
@@ -1697,21 +1744,12 @@
       return 'none';
     }
 
-    /** Applies the seasonal theme (classes + goal icon) to the EV view. */
+    /** Applies the seasonal theme globally (EV road, classic list, slot reel). */
     function applySeason() {
-      if (!evContainer) return;
       const season = getActiveSeason();
-      evContainer.classList.toggle('season-halloween', season === 'halloween');
-      evContainer.classList.toggle('season-winter', season === 'winter');
+      document.body.classList.toggle('season-halloween', season === 'halloween');
+      document.body.classList.toggle('season-winter', season === 'winter');
       if (evGoal) evGoal.textContent = season === 'halloween' ? '🎃' : '🏁';
-    }
-
-    function updateEvSpeakerName() {
-      if (!evSpeakerName) return;
-      clearText(evSpeakerName);
-      evSpeakerName.textContent = (activeIndex >= 0 && activeIndex < currentShuffledList.length)
-        ? currentShuffledList[activeIndex] : '—';
-      updateEvQueue();
     }
 
     /** Renders the speaker order below the gauge (done / current / upcoming). */
@@ -1799,13 +1837,14 @@
 
       if (currentShuffledList.length === 0) {
         activeIndex = -1;
-        setText(evSpeakerName, 'noActiveParticipants');
+        const queue = document.getElementById('evQueue');
+        if (queue) queue.innerHTML = '<li data-i18n="noActiveParticipants">' + t('noActiveParticipants') + '</li>';
         setNextButtonVisible(false);
         return;
       }
 
       activeIndex = 0;
-      updateEvSpeakerName();
+      updateEvQueue();
       setNextButtonVisible(true);
       // The shuffle handler starts the timer; updateEvView() runs on each tick.
     }
