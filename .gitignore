@@ -1,0 +1,6 @@
+# Editor / tooling configuration (local only)
+.claude/
+.vscode/
+
+# Backups
+*.bak
