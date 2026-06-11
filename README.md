@@ -24,7 +24,7 @@ In den Einstellungen wählst du zwischen drei Darstellungen:
 
 - **Klassische Ansicht:** Die gewürfelte Reihenfolge als Liste; wer dran ist, wird hervorgehoben.
 - **Slotmaschinen-Ansicht:** Eine animierte Walze mit Hebel lost den nächsten Sprecher aus — inklusive Gewinner-Historie.
-- **Roadtrip-Ansicht (E-Auto):** Ein graues VW-ID.3-Auto fährt pro Sprecher die Strecke bis zur Zielflagge ab. Die Batterieanzeige (SoC) zeigt die verbleibende Redezeit; bei knapper Zeit erscheinen nacheinander die offiziellen VW-Warnsymbole (Batterie gelb &rarr; Schildkröte gelb &rarr; Schildkröte rot). Ist die Batterie leer, bleibt das Auto stehen. Die Reihenfolge mit den nächsten Teilnehmern wird darunter angezeigt.
+- **Roadtrip-Ansicht (E-Auto):** Ein graues VW-ID.3-Auto fährt pro Sprecher die Strecke bis zur Zielflagge ab. Die Batterieanzeige (SoC) zeigt die verbleibende Redezeit; bei knapper Zeit erscheinen nacheinander Warnsymbole (Batterie gelb &rarr; Schildkröte gelb &rarr; Schildkröte rot). Ist die Batterie leer, bleibt das Auto stehen. Die Reihenfolge mit den nächsten Teilnehmern wird darunter angezeigt.
 
 ## 🚀 Live Demo / Nutzung
 
