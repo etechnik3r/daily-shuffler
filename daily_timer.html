@@ -7,9 +7,27 @@
   <style>
     /* --- Base Styles & Typography --- */
     @import url('https://fonts.googleapis.com/css2?family=Helvetica&display=swap');
+
+    /* --- Design tokens: one source of truth so every view shares the same
+       surfaces, accent, depth and column width ("aus einem Guss"). --- */
+    :root {
+      --accent: #1366ff;
+      --accent-deep: #002878;
+      --col-width: 340px;
+      --card-bg: linear-gradient(180deg, #ffffff 0%, #f4f8ff 100%);
+      --card-border: 1px solid rgba(0,40,120,0.10);
+      --card-radius: 16px;
+      --card-shadow: 0 10px 24px rgba(3,21,60,0.10);
+      --cta-bg: linear-gradient(180deg, #1366ff 0%, #002878 100%);
+      --cta-shadow: 0 12px 24px rgba(0,40,120,0.28);
+      --glow: 0 0 0 2px rgba(0,122,255,0.55), 0 6px 16px rgba(0,122,255,0.18);
+      --glow-bg: linear-gradient(180deg, rgba(0,122,255,0.10), rgba(0,122,255,0.03));
+    }
+
     body {
       font-family: 'Helvetica', 'Arial', sans-serif;
-      background: #f9f9f9;
+      background: linear-gradient(180deg, #f3f6fc 0%, #eef2f9 100%);
+      background-attachment: fixed;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -27,54 +45,62 @@
     }
     
     /* --- UI Components: Buttons --- */
+    /* Primary action – the same gradient CTA used by the slot spin button. */
     .app-button {
-      background-color: #002878;
+      background: var(--cta-bg);
       color: white;
       border: none;
       padding: 15px 30px;
-      font-size: 1.2em;
-      border-radius: 8px;
+      font-size: 1.15em;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      border-radius: 14px;
       cursor: pointer;
       margin: 10px 0;
-      transition: background-color 0.2s ease, transform 0.1s ease;
+      box-shadow: var(--cta-shadow);
+      transition: filter 0.15s ease, transform 0.1s ease, background 0.2s ease;
       width: 90%;
-      max-width: 320px;
+      max-width: var(--col-width);
     }
-    
-    .app-button:hover {
-      background-color: #001d5a;
-    }
-    
+
+    .app-button:hover { filter: brightness(1.07); }
+    .app-button:active { transform: translateY(1px); }
+
     /* Secondary Action Buttons Container */
     .control-buttons-container {
         display: flex;
-        flex-direction: column; 
+        flex-direction: column;
         width: 90%;
-        max-width: 320px;
-        margin-top: 10px; 
+        max-width: var(--col-width);
+        margin-top: 10px;
         margin-bottom: 20px;
-        gap: 10px; 
+        gap: 10px;
     }
-    
+
     @media (min-width: 480px) {
         .control-buttons-container {
             flex-direction: row;
             justify-content: space-between;
         }
     }
-    
+
+    /* Secondary actions – quiet, tinted cards so the primary CTA stands out. */
     #editButton, #helpButton {
-        background-color: #8c8c8c;
-        color: white; 
-        padding: 10px 15px; 
+        background: #ffffff;
+        color: var(--accent-deep);
+        border: 1px solid #d3dcf1;
+        box-shadow: 0 4px 12px rgba(3,21,60,0.06);
+        font-weight: 700;
+        padding: 12px 15px;
         font-size: 1em;
-        margin: 0; 
-        width: 100%; 
+        margin: 0;
+        width: 100%;
         box-sizing: border-box;
     }
 
     #editButton:hover, #helpButton:hover {
-        background-color: #6a6a6a;
+        background: #eef3ff;
+        filter: none;
     }
     
     @media (min-width: 480px) {
@@ -87,49 +113,56 @@
     #participantSelection {
         display: flex;
         flex-direction: column;
-        align-items: center;    
+        align-items: center;
         gap: 10px;
         width: 90%;
-        max-width: 320px;       
+        max-width: var(--col-width);
         margin-bottom: 20px;
-        background: white;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 0 5px rgba(0,0,0,0.05);
-        min-height: 50px; 
+        background: var(--card-bg);
+        border: var(--card-border);
+        padding: 16px;
+        border-radius: var(--card-radius);
+        box-shadow: var(--card-shadow);
+        box-sizing: border-box;
+        min-height: 50px;
     }
 
     .participant-label {
         display: flex;
         align-items: center;
         justify-content: flex-start;
-        background-color: #eef2f8;
-        padding: 12px 15px;
-        border-radius: 8px;
+        background: #ffffff;
+        padding: 13px 16px;
+        border-radius: 12px;
         cursor: pointer;
-        font-size: 1.1em;
-        transition: background-color 0.2s;
-        border: 1px solid #d0d7e5;
-        user-select: none; 
+        font-size: 1.05em;
+        font-weight: 600;
+        color: var(--accent-deep);
+        transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
+        border: 1px solid #dde4f3;
+        user-select: none;
         width: 100%;
         box-sizing: border-box;
     }
 
     .participant-label:hover {
-        background-color: #dde4f0;
+        background: #eef3ff;
+        box-shadow: 0 4px 12px rgba(3,21,60,0.07);
     }
 
     .participant-label input[type="checkbox"] {
-        margin-right: 15px;
+        margin-right: 14px;
         width: 20px;
         height: 20px;
+        accent-color: var(--accent);
         cursor: pointer;
     }
 
     /* State: Participant unselected */
     .participant-label.unchecked {
-        opacity: 0.6;
-        background-color: #f0f0f0;
+        opacity: 0.55;
+        background: #f1f2f5;
+        border-color: #e2e5ec;
         text-decoration: line-through;
         color: #888;
     }
@@ -150,13 +183,22 @@
     }
     
     #timerDisplay {
-        font-size: 3.5em; 
-        font-weight: bold;
-        color: #002878;
+        font-size: 3.3em;
+        font-weight: 800;
+        color: var(--accent-deep);
         display: none;
-        letter-spacing: -2px; 
-        min-width: 120px; 
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        letter-spacing: -2px;
+        min-width: 160px;
+        height: 80px;
+        padding: 0 30px;
         text-align: center;
+        background: var(--card-bg);
+        border: var(--card-border);
+        border-radius: 18px;
+        box-shadow: var(--card-shadow);
         transition: color 0.3s ease;
     }
 
@@ -170,13 +212,15 @@
     /* --- UI Components: Team List --- */
     #teamList {
       list-style-type: none;
-      padding: 0;
+      padding: 8px;
       font-size: 1.2em;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      background: var(--card-bg);
+      border: var(--card-border);
+      border-radius: var(--card-radius);
+      box-shadow: var(--card-shadow);
       width: 90%;
-      max-width: 320px;
+      max-width: var(--col-width);
+      box-sizing: border-box;
       text-align: center;
       display: none;
       margin-top: 20px;
@@ -185,35 +229,27 @@
     }
 
     #teamList li {
-      padding: 12px;
-      border-bottom: 1px solid #eee;
-      background-color: white; 
-      transition: background-color 0.3s ease, border 0.3s ease, transform 0.1s ease;
+      padding: 14px 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      color: var(--accent-deep);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.15s ease;
     }
 
-    #teamList li:last-child {
-      border-bottom: none;
+    #teamList li + li {
+      margin-top: 4px;
     }
 
-    /* State: Active Participant Highlight */
+    /* State: Active Participant Highlight – matches the slot indicator band. */
     #teamList li.active-participant {
-      background-color: #ffe0b2;
-      font-weight: bold;
-      font-size: 1.3em;
-      border: 2px solid #ff9800;
-      transform: scale(1.05);
+      background: var(--glow-bg);
+      font-weight: 800;
+      font-size: 1.25em;
+      box-shadow: var(--glow);
+      transform: scale(1.03);
       position: relative;
       z-index: 1;
-      color: #004d40;
-    }
-
-    #teamList li.active-participant:first-child {
-        border-top-left-radius: 8px;
-        border-top-right-radius: 8px;
-    }
-     #teamList li.active-participant:last-child {
-        border-bottom-left-radius: 8px;
-        border-bottom-right-radius: 8px;
+      color: var(--accent-deep);
     }
 
     /* --- Slot Machine View (minimalist) --- */
@@ -505,16 +541,17 @@
 
     /* --- Notifications & Banners --- */
     #updateBanner {
-      background-color: #007bff;
+      background: var(--cta-bg);
       color: white;
-      padding: 10px 15px;
-      border-radius: 8px;
+      padding: 12px 16px;
+      border-radius: 14px;
       margin-top: 15px;
       font-size: 0.9em;
       text-align: center;
       width: 90%;
-      max-width: 320px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      max-width: var(--col-width);
+      box-sizing: border-box;
+      box-shadow: var(--cta-shadow);
       transition: opacity 0.5s ease-out;
     }
     
@@ -532,14 +569,17 @@
     }
 
     .modal-content {
-      background-color: #fefefe;
-      margin: 15% auto;
-      padding: 25px;
-      border: 1px solid #888;
+      background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+      margin: 10% auto;
+      padding: 26px;
+      border: var(--card-border);
       width: 90%;
       max-width: 400px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px 0 rgba(0,0,0,0.3);
+      border-radius: 20px;
+      box-shadow: 0 24px 60px rgba(3,21,60,0.35);
+    }
+    .modal-content h2 {
+      color: var(--accent-deep);
     }
 
     .close {
@@ -560,13 +600,19 @@
     textarea {
       width: 100%;
       min-height: 150px;
-      padding: 10px;
+      padding: 12px;
       margin: 10px 0 20px 0;
-      border: 1px solid #ccc;
+      border: 1px solid #d3dcf1;
       box-sizing: border-box;
-      border-radius: 5px;
+      border-radius: 12px;
       font-size: 1em;
-      background-color: #f5f5f5; 
+      background-color: #f6f9ff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    textarea:focus, #totalTimeInput:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(19,102,255,0.15);
     }
     
     .modal-button-container {
@@ -585,13 +631,17 @@
     }
     
     #resetNamesButton {
-      background-color: #b0b0b0;
+      background: #eef3ff;
+      color: var(--accent-deep);
+      border: 1px solid #d3dcf1;
+      box-shadow: none;
       width: auto;
       flex-grow: 0;
     }
-    
+
     #resetNamesButton:hover {
-      background-color: #949494;
+      background: #e0e8ff;
+      filter: none;
     }
 
     /* Feedback State */
@@ -601,27 +651,63 @@
       transform: scale(1.05);
     }
     
-    /* Help Content Formatting */
+    /* Help Content Formatting – scannable feature rows with an icon + label. */
+    #helpModalContent > p {
+        color: #46556f;
+        line-height: 1.5;
+        margin: 4px 0 4px;
+    }
+    #helpModalContent h3 {
+        margin: 18px 0 10px;
+        font-size: 0.8em;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #6a7ba3;
+    }
     #helpModalContent ul {
+        list-style: none;
         text-align: left;
-        padding-left: 20px;
-        margin-top: 10px;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
     }
     #helpModalContent li {
-        margin-bottom: 8px;
-        font-size: 1em;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        background: #f6f9ff;
+        border: 1px solid #e3e9f6;
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 0.95em;
         line-height: 1.4;
+        color: #46556f;
+    }
+    .help-ico {
+        flex: 0 0 auto;
+        font-size: 1.35em;
+        line-height: 1.2;
+    }
+    .help-text b {
+        display: block;
+        margin-bottom: 2px;
+        color: var(--accent-deep);
+        font-size: 1.02em;
     }
     
     #totalTimeInput {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin-bottom: 20px;
       box-sizing: border-box;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+      border: 1px solid #d3dcf1;
+      border-radius: 12px;
       font-size: 1em;
       text-align: center;
+      background-color: #f6f9ff;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
   </style>
@@ -680,7 +766,8 @@
   </div>
 
   <ul id="teamList"></ul>
-  
+  <button id="nextParticipantButton" class="app-button" style="display: none;" data-i18n="btnNext">Nächster Teilnehmer ▶</button>
+
   <div id="configModal" class="modal">
     <div class="modal-content">
       <span class="close config-close">&times;</span>
@@ -772,6 +859,7 @@
         btnStart: 'Starten',
         btnRollAgain: 'Erneut würfeln',
         btnRestart: 'Neu starten',
+        btnNext: 'Nächster Teilnehmer ▶',
         btnSlotResetRound: 'Slotmaschine Runde zurücksetzen',
         slotStatusInitial: 'Drücke Starten für Zufall.',
         slotStatusRestart: 'Wähle neue Teilnehmer und starte erneut.',
@@ -799,10 +887,10 @@
         btnReset: 'Zurücksetzen',
         btnSave: 'Speichern',
         btnSaved: 'Gespeichert! ✅',
-        helpTitle: 'Anleitung: Daily-Reihenfolge',
-        helpIntro: 'Diese App hilft dir, eine faire und zufällige Reihenfolge für die Team-Updates in deinem Daily Meeting festzulegen.',
-        helpUsageTitle: 'Funktion & Bedienung',
-        helpList: '<li>**Checklisten:** Wähle oben ab, wer heute fehlt (Urlaub/Krank).</li><li>**Würfeln:** Erstellt eine zufällige Reihenfolge der <b>aktiven</b> Teammitglieder und startet den Timer für den ersten.</li><li>**Slotmaschinen-Ansicht:** In den Einstellungen kannst du zwischen der klassischen Liste und der animierten Slotmaschinen-Ansicht wählen.</li><li>**Einstellungen:** Passt die generelle Liste der Teammitglieder (Stammdaten) an.</li><li>**Leertaste (Space):** Wechselt zum nächsten Teammitglied und setzt den Timer zurück.</li><li>**Strg/Shift + Leertaste:** Wechselt zum vorherigen Teammitglied (Rückgängig-Funktion).</li>',
+        helpTitle: 'So funktioniert es',
+        helpIntro: 'Lege in Sekunden eine faire, zufällige Reihenfolge für die Wortbeiträge in deinem Daily fest – mit einem Timer, der die Zeit gleichmäßig auf alle verteilt.',
+        helpUsageTitle: 'Auf einen Blick',
+        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Anwesenheit</b>Hake oben ab, wer heute dabei ist. Abgewählte Personen (Urlaub, krank) werden übersprungen.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Reihenfolge würfeln</b>Tippe auf „Würfeln": Die App erstellt eine zufällige Reihenfolge der aktiven Personen und startet den Timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>Die Gesamtdauer wird gleichmäßig aufgeteilt. Wird die Zeit knapp, färbt sich der Timer – erst gelb, dann rot.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Weiter zur nächsten Person</b>Tippe auf „Nächster Teilnehmer" oder drücke die Leertaste.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Einen Schritt zurück</b>Strg oder Umschalt + Leertaste springt zur vorherigen Person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slotmaschinen-Ansicht</b>Lust auf Show? In den Einstellungen schaltest du auf die animierte Slotmaschine um.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Einstellungen</b>Namen, Dauer, Ansicht und Sprache jederzeit anpassen.</div></li>',
         alertPickOne: 'Bitte wähle mindestens einen Teilnehmer aus!',
         alertError: 'Ein Fehler ist aufgetreten: {msg}\nBitte Seite neu laden oder Cache leeren.',
         alertStartError: 'Kritischer Start-Fehler: {msg}',
@@ -817,6 +905,7 @@
         btnStart: 'Start',
         btnRollAgain: 'Roll again',
         btnRestart: 'Restart',
+        btnNext: 'Next participant ▶',
         btnSlotResetRound: 'Reset slot machine round',
         slotStatusInitial: 'Press Start for a random pick.',
         slotStatusRestart: 'Pick new participants and start again.',
@@ -844,10 +933,10 @@
         btnReset: 'Reset',
         btnSave: 'Save',
         btnSaved: 'Saved! ✅',
-        helpTitle: 'Guide: Daily order',
-        helpIntro: 'This app helps you set a fair, random order for team updates in your daily meeting.',
-        helpUsageTitle: 'Features & usage',
-        helpList: '<li>**Checklists:** Uncheck above whoever is absent today (vacation/sick).</li><li>**Roll:** Creates a random order of the <b>active</b> team members and starts the timer for the first one.</li><li>**Slot machine view:** In the settings you can switch between the classic list and the animated slot machine view.</li><li>**Settings:** Adjusts the general list of team members (master data).</li><li>**Spacebar:** Moves to the next team member and resets the timer.</li><li>**Ctrl/Shift + Space:** Moves to the previous team member (undo function).</li>',
+        helpTitle: 'How it works',
+        helpIntro: 'Set a fair, random speaking order for your daily in seconds – with a timer that splits the time evenly across everyone.',
+        helpUsageTitle: 'At a glance',
+        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Attendance</b>Tick who is in today. Unticked people (vacation, sick) are skipped.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Roll the order</b>Tap “Roll” and the app builds a random order of the active people and starts the timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>The total time is split evenly. As it runs low the timer changes colour – yellow, then red.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Next person</b>Tap “Next participant” or press the spacebar.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Step back</b>Ctrl or Shift + Space jumps to the previous person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slot machine view</b>Want a bit of show? Switch to the animated slot machine in the settings.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Settings</b>Adjust names, duration, view and language anytime.</div></li>',
         alertPickOne: 'Please select at least one participant!',
         alertError: 'An error occurred: {msg}\nPlease reload the page or clear the cache.',
         alertStartError: 'Critical startup error: {msg}',
@@ -1075,7 +1164,7 @@
         individualTimeSeconds = Math.floor((totalDailyTimeMinutes * 60) / teamSize);
         timeRemainingSeconds = individualTimeSeconds;
         
-        timerDisplay.style.display = 'block';
+        timerDisplay.style.display = 'inline-flex';
         updateTimerDisplay(); 
         
         timerInterval = setInterval(tick, 1000);
@@ -1140,6 +1229,37 @@
       updateSlotUsedState();
     }
 
+    /** Shows/hides the mobile "next participant" button (classic view only). */
+    function setNextButtonVisible(visible) {
+      const btn = document.getElementById('nextParticipantButton');
+      if (btn) btn.style.display = visible ? 'block' : 'none';
+    }
+
+    /** Ends the daily in classic view: green check, stop timer, celebrate. */
+    function endDailyClassic() {
+      stopTimer();
+      if (activeIndex >= 0) updateActiveParticipant(activeIndex);
+      setText(timerDisplay, 'dailyFinished');
+      clearColorClasses();
+      toggleOvertimeIcons(false);
+      setNextButtonVisible(false);
+      showConfetti();
+    }
+
+    /** Same effect as pressing Space – for touch devices without a keyboard. */
+    function advanceClassicParticipant() {
+      if (configModal.style.display === 'block' || helpModal.style.display === 'block') return;
+      if (viewMode !== VIEW_MODE_CLASSIC) return;
+      const listItems = teamList.querySelectorAll('li');
+      if (listItems.length === 0 || currentShuffledList.length === 0) return;
+      if (activeIndex < currentShuffledList.length - 1) {
+        updateActiveParticipant(activeIndex + 1);
+        startTimer();
+      } else {
+        endDailyClassic();
+      }
+    }
+
     /**
      * Renders the shuffled participant list to the DOM and initiates the first selection.
      * * @param {Array<string>} list - The randomized list of active participants.
@@ -1167,7 +1287,8 @@
           activeIndex = 0;
           updateHighlights();
         }
-        
+
+        setNextButtonVisible(currentShuffledList.length > 0);
         teamList.style.opacity = '1';
       }, 300);
     }
@@ -1303,6 +1424,7 @@
       slotSessionActive = true;
 
       teamList.style.display = 'none';
+      setNextButtonVisible(false);
       slotContainer.style.display = 'block';
       hideSlotEndOverlay();
       updateSlotHistory();
@@ -1311,7 +1433,7 @@
         restartBtn.style.display = 'none';
       }
       if (currentShuffledList.length > 0) {
-        timerDisplay.style.display = 'block';
+        timerDisplay.style.display = 'inline-flex';
         individualTimeSeconds = Math.floor((totalDailyTimeMinutes * 60) / currentShuffledList.length);
         timeRemainingSeconds = individualTimeSeconds;
         updateTimerDisplay();
@@ -1343,6 +1465,7 @@
       viewMode = mode === VIEW_MODE_SLOT ? VIEW_MODE_SLOT : VIEW_MODE_CLASSIC;
       localStorage.setItem(VIEW_MODE_KEY, viewMode);
       teamList.style.display = 'none';
+      setNextButtonVisible(false);
       slotContainer.style.display = 'none';
       participantSelection.style.display = 'flex';
       shuffleButton.style.display = 'inline-block';
@@ -1354,6 +1477,7 @@
 
     function hideResults() {
       teamList.style.display = 'none';
+      setNextButtonVisible(false);
       slotContainer.style.display = 'none';
       if (slotTrack) {
         slotTrack.style.transition = 'none';
@@ -1410,18 +1534,19 @@
     }
 
     function showConfetti(duration = 3000) {
-      const container = document.getElementById('slotContainer') || document.body;
+      // Full-screen overlay so it works in every view (the classic list, the
+      // slot machine, anywhere) and rains across the whole screen.
       const canvas = document.createElement('canvas');
-      canvas.style.position = 'absolute';
+      canvas.style.position = 'fixed';
       canvas.style.left = '0';
       canvas.style.top = '0';
-      canvas.style.width = '100%';
-      canvas.style.height = '100%';
+      canvas.style.width = '100vw';
+      canvas.style.height = '100vh';
       canvas.style.pointerEvents = 'none';
-      canvas.style.zIndex = '12';
-      canvas.width = container.clientWidth;
-      canvas.height = container.clientHeight;
-      container.appendChild(canvas);
+      canvas.style.zIndex = '9999';
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      document.body.appendChild(canvas);
       const ctx = canvas.getContext('2d');
       const colors = ['#ff3b30','#ff9500','#ffcc00','#4cd964','#5ac8fa','#007aff','#5856d6'];
       const pieces = [];
@@ -1709,11 +1834,7 @@
                 if (activeIndex < currentShuffledList.length - 1) {
                     newIndex = activeIndex + 1;
                 } else {
-                    stopTimer();
-                    updateActiveParticipant(activeIndex);
-                    setText(timerDisplay, 'dailyFinished');
-                    clearColorClasses();
-                    toggleOvertimeIcons(false);
+                    endDailyClassic();
                     return;
                 }
             }
@@ -1780,6 +1901,10 @@
     const slotRestartButton = document.getElementById('slotRestartButton');
     if (slotRestartButton) {
       slotRestartButton.addEventListener('click', resetSlotMachine);
+    }
+    const nextParticipantButton = document.getElementById('nextParticipantButton');
+    if (nextParticipantButton) {
+      nextParticipantButton.addEventListener('click', advanceClassicParticipant);
     }
 
     // Configuration Actions
