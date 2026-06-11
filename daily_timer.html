@@ -529,10 +529,12 @@
       background-position: 0 50%;
       background-color: #4a5266;
     }
+    /* Finish flag at 75% of the road, so there is visible tarmac behind it. */
     #evGoal {
       position: absolute;
-      right: 12px;
-      bottom: 34px;
+      left: 75%;
+      transform: translateX(-50%);
+      bottom: 36px; /* standing on the road surface */
       font-size: 1.5em;
       line-height: 1;
       z-index: 2;
@@ -540,30 +542,24 @@
     #evCar {
       position: absolute;
       left: 2%;
-      bottom: 18px;
+      bottom: 33px; /* wheels resting on top of the road */
       width: 84px;
       z-index: 3;
       transition: left 0.9s linear;
-      animation: ev-drive 1.2s ease-in-out infinite;
       will-change: transform;
     }
-    #evCar svg { display: block; width: 100%; height: auto; }
-    @keyframes ev-drive {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-2px); }
+    #evCar svg { display: block; width: 100%; height: auto; overflow: visible; }
+    /* The wheels spin while the car drives; they stand still at the finish
+       flag or when the battery is empty (no blinking – the car just stops). */
+    .ev-wheel {
+      transform-box: fill-box;
+      transform-origin: center;
     }
-    /* Overtime: limp-home mode – red blink + sluggish stutter. */
-    .ev-overtime #evCar {
-      animation: ev-stutter 1.6s steps(3, end) infinite, ev-blink 0.9s linear infinite;
+    .ev-driving .ev-wheel {
+      animation: ev-wheel-spin 0.9s linear infinite;
     }
-    @keyframes ev-stutter {
-      0%, 100% { transform: translate(0, 0); }
-      33% { transform: translate(-3px, 0); }
-      66% { transform: translate(2px, -1px); }
-    }
-    @keyframes ev-blink {
-      0%, 49% { filter: drop-shadow(0 0 6px rgba(255,40,40,0.95)) saturate(1.6) hue-rotate(-30deg); }
-      50%, 100% { filter: none; }
+    @keyframes ev-wheel-spin {
+      to { transform: rotate(360deg); }
     }
     /* Boost: dash out the right edge, instantly re-enter from the left. */
     #evCar.boosting {
@@ -580,7 +576,7 @@
     /* Roof accessories (seasonal) */
     .ev-roof {
       position: absolute;
-      top: -2px; /* rests on the car roof (the svg has headroom for the hat) */
+      top: -5px; /* rests on the car roof (the svg has headroom for the hat) */
       left: 50%;
       transform: translateX(-50%);
       font-size: 1.25em;
@@ -634,16 +630,65 @@
       min-width: 56px;
       text-align: left;
     }
-    #evTurtle {
-      font-size: 1.6em;
-      line-height: 1;
-      display: none;
-      animation: ev-turtle-in 0.4s ease-out;
+    /* Staged VW warning pictograms next to the SoC display. */
+    #evWarnIcons {
+      display: inline-flex;
+      align-items: center;
+      width: 30px;
+      height: 30px;
     }
-    .ev-overtime #evTurtle { display: inline-block; }
-    @keyframes ev-turtle-in {
+    #evWarnIcons svg {
+      width: 30px;
+      height: 30px;
+      display: none;
+      animation: ev-warn-in 0.35s ease-out;
+    }
+    @keyframes ev-warn-in {
       from { transform: scale(0.3); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
+    }
+    /* Upcoming speakers, like the classic list, so people can prepare. */
+    #evQueueCard {
+      width: 100%;
+      max-width: 300px;
+      margin: 18px auto 0;
+      background: #f4f7ff;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 1px solid #d3dcf1;
+      box-sizing: border-box;
+    }
+    #evQueueTitle {
+      margin-bottom: 8px;
+      font-size: 0.85em;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #1c317e;
+    }
+    #evQueue {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    #evQueue li {
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      color: var(--accent-deep);
+      text-align: center;
+    }
+    #evQueue li.done {
+      opacity: 0.45;
+      text-decoration: line-through;
+    }
+    #evQueue li.current {
+      background: var(--glow-bg);
+      box-shadow: var(--glow);
+      font-weight: 800;
     }
 
     /* --- Season: Halloween --- */
@@ -1020,26 +1065,45 @@
       <div id="evGoal">🏁</div>
       <div id="evCar">
         <span class="ev-roof ev-sled">🛷</span>
-        <svg viewBox="0 -16 120 64" xmlns="http://www.w3.org/2000/svg" aria-label="VW ID. Elektroauto">
-          <!-- compact VW-ID-style hatchback, side view -->
-          <path d="M8 40 Q9 28 22 24 Q32 11 54 10 Q78 9 90 21 Q108 25 111 36 Q112 42 105 42 L14 42 Q8 42 8 40 Z"
-                fill="#69c8f2" stroke="#1d3a8f" stroke-width="2" stroke-linejoin="round"/>
-          <path d="M30 23 Q38 14 54 13 L56 23 Z" fill="#e3f4ff" stroke="#1d3a8f" stroke-width="1.4"/>
-          <path d="M60 23 L60 13 Q74 14 84 22 Z" fill="#e3f4ff" stroke="#1d3a8f" stroke-width="1.4"/>
-          <!-- LED light bar (ID. signature) -->
-          <rect x="98" y="26" width="11" height="3" rx="1.5" fill="#fffbe6" stroke="#1d3a8f" stroke-width="0.8"/>
-          <!-- charging flap hint -->
-          <circle cx="22" cy="28" r="2.4" fill="#1d3a8f" opacity="0.5"/>
-          <!-- wheels -->
-          <circle cx="32" cy="42" r="9" fill="#222a3d"/><circle cx="32" cy="42" r="3.6" fill="#9fb4d8"/>
-          <circle cx="88" cy="42" r="9" fill="#222a3d"/><circle cx="88" cy="42" r="3.6" fill="#9fb4d8"/>
-          <!-- ID. badge -->
-          <text x="50" y="35" font-size="9" font-weight="bold" fill="#1d3a8f" font-family="Helvetica, Arial, sans-serif">ID.</text>
+        <svg viewBox="0 -18 150 68" xmlns="http://www.w3.org/2000/svg" aria-label="VW ID.3">
+          <!-- body silhouette modelled on the ID.3 side profile, in grey -->
+          <path d="M10 40 C7 34 8 29 13 25 C18 20 24 16 32 14 C48 9 72 8 86 12 C98 16 108 21 116 26 C126 29 132 33 133 38 L133 40 L120 40 A13 13 0 0 1 96 40 L50 40 A13 13 0 0 1 26 40 Z"
+                fill="#a9b2bc" stroke="#4a5562" stroke-width="2" stroke-linejoin="round"/>
+          <!-- glasshouse -->
+          <path d="M33 16 C48 11 70 10.5 84 14 C92 17 99 21 105 25 L38 25 C35 22 33 19 33 16 Z"
+                fill="#414b58" stroke="#4a5562" stroke-width="1.2"/>
+          <!-- door seam -->
+          <path d="M70 14 L70 38" stroke="#7c8794" stroke-width="1.2" fill="none"/>
+          <!-- headlight -->
+          <path d="M126 31 q5 2 6 6 l-7 0 z" fill="#eef4fa" stroke="#4a5562" stroke-width="1"/>
+          <!-- wheels with spokes; the groups rotate while the car drives -->
+          <g class="ev-wheel">
+            <circle cx="38" cy="40" r="9.5" fill="#1f242c"/>
+            <g stroke="#cdd5de" stroke-width="2">
+              <line x1="38" y1="40" x2="38" y2="33"/>
+              <line x1="38" y1="40" x2="44.7" y2="37.8"/>
+              <line x1="38" y1="40" x2="42.1" y2="45.7"/>
+              <line x1="38" y1="40" x2="33.9" y2="45.7"/>
+              <line x1="38" y1="40" x2="31.3" y2="37.8"/>
+            </g>
+            <circle cx="38" cy="40" r="2.6" fill="#cdd5de"/>
+          </g>
+          <g class="ev-wheel">
+            <circle cx="108" cy="40" r="9.5" fill="#1f242c"/>
+            <g stroke="#cdd5de" stroke-width="2">
+              <line x1="108" y1="40" x2="108" y2="33"/>
+              <line x1="108" y1="40" x2="114.7" y2="37.8"/>
+              <line x1="108" y1="40" x2="112.1" y2="45.7"/>
+              <line x1="108" y1="40" x2="103.9" y2="45.7"/>
+              <line x1="108" y1="40" x2="101.3" y2="37.8"/>
+            </g>
+            <circle cx="108" cy="40" r="2.6" fill="#cdd5de"/>
+          </g>
           <!-- witch hat (Halloween, toggled via CSS) -->
           <g class="ev-hat-svg" visibility="hidden">
-            <polygon points="46,10 57,-14 68,10" fill="#5b2a86" stroke="#3d1c5c" stroke-width="1.2"/>
-            <ellipse cx="57" cy="10" rx="16" ry="3.4" fill="#3d1c5c"/>
-            <rect x="52" y="-2" width="10" height="3.4" fill="#f5a623" rx="1"/>
+            <polygon points="46,10 58,-15 70,10" fill="#5b2a86" stroke="#3d1c5c" stroke-width="1.2"/>
+            <ellipse cx="58" cy="10" rx="17" ry="3.4" fill="#3d1c5c"/>
+            <rect x="52" y="-3" width="12" height="3.6" fill="#f5a623" rx="1"/>
           </g>
         </svg>
       </div>
@@ -1047,7 +1111,16 @@
     <div id="evBatteryRow">
       <div id="evBattery"><div id="evBatteryFill"></div></div>
       <span id="evBatteryPct">100 %</span>
-      <span id="evTurtle" title="Leistungsreduzierung">🐢</span>
+      <span id="evWarnIcons">
+        <!-- official VW pictograms: staged warnings at 20% / 10% / 5% SoC -->
+        <svg id="evIconBattYellow" viewBox="0 0 2042 2041" xmlns="http://www.w3.org/2000/svg"><path d="M1796 511v944H261v-112h1421V511h114zm196 141v1000H430v-114h1451V652h111zM161 1145h1325V457H161v688zm987-434v-83h85v-83h84v83h84v83h-84v85h-84v-85h-85zm-902 0v-83h255v83H246zm1353 547H50V345h225V224h196v121h706V224h196v121h226v913z" fill="#ffd100"/></svg>
+        <svg id="evIconTurtleYellow" viewBox="0 0 1864 2041" xmlns="http://www.w3.org/2000/svg"><path d="M934 35q123 0 237 32t212.5 89.5 180 139 139 180T1792 688t32 237q0 124-32 238.5t-89.5 214-139 180.5-180 139-212.5 90-237 32q-124 0-238.5-32t-214-90T301 1558t-139-180.5-90-214T40 925q0-123 32-237t90-212.5 139-180 180.5-139 214-89.5T934 35zm0 1688q109 0 210.5-28.5t189.5-80 160.5-124.5 124.5-161.5 80.5-190.5 28.5-213q0-109-28.5-210.5T1619 525t-124.5-160.5-160.5-124-189.5-80T934 132q-110 0-212 28.5t-190.5 80-161.5 124T245.5 525t-80 189.5T137 925q0 110 28.5 212.5t80 191 124.5 161T531.5 1614t190.5 80.5 212 28.5zm127-1062q72 0 137 20t120.5 56.5 99.5 87 72 111.5q-1 0-1 1 0 2 3.5 7t8 10 8 8.5l3.5 3.5q0 2-4 3.5t-4 6.5 2.5 14 2.5 17q0 7-6 13t-11 6q-6 0-17-3.5t-16-3.5q-3 0-3 2 0 5 6.5 14t14.5 17q10 10 22 21 6 15 10 28 4 11 7 24t3 22q0 2 3 6t6 8.5 6 8 3 4.5q0 2-4.5 2h-9.5q-15 0-37-1.5t-42-3.5q-24-2-48-5h-2q-8 0-13.5-13t-9.5-29q-4-18-8-42-12 4-37 7t-56 5.5-65 4.5-64.5 3.5-54.5 2-35 .5-34.5-.5-53.5-1.5-63-2-63-3.5-54-5.5-35-7q-6 26-11 50t-10 50q-34-2-62-4-24-2-46-3t-28-3q-2-1-7.5-12t-5.5-14q0-8 8.5-18.5t19-21.5 19-23 8.5-24q0-8-1.5-16.5T630 1034v-5l1 5q-30-4-70-18.5T479 980t-83-46-73-51-52-49.5-20-41.5q0-10 11-21.5t29.5-21.5 43-16.5T386 726q55 0 100 22.5t78 49 53.5 49T645 869q12 0 24-6.5t17-14.5q28-46 68.5-81t89.5-58.5T948 673t113-12z" fill="#ffd100"/></svg>
+        <svg id="evIconTurtleRed" viewBox="0 0 1864 2041" xmlns="http://www.w3.org/2000/svg"><path d="M934 35q123 0 237 32t212.5 89.5 180 139 139 180T1792 688t32 237q0 124-32 238.5t-89.5 214-139 180.5-180 139-212.5 90-237 32q-124 0-238.5-32t-214-90T301 1558t-139-180.5-90-214T40 925q0-123 32-237t90-212.5 139-180 180.5-139 214-89.5T934 35zm0 1688q109 0 210.5-28.5t189.5-80 160.5-124.5 124.5-161.5 80.5-190.5 28.5-213q0-109-28.5-210.5T1619 525t-124.5-160.5-160.5-124-189.5-80T934 132q-110 0-212 28.5t-190.5 80-161.5 124T245.5 525t-80 189.5T137 925q0 110 28.5 212.5t80 191 124.5 161T531.5 1614t190.5 80.5 212 28.5zm127-1062q72 0 137 20t120.5 56.5 99.5 87 72 111.5q-1 0-1 1 0 2 3.5 7t8 10 8 8.5l3.5 3.5q0 2-4 3.5t-4 6.5 2.5 14 2.5 17q0 7-6 13t-11 6q-6 0-17-3.5t-16-3.5q-3 0-3 2 0 5 6.5 14t14.5 17q10 10 22 21 6 15 10 28 4 11 7 24t3 22q0 2 3 6t6 8.5 6 8 3 4.5q0 2-4.5 2h-9.5q-15 0-37-1.5t-42-3.5q-24-2-48-5h-2q-8 0-13.5-13t-9.5-29q-4-18-8-42-12 4-37 7t-56 5.5-65 4.5-64.5 3.5-54.5 2-35 .5-34.5-.5-53.5-1.5-63-2-63-3.5-54-5.5-35-7q-6 26-11 50t-10 50q-34-2-62-4-24-2-46-3t-28-3q-2-1-7.5-12t-5.5-14q0-8 8.5-18.5t19-21.5 19-23 8.5-24q0-8-1.5-16.5T630 1034v-5l1 5q-30-4-70-18.5T479 980t-83-46-73-51-52-49.5-20-41.5q0-10 11-21.5t29.5-21.5 43-16.5T386 726q55 0 100 22.5t78 49 53.5 49T645 869q12 0 24-6.5t17-14.5q28-46 68.5-81t89.5-58.5T948 673t113-12z" fill="#e4002c"/></svg>
+      </span>
+    </div>
+    <div id="evQueueCard">
+      <div id="evQueueTitle" data-i18n="evQueueTitle">Reihenfolge</div>
+      <ol id="evQueue"></ol>
     </div>
     <div id="evSnow"></div>
   </div>
@@ -1184,6 +1257,7 @@
         viewClassic: 'Klassische Ansicht',
         viewSlot: 'Slotmaschinen-Ansicht',
         viewEv: 'Roadtrip-Ansicht (E-Auto)',
+        evQueueTitle: 'Reihenfolge',
         devOptionsTitle: 'Entwickler-Optionen',
         devSeasonLabel: 'Saison-Override',
         seasonAuto: 'Automatisch (Systemdatum)',
@@ -1238,6 +1312,7 @@
         viewClassic: 'Classic view',
         viewSlot: 'Slot machine view',
         viewEv: 'Roadtrip view (EV)',
+        evQueueTitle: 'Order',
         devOptionsTitle: 'Developer options',
         devSeasonLabel: 'Season override',
         seasonAuto: 'Automatic (system date)',
@@ -1580,9 +1655,11 @@
       toggleOvertimeIcons(false);
       setNextButtonVisible(false);
       if (viewMode === VIEW_MODE_EV) {
-        // Park the car at the finish flag and leave limp-home mode.
-        evContainer.classList.remove('ev-overtime');
-        if (evCar) evCar.style.left = '82%';
+        // Park the car at the finish flag, wheels stopped.
+        evContainer.classList.remove('ev-driving');
+        if (evCar) evCar.style.left = '62%';
+        setEvWarnIcon(null);
+        updateEvQueue(true);
       }
       showConfetti();
     }
@@ -1634,34 +1711,71 @@
       clearText(evSpeakerName);
       evSpeakerName.textContent = (activeIndex >= 0 && activeIndex < currentShuffledList.length)
         ? currentShuffledList[activeIndex] : '—';
+      updateEvQueue();
+    }
+
+    /** Renders the speaker order below the gauge (done / current / upcoming). */
+    function updateEvQueue(allDone) {
+      const queue = document.getElementById('evQueue');
+      if (!queue) return;
+      queue.innerHTML = '';
+      currentShuffledList.forEach((name, i) => {
+        const li = document.createElement('li');
+        li.textContent = name;
+        if (allDone || i < activeIndex) li.className = 'done';
+        else if (i === activeIndex) li.className = 'current';
+        queue.appendChild(li);
+      });
+    }
+
+    /** Shows exactly one staged VW warning pictogram (or none). */
+    function setEvWarnIcon(stage) {
+      const icons = {
+        battYellow: document.getElementById('evIconBattYellow'),
+        turtleYellow: document.getElementById('evIconTurtleYellow'),
+        turtleRed: document.getElementById('evIconTurtleRed')
+      };
+      Object.keys(icons).forEach(key => {
+        if (icons[key]) icons[key].style.display = key === stage ? 'block' : 'none';
+      });
     }
 
     /**
-     * Renders the EV view: car position = overall daily progress (completed
-     * speakers + the current speaker's used share), battery (SoC) = remaining
-     * time of the current speaker. Called from updateTimerDisplay each tick.
+     * Renders the EV view. The car drives the whole road once per speaker
+     * (start → finish flag at 75%); the battery (SoC) shows the remaining
+     * speaking time. Wheels spin only while time remains – when the battery
+     * is empty the car simply stands still. Called from updateTimerDisplay.
      */
     function updateEvView() {
       if (viewMode !== VIEW_MODE_EV || !evContainer) return;
-      const teamSize = currentShuffledList.length;
-      if (teamSize === 0) return;
+      if (currentShuffledList.length === 0) return;
 
       const soc = individualTimeSeconds > 0
         ? Math.max(0, Math.min(1, timeRemainingSeconds / individualTimeSeconds)) : 0;
+      const pct = Math.round(soc * 100);
       if (evBatteryFill) {
         evBatteryFill.style.width = 'calc((100% - 4px) * ' + soc.toFixed(4) + ')';
-        evBatteryFill.classList.toggle('crit', timeRemainingSeconds <= 5);
-        evBatteryFill.classList.toggle('warn', timeRemainingSeconds > 5 && timeRemainingSeconds <= 20);
+        evBatteryFill.classList.toggle('crit', pct <= 5);
+        evBatteryFill.classList.toggle('warn', pct > 5 && pct <= 20);
       }
-      if (evBatteryPct) evBatteryPct.textContent = Math.round(soc * 100) + ' %';
+      if (evBatteryPct) evBatteryPct.textContent = pct + ' %';
 
-      // Overtime: limp-home mode (empty battery, turtle, blinking, stutter).
-      evContainer.classList.toggle('ev-overtime', timeRemainingSeconds < 0);
+      // Staged warnings: 20% battery-yellow → 10% turtle-yellow → 5% turtle-red.
+      const overtime = timeRemainingSeconds < 0;
+      setEvWarnIcon(
+        (overtime || pct <= 5) ? 'turtleRed'
+        : pct <= 10 ? 'turtleYellow'
+        : pct <= 20 ? 'battYellow'
+        : null
+      );
 
+      // Wheels spin while driving; the car stops once the battery is empty.
+      evContainer.classList.toggle('ev-driving', timeRemainingSeconds > 0);
+
+      // Trip: 2% (start) → 62% (car centred under the flag at 75%).
       const used = individualTimeSeconds > 0
         ? Math.max(0, Math.min(1, 1 - timeRemainingSeconds / individualTimeSeconds)) : 0;
-      const progress = Math.min(1, (Math.max(0, activeIndex) + used) / teamSize);
-      if (evCar) evCar.style.left = (2 + progress * 80) + '%';
+      if (evCar) evCar.style.left = (2 + used * 60) + '%';
     }
 
     /** Boost transition: the car dashes out right and re-enters from the left. */
@@ -1679,7 +1793,8 @@
       slotContainer.style.display = 'none';
       teamList.style.display = 'none';
       evContainer.style.display = 'block';
-      evContainer.classList.remove('ev-overtime');
+      evContainer.classList.remove('ev-driving');
+      setEvWarnIcon(null);
       applySeason();
 
       if (currentShuffledList.length === 0) {
