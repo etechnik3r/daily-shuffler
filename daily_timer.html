@@ -483,6 +483,257 @@
       padding: 15px;
       text-align: center;
     }
+
+    /* --- EV Roadtrip View (compact, for narrow windows) --- */
+    #evContainer {
+      width: 100%;
+      max-width: var(--col-width);
+      margin: 8px auto 0;
+      position: relative;
+      display: none;
+    }
+    #evSpeakerName {
+      text-align: center;
+      font-size: 2em;
+      font-weight: 800;
+      color: var(--accent-deep);
+      margin-bottom: 14px;
+      min-height: 1.2em;
+      overflow-wrap: anywhere;
+    }
+    /* Road = progress bar for the whole daily. overflow:hidden lets the car
+       drive off-screen during the boost transition. */
+    #evRoadWrap {
+      position: relative;
+      width: 100%;
+      height: 86px;
+      overflow: hidden;
+      border-radius: 14px;
+      background: var(--card-bg);
+      border: var(--card-border);
+      box-shadow: var(--card-shadow);
+    }
+    #evRoad {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      bottom: 12px;
+      height: 26px;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #5a6377 0%, #434b5e 100%);
+      /* dashed centre line */
+      background-image: repeating-linear-gradient(90deg,
+        transparent 0 18px, rgba(255,255,255,0.85) 18px 30px, transparent 30px 48px);
+      background-size: 48px 3px;
+      background-repeat: repeat-x;
+      background-position: 0 50%;
+      background-color: #4a5266;
+    }
+    #evGoal {
+      position: absolute;
+      right: 12px;
+      bottom: 34px;
+      font-size: 1.5em;
+      line-height: 1;
+      z-index: 2;
+    }
+    #evCar {
+      position: absolute;
+      left: 2%;
+      bottom: 18px;
+      width: 84px;
+      z-index: 3;
+      transition: left 0.9s linear;
+      animation: ev-drive 1.2s ease-in-out infinite;
+      will-change: transform;
+    }
+    #evCar svg { display: block; width: 100%; height: auto; }
+    @keyframes ev-drive {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
+    }
+    /* Overtime: limp-home mode – red blink + sluggish stutter. */
+    .ev-overtime #evCar {
+      animation: ev-stutter 1.6s steps(3, end) infinite, ev-blink 0.9s linear infinite;
+    }
+    @keyframes ev-stutter {
+      0%, 100% { transform: translate(0, 0); }
+      33% { transform: translate(-3px, 0); }
+      66% { transform: translate(2px, -1px); }
+    }
+    @keyframes ev-blink {
+      0%, 49% { filter: drop-shadow(0 0 6px rgba(255,40,40,0.95)) saturate(1.6) hue-rotate(-30deg); }
+      50%, 100% { filter: none; }
+    }
+    /* Boost: dash out the right edge, instantly re-enter from the left. */
+    #evCar.boosting {
+      animation: ev-boost 0.8s ease-in-out;
+    }
+    @keyframes ev-boost {
+      0%   { transform: translateX(0); opacity: 1; }
+      42%  { transform: translateX(380px); opacity: 1; }
+      46%  { transform: translateX(380px); opacity: 0; }
+      54%  { transform: translateX(-380px); opacity: 0; }
+      60%  { transform: translateX(-380px); opacity: 1; }
+      100% { transform: translateX(0); opacity: 1; }
+    }
+    /* Roof accessories (seasonal) */
+    .ev-roof {
+      position: absolute;
+      top: -2px; /* rests on the car roof (the svg has headroom for the hat) */
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.25em;
+      line-height: 1;
+      display: none;
+    }
+    /* Battery (SoC) = timer for the current speaker. */
+    #evBatteryRow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    #evBattery {
+      position: relative;
+      width: 170px;
+      height: 30px;
+      border: 3px solid var(--accent-deep);
+      border-radius: 8px;
+      background: #ffffff;
+      box-sizing: border-box;
+    }
+    /* battery terminal */
+    #evBattery::after {
+      content: '';
+      position: absolute;
+      right: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 7px;
+      height: 14px;
+      border-radius: 0 3px 3px 0;
+      background: var(--accent-deep);
+    }
+    #evBatteryFill {
+      position: absolute;
+      inset: 2px;
+      width: calc(100% - 4px);
+      border-radius: 4px;
+      background: #2fbf4f;
+      transform-origin: left center;
+      transition: width 0.9s linear, background-color 0.3s ease;
+    }
+    #evBatteryFill.warn { background: #f5c518; }
+    #evBatteryFill.crit { background: #e23030; }
+    #evBatteryPct {
+      font-weight: 800;
+      font-size: 1.1em;
+      color: var(--accent-deep);
+      min-width: 56px;
+      text-align: left;
+    }
+    #evTurtle {
+      font-size: 1.6em;
+      line-height: 1;
+      display: none;
+      animation: ev-turtle-in 0.4s ease-out;
+    }
+    .ev-overtime #evTurtle { display: inline-block; }
+    @keyframes ev-turtle-in {
+      from { transform: scale(0.3); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    /* --- Season: Halloween --- */
+    .season-halloween #evRoadWrap {
+      background: linear-gradient(180deg, #2a1a3d 0%, #41245c 100%);
+      border-color: rgba(255,140,0,0.35);
+    }
+    .season-halloween #evRoad {
+      background-color: #1d1430;
+      background-image: repeating-linear-gradient(90deg,
+        transparent 0 18px, rgba(255,150,40,0.85) 18px 30px, transparent 30px 48px);
+    }
+    .season-halloween .ev-hat-svg { visibility: visible; }
+    /* --- Season: Winter --- */
+    .season-winter #evRoadWrap { border: 2px solid #ffffff; }
+    .season-winter #evRoad {
+      box-shadow: 0 -4px 0 0 rgba(255,255,255,0.9); /* snow cover on the road */
+    }
+    .season-winter .ev-roof.ev-sled { display: block; }
+    #evSnow {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: none;
+      border-radius: 14px;
+      overflow: hidden;
+      z-index: 4;
+      background-image:
+        radial-gradient(2px 2px at 20% 30%, #fff 50%, transparent 51%),
+        radial-gradient(2px 2px at 70% 10%, #fff 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 45% 60%, #fff 50%, transparent 51%),
+        radial-gradient(2.5px 2.5px at 85% 45%, #fff 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 10% 75%, #fff 50%, transparent 51%);
+      background-size: 240px 240px;
+      animation: ev-snowfall 7s linear infinite;
+      opacity: 0.85;
+    }
+    .season-winter #evSnow { display: block; }
+    @keyframes ev-snowfall {
+      from { background-position: 0 -240px; }
+      to { background-position: 24px 240px; }
+    }
+
+    /* --- Developer options (collapsed details in the settings modal) --- */
+    .dev-options {
+      margin-top: 18px;
+      border-top: 1px solid #e3e9f6;
+      padding-top: 10px;
+    }
+    .dev-options summary {
+      cursor: pointer;
+      font-size: 0.85em;
+      font-weight: 700;
+      color: #6a7ba3;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      user-select: none;
+    }
+    .dev-options-body {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .dev-options label {
+      font-size: 0.9em;
+      font-weight: 700;
+      color: var(--accent-deep);
+    }
+    #seasonOverrideSelect {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d3dcf1;
+      border-radius: 12px;
+      background: #f6f9ff;
+      font-size: 0.95em;
+      color: var(--accent-deep);
+    }
+    #turtleTestButton {
+      background: #eef3ff;
+      color: var(--accent-deep);
+      border: 1px solid #d3dcf1;
+      box-shadow: none;
+      font-size: 0.95em;
+      padding: 10px 14px;
+      width: 100%;
+      margin: 0;
+    }
+    #turtleTestButton:hover { background: #e0e8ff; filter: none; }
+
     .view-mode-options {
       display: flex;
       flex-direction: column;
@@ -761,6 +1012,46 @@
   </div>
 
   <ul id="teamList"></ul>
+
+  <div id="evContainer">
+    <div id="evSpeakerName">—</div>
+    <div id="evRoadWrap">
+      <div id="evRoad"></div>
+      <div id="evGoal">🏁</div>
+      <div id="evCar">
+        <span class="ev-roof ev-sled">🛷</span>
+        <svg viewBox="0 -16 120 64" xmlns="http://www.w3.org/2000/svg" aria-label="VW ID. Elektroauto">
+          <!-- compact VW-ID-style hatchback, side view -->
+          <path d="M8 40 Q9 28 22 24 Q32 11 54 10 Q78 9 90 21 Q108 25 111 36 Q112 42 105 42 L14 42 Q8 42 8 40 Z"
+                fill="#69c8f2" stroke="#1d3a8f" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M30 23 Q38 14 54 13 L56 23 Z" fill="#e3f4ff" stroke="#1d3a8f" stroke-width="1.4"/>
+          <path d="M60 23 L60 13 Q74 14 84 22 Z" fill="#e3f4ff" stroke="#1d3a8f" stroke-width="1.4"/>
+          <!-- LED light bar (ID. signature) -->
+          <rect x="98" y="26" width="11" height="3" rx="1.5" fill="#fffbe6" stroke="#1d3a8f" stroke-width="0.8"/>
+          <!-- charging flap hint -->
+          <circle cx="22" cy="28" r="2.4" fill="#1d3a8f" opacity="0.5"/>
+          <!-- wheels -->
+          <circle cx="32" cy="42" r="9" fill="#222a3d"/><circle cx="32" cy="42" r="3.6" fill="#9fb4d8"/>
+          <circle cx="88" cy="42" r="9" fill="#222a3d"/><circle cx="88" cy="42" r="3.6" fill="#9fb4d8"/>
+          <!-- ID. badge -->
+          <text x="50" y="35" font-size="9" font-weight="bold" fill="#1d3a8f" font-family="Helvetica, Arial, sans-serif">ID.</text>
+          <!-- witch hat (Halloween, toggled via CSS) -->
+          <g class="ev-hat-svg" visibility="hidden">
+            <polygon points="46,10 57,-14 68,10" fill="#5b2a86" stroke="#3d1c5c" stroke-width="1.2"/>
+            <ellipse cx="57" cy="10" rx="16" ry="3.4" fill="#3d1c5c"/>
+            <rect x="52" y="-2" width="10" height="3.4" fill="#f5a623" rx="1"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <div id="evBatteryRow">
+      <div id="evBattery"><div id="evBatteryFill"></div></div>
+      <span id="evBatteryPct">100 %</span>
+      <span id="evTurtle" title="Leistungsreduzierung">🐢</span>
+    </div>
+    <div id="evSnow"></div>
+  </div>
+
   <button id="nextParticipantButton" class="app-button" style="display: none;" data-i18n="btnNext">Nächster Teilnehmer ▶</button>
 
   <div id="configModal" class="modal">
@@ -787,12 +1078,27 @@
       <div class="view-mode-options">
         <label><input type="radio" name="viewMode" value="classic"> <span data-i18n="viewClassic">Klassische Ansicht</span></label>
         <label><input type="radio" name="viewMode" value="slot"> <span data-i18n="viewSlot">Slotmaschinen-Ansicht</span></label>
+        <label><input type="radio" name="viewMode" value="ev"> <span data-i18n="viewEv">Roadtrip-Ansicht (E-Auto)</span></label>
       </div>
 
       <div class="modal-button-container">
         <button id="resetNamesButton" class="app-button" data-i18n="btnReset">Zurücksetzen</button>
         <button id="saveConfigButton" class="app-button" data-i18n="btnSave">Speichern</button>
       </div>
+
+      <details class="dev-options">
+        <summary data-i18n="devOptionsTitle">Entwickler-Optionen</summary>
+        <div class="dev-options-body">
+          <label for="seasonOverrideSelect" data-i18n="devSeasonLabel">Saison-Override</label>
+          <select id="seasonOverrideSelect">
+            <option value="auto" data-i18n="seasonAuto">Automatisch (Systemdatum)</option>
+            <option value="halloween" data-i18n="seasonHalloween">Halloween erzwingen</option>
+            <option value="winter" data-i18n="seasonWinter">Winter erzwingen</option>
+            <option value="off" data-i18n="seasonOff">Events deaktivieren</option>
+          </select>
+          <button id="turtleTestButton" class="app-button" data-i18n="devTurtleBtn">Timer auf 3 Sekunden setzen</button>
+        </div>
+      </details>
       
     </div>
   </div>
@@ -834,6 +1140,8 @@
     const CURRENT_VERSION = '1.17'; 
     const VIEW_MODE_CLASSIC = 'classic';
     const VIEW_MODE_SLOT = 'slot';
+    const VIEW_MODE_EV = 'ev';
+    const EVENT_OVERRIDE_KEY = 'dailyEventOverride';
     const LANG_KEY = 'dailyLang';
     const SUPPORTED_LANGS = ['de', 'en'];
     let currentLang = 'de';
@@ -875,6 +1183,14 @@
         cfgViewDesc: 'Wähle den bevorzugten Modus für die Teilnehmerauswahl.',
         viewClassic: 'Klassische Ansicht',
         viewSlot: 'Slotmaschinen-Ansicht',
+        viewEv: 'Roadtrip-Ansicht (E-Auto)',
+        devOptionsTitle: 'Entwickler-Optionen',
+        devSeasonLabel: 'Saison-Override',
+        seasonAuto: 'Automatisch (Systemdatum)',
+        seasonHalloween: 'Halloween erzwingen',
+        seasonWinter: 'Winter erzwingen',
+        seasonOff: 'Events deaktivieren',
+        devTurtleBtn: 'Timer auf 3 Sekunden setzen',
         cfgLangTitle: 'Sprache',
         cfgLangDesc: 'Wähle die Sprache der Oberfläche.',
         langDe: 'Deutsch',
@@ -885,7 +1201,7 @@
         helpTitle: 'So funktioniert es',
         helpIntro: 'Lege in Sekunden eine faire, zufällige Reihenfolge für die Wortbeiträge in deinem Daily fest – mit einem Timer, der die Zeit gleichmäßig auf alle verteilt.',
         helpUsageTitle: 'Auf einen Blick',
-        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Anwesenheit</b>Hake oben ab, wer heute dabei ist. Abgewählte Personen (Urlaub, krank) werden übersprungen.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Reihenfolge würfeln</b>Tippe auf „Würfeln": Die App erstellt eine zufällige Reihenfolge der aktiven Personen und startet den Timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>Die Gesamtdauer wird gleichmäßig aufgeteilt. Wird die Zeit knapp, färbt sich der Timer – erst gelb, dann rot.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Weiter zur nächsten Person</b>Tippe auf „Nächster Teilnehmer" oder drücke die Leertaste.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Einen Schritt zurück</b>Strg oder Umschalt + Leertaste springt zur vorherigen Person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slotmaschinen-Ansicht</b>Lust auf Show? In den Einstellungen schaltest du auf die animierte Slotmaschine um.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Einstellungen</b>Namen, Dauer, Ansicht und Sprache jederzeit anpassen.</div></li>',
+        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Anwesenheit</b>Hake oben ab, wer heute dabei ist. Abgewählte Personen (Urlaub, krank) werden übersprungen.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Reihenfolge würfeln</b>Tippe auf „Würfeln": Die App erstellt eine zufällige Reihenfolge der aktiven Personen und startet den Timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>Die Gesamtdauer wird gleichmäßig aufgeteilt. Wird die Zeit knapp, färbt sich der Timer – erst gelb, dann rot.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Weiter zur nächsten Person</b>Tippe auf „Nächster Teilnehmer" oder drücke die Leertaste.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Einen Schritt zurück</b>Strg oder Umschalt + Leertaste springt zur vorherigen Person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slotmaschinen-Ansicht</b>Lust auf Show? In den Einstellungen schaltest du auf die animierte Slotmaschine um.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip-Ansicht</b>Ein E-Auto fährt die Daily-Strecke ab, die Batterie zeigt die Redezeit. Ist sie leer, kommt die Schildkröte.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Einstellungen</b>Namen, Dauer, Ansicht und Sprache jederzeit anpassen.</div></li>',
         alertPickOne: 'Bitte wähle mindestens einen Teilnehmer aus!',
         alertError: 'Ein Fehler ist aufgetreten: {msg}\nBitte Seite neu laden oder Cache leeren.',
         alertStartError: 'Kritischer Start-Fehler: {msg}',
@@ -921,6 +1237,14 @@
         cfgViewDesc: 'Choose your preferred mode for picking participants.',
         viewClassic: 'Classic view',
         viewSlot: 'Slot machine view',
+        viewEv: 'Roadtrip view (EV)',
+        devOptionsTitle: 'Developer options',
+        devSeasonLabel: 'Season override',
+        seasonAuto: 'Automatic (system date)',
+        seasonHalloween: 'Force Halloween',
+        seasonWinter: 'Force winter',
+        seasonOff: 'Disable events',
+        devTurtleBtn: 'Set timer to 3 seconds',
         cfgLangTitle: 'Language',
         cfgLangDesc: 'Choose the interface language.',
         langDe: 'Deutsch',
@@ -931,7 +1255,7 @@
         helpTitle: 'How it works',
         helpIntro: 'Set a fair, random speaking order for your daily in seconds – with a timer that splits the time evenly across everyone.',
         helpUsageTitle: 'At a glance',
-        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Attendance</b>Tick who is in today. Unticked people (vacation, sick) are skipped.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Roll the order</b>Tap “Roll” and the app builds a random order of the active people and starts the timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>The total time is split evenly. As it runs low the timer changes colour – yellow, then red.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Next person</b>Tap “Next participant” or press the spacebar.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Step back</b>Ctrl or Shift + Space jumps to the previous person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slot machine view</b>Want a bit of show? Switch to the animated slot machine in the settings.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Settings</b>Adjust names, duration, view and language anytime.</div></li>',
+        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Attendance</b>Tick who is in today. Unticked people (vacation, sick) are skipped.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Roll the order</b>Tap “Roll” and the app builds a random order of the active people and starts the timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>The total time is split evenly. As it runs low the timer changes colour – yellow, then red.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Next person</b>Tap “Next participant” or press the spacebar.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Step back</b>Ctrl or Shift + Space jumps to the previous person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slot machine view</b>Want a bit of show? Switch to the animated slot machine in the settings.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip view</b>An EV drives the daily route while the battery shows the speaking time. When it is empty, the turtle appears.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Settings</b>Adjust names, duration, view and language anytime.</div></li>',
         alertPickOne: 'Please select at least one participant!',
         alertError: 'An error occurred: {msg}\nPlease reload the page or clear the cache.',
         alertStartError: 'Critical startup error: {msg}',
@@ -1037,6 +1361,12 @@
     const slotStatus = document.getElementById('slotStatus');
     const slotSpinButton = document.getElementById('slotSpinButton');
     const slotHistoryList = document.getElementById('slotHistoryList');
+    const evContainer = document.getElementById('evContainer');
+    const evSpeakerName = document.getElementById('evSpeakerName');
+    const evCar = document.getElementById('evCar');
+    const evGoal = document.getElementById('evGoal');
+    const evBatteryFill = document.getElementById('evBatteryFill');
+    const evBatteryPct = document.getElementById('evBatteryPct');
     const viewModeInputs = document.querySelectorAll('input[name="viewMode"]');
 
     if (slotSpinButton) {
@@ -1121,16 +1451,19 @@
         
         if (timeRemainingSeconds < 0) {
             timerDisplay.classList.add('overtime');
-            toggleOvertimeIcons(true);
-        } else if (timeRemainingSeconds <= 4) { 
+            // The EV view signals overtime with the turtle instead of the emojis.
+            if (viewMode !== VIEW_MODE_EV) toggleOvertimeIcons(true);
+        } else if (timeRemainingSeconds <= 4) {
             timerDisplay.classList.add('color-05s');
         } else if (timeRemainingSeconds <= 10) { 
             timerDisplay.classList.add('color-10s');
         } else if (timeRemainingSeconds <= 15) { 
             timerDisplay.classList.add('color-15s');
-        } else if (timeRemainingSeconds <= 20) { 
+        } else if (timeRemainingSeconds <= 20) {
             timerDisplay.classList.add('color-20s');
-        } 
+        }
+
+        updateEvView();
     }
     
     /**
@@ -1158,10 +1491,11 @@
         
         individualTimeSeconds = Math.floor((totalDailyTimeMinutes * 60) / teamSize);
         timeRemainingSeconds = individualTimeSeconds;
-        
-        timerDisplay.style.display = 'inline-flex';
-        updateTimerDisplay(); 
-        
+
+        // The EV view shows the time as a battery; hide the numeric pill there.
+        timerDisplay.style.display = viewMode === VIEW_MODE_EV ? 'none' : 'inline-flex';
+        updateTimerDisplay();
+
         timerInterval = setInterval(tick, 1000);
     }
     
@@ -1216,6 +1550,12 @@
      * * @param {number} newIndex - The targeted index in the participant list.
      */
     function updateActiveParticipant(newIndex) {
+      if (viewMode === VIEW_MODE_EV) {
+        if (currentShuffledList.length === 0) return;
+        activeIndex = Math.max(0, Math.min(currentShuffledList.length - 1, newIndex));
+        updateEvSpeakerName();
+        return;
+      }
       const listItems = teamList.querySelectorAll('li');
       if (listItems.length === 0) return;
 
@@ -1230,29 +1570,129 @@
       if (btn) btn.style.display = visible ? 'block' : 'none';
     }
 
-    /** Ends the daily in classic view: green check, stop timer, celebrate. */
+    /** Ends the daily in classic/EV view: green check, stop timer, celebrate. */
     function endDailyClassic() {
       stopTimer();
       if (activeIndex >= 0) updateActiveParticipant(activeIndex);
       setText(timerDisplay, 'dailyFinished');
+      timerDisplay.style.display = 'inline-flex';
       clearColorClasses();
       toggleOvertimeIcons(false);
       setNextButtonVisible(false);
+      if (viewMode === VIEW_MODE_EV) {
+        // Park the car at the finish flag and leave limp-home mode.
+        evContainer.classList.remove('ev-overtime');
+        if (evCar) evCar.style.left = '82%';
+      }
       showConfetti();
     }
 
     /** Same effect as pressing Space – for touch devices without a keyboard. */
     function advanceClassicParticipant() {
       if (configModal.style.display === 'block' || helpModal.style.display === 'block') return;
-      if (viewMode !== VIEW_MODE_CLASSIC) return;
-      const listItems = teamList.querySelectorAll('li');
-      if (listItems.length === 0 || currentShuffledList.length === 0) return;
+      if (viewMode !== VIEW_MODE_CLASSIC && viewMode !== VIEW_MODE_EV) return;
+      if (viewMode === VIEW_MODE_CLASSIC && teamList.querySelectorAll('li').length === 0) return;
+      if (currentShuffledList.length === 0) return;
       if (activeIndex < currentShuffledList.length - 1) {
+        if (viewMode === VIEW_MODE_EV) evBoost();
         updateActiveParticipant(activeIndex + 1);
         startTimer();
       } else {
         endDailyClassic();
       }
+    }
+
+    // --- EV Roadtrip View Module ---
+
+    /**
+     * Resolves the active seasonal event. A localStorage override (set via the
+     * developer options) wins; otherwise the current month decides
+     * (October → halloween, December → winter).
+     */
+    function getActiveSeason() {
+      let override = null;
+      try { override = localStorage.getItem(EVENT_OVERRIDE_KEY); } catch (e) {}
+      if (override === 'halloween' || override === 'winter') return override;
+      if (override === 'off') return 'none';
+      const month = new Date().getMonth();
+      if (month === 9) return 'halloween';
+      if (month === 11) return 'winter';
+      return 'none';
+    }
+
+    /** Applies the seasonal theme (classes + goal icon) to the EV view. */
+    function applySeason() {
+      if (!evContainer) return;
+      const season = getActiveSeason();
+      evContainer.classList.toggle('season-halloween', season === 'halloween');
+      evContainer.classList.toggle('season-winter', season === 'winter');
+      if (evGoal) evGoal.textContent = season === 'halloween' ? '🎃' : '🏁';
+    }
+
+    function updateEvSpeakerName() {
+      if (!evSpeakerName) return;
+      clearText(evSpeakerName);
+      evSpeakerName.textContent = (activeIndex >= 0 && activeIndex < currentShuffledList.length)
+        ? currentShuffledList[activeIndex] : '—';
+    }
+
+    /**
+     * Renders the EV view: car position = overall daily progress (completed
+     * speakers + the current speaker's used share), battery (SoC) = remaining
+     * time of the current speaker. Called from updateTimerDisplay each tick.
+     */
+    function updateEvView() {
+      if (viewMode !== VIEW_MODE_EV || !evContainer) return;
+      const teamSize = currentShuffledList.length;
+      if (teamSize === 0) return;
+
+      const soc = individualTimeSeconds > 0
+        ? Math.max(0, Math.min(1, timeRemainingSeconds / individualTimeSeconds)) : 0;
+      if (evBatteryFill) {
+        evBatteryFill.style.width = 'calc((100% - 4px) * ' + soc.toFixed(4) + ')';
+        evBatteryFill.classList.toggle('crit', timeRemainingSeconds <= 5);
+        evBatteryFill.classList.toggle('warn', timeRemainingSeconds > 5 && timeRemainingSeconds <= 20);
+      }
+      if (evBatteryPct) evBatteryPct.textContent = Math.round(soc * 100) + ' %';
+
+      // Overtime: limp-home mode (empty battery, turtle, blinking, stutter).
+      evContainer.classList.toggle('ev-overtime', timeRemainingSeconds < 0);
+
+      const used = individualTimeSeconds > 0
+        ? Math.max(0, Math.min(1, 1 - timeRemainingSeconds / individualTimeSeconds)) : 0;
+      const progress = Math.min(1, (Math.max(0, activeIndex) + used) / teamSize);
+      if (evCar) evCar.style.left = (2 + progress * 80) + '%';
+    }
+
+    /** Boost transition: the car dashes out right and re-enters from the left. */
+    function evBoost() {
+      if (!evCar) return;
+      evCar.classList.remove('boosting');
+      void evCar.offsetWidth; // restart the CSS animation
+      evCar.classList.add('boosting');
+    }
+
+    /** Renders the EV roadtrip view and selects the first speaker. */
+    function displayEvTeam(list) {
+      currentShuffledList = list.filter(name => name.trim() !== '');
+
+      slotContainer.style.display = 'none';
+      teamList.style.display = 'none';
+      evContainer.style.display = 'block';
+      evContainer.classList.remove('ev-overtime');
+      applySeason();
+
+      if (currentShuffledList.length === 0) {
+        activeIndex = -1;
+        setText(evSpeakerName, 'noActiveParticipants');
+        setNextButtonVisible(false);
+        return;
+      }
+
+      activeIndex = 0;
+      updateEvSpeakerName();
+      setNextButtonVisible(true);
+      // The shuffle handler starts the timer; updateEvView() runs on each tick.
     }
 
     /**
@@ -1450,17 +1890,20 @@
     function displayTeam(list) {
       if (viewMode === VIEW_MODE_SLOT) {
         displaySlotTeam(list);
+      } else if (viewMode === VIEW_MODE_EV) {
+        displayEvTeam(list);
       } else {
         displayClassicTeam(list);
       }
     }
 
     function setViewMode(mode) {
-      viewMode = mode === VIEW_MODE_SLOT ? VIEW_MODE_SLOT : VIEW_MODE_CLASSIC;
+      viewMode = (mode === VIEW_MODE_SLOT || mode === VIEW_MODE_EV) ? mode : VIEW_MODE_CLASSIC;
       localStorage.setItem(VIEW_MODE_KEY, viewMode);
       teamList.style.display = 'none';
       setNextButtonVisible(false);
       slotContainer.style.display = 'none';
+      evContainer.style.display = 'none';
       participantSelection.style.display = 'flex';
       shuffleButton.style.display = 'inline-block';
       setText(shuffleButton, viewMode === VIEW_MODE_SLOT ? 'btnStart' : 'btnRoll');
@@ -1473,6 +1916,7 @@
       teamList.style.display = 'none';
       setNextButtonVisible(false);
       slotContainer.style.display = 'none';
+      evContainer.style.display = 'none';
       if (slotTrack) {
         slotTrack.style.transition = 'none';
       }
@@ -1638,10 +2082,16 @@
       if(Array.isArray(currentTeamMembers)) {
           teamNamesInput.value = currentTeamMembers.join(', ');
       }
-      totalTimeInput.value = totalDailyTimeMinutes; 
+      totalTimeInput.value = totalDailyTimeMinutes;
       viewModeInputs.forEach(input => {
         input.checked = input.value === viewMode;
       });
+      const seasonSel = document.getElementById('seasonOverrideSelect');
+      if (seasonSel) {
+        let ov = null;
+        try { ov = localStorage.getItem(EVENT_OVERRIDE_KEY); } catch (e) {}
+        seasonSel.value = (ov === 'halloween' || ov === 'winter' || ov === 'off') ? ov : 'auto';
+      }
       configModal.style.display = 'block';
     }
     
@@ -1687,7 +2137,7 @@
       }
 
       const selectedViewMode = document.querySelector('input[name="viewMode"]:checked');
-      if (selectedViewMode && (selectedViewMode.value === VIEW_MODE_SLOT || selectedViewMode.value === VIEW_MODE_CLASSIC)) {
+      if (selectedViewMode && [VIEW_MODE_SLOT, VIEW_MODE_CLASSIC, VIEW_MODE_EV].indexOf(selectedViewMode.value) !== -1) {
           viewMode = selectedViewMode.value;
           localStorage.setItem(VIEW_MODE_KEY, viewMode);
       }
@@ -1769,7 +2219,7 @@
       }
 
       const storedViewMode = localStorage.getItem(VIEW_MODE_KEY);
-      if (storedViewMode === VIEW_MODE_SLOT || storedViewMode === VIEW_MODE_CLASSIC) {
+      if ([VIEW_MODE_SLOT, VIEW_MODE_CLASSIC, VIEW_MODE_EV].indexOf(storedViewMode) !== -1) {
         viewMode = storedViewMode;
       } else {
         viewMode = VIEW_MODE_CLASSIC;
@@ -1835,6 +2285,9 @@
                 }
             }
 
+            if (viewMode === VIEW_MODE_EV && newIndex > activeIndex) {
+                evBoost();
+            }
             updateActiveParticipant(newIndex);
 
             if (viewMode === VIEW_MODE_SLOT) {
@@ -1902,6 +2355,11 @@
     if (nextParticipantButton) {
       nextParticipantButton.addEventListener('click', advanceClassicParticipant);
     }
+    if (evCar) {
+      evCar.addEventListener('animationend', (e) => {
+        if (e.animationName === 'ev-boost') evCar.classList.remove('boosting');
+      });
+    }
 
     // Configuration Actions
     saveConfigButton.addEventListener('click', saveConfig);
@@ -1911,6 +2369,23 @@
     document.querySelectorAll('#langSwitch .lang-option').forEach(btn => {
       btn.addEventListener('click', () => applyLanguage(btn.dataset.lang));
     });
+
+    // Developer options: season override (persisted) + turtle quick test.
+    const seasonOverrideSelect = document.getElementById('seasonOverrideSelect');
+    if (seasonOverrideSelect) {
+      seasonOverrideSelect.addEventListener('change', () => {
+        try { localStorage.setItem(EVENT_OVERRIDE_KEY, seasonOverrideSelect.value); } catch (e) {}
+        applySeason();
+      });
+    }
+    const turtleTestButton = document.getElementById('turtleTestButton');
+    if (turtleTestButton) {
+      turtleTestButton.addEventListener('click', () => {
+        if (timerInterval === null) return; // only meaningful while a timer runs
+        timeRemainingSeconds = 3;
+        updateTimerDisplay();
+      });
+    }
     
     // Modal Close Triggers
     if (configClose) configClose.addEventListener('click', closeConfig);
@@ -1928,6 +2403,7 @@
         loadInitialConfig();
         checkVersionAndShowBanner();
         applyLanguage(currentLang);
+        applySeason();
     } catch (e) {
         alert(t('alertStartError', { msg: e.message }));
     }
