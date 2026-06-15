@@ -898,7 +898,7 @@
     }
     .wheel-stage {
       position: relative;
-      width: 300px;
+      width: 360px;
       max-width: 100%;
       margin: 0 auto;
       aspect-ratio: 1 / 1;
@@ -921,22 +921,25 @@
         0 0 0 6px #ffffff,
         0 0 0 8px rgba(0,40,120,0.12);
     }
-    /* Fixed hub cap in the centre, sitting above the spinning disc. */
+    /* The current speaker's slice: bright white rim + soft glow, full colour. */
+    #wheelSvg path.wheel-current,
+    #wheelSvg circle.wheel-current {
+      stroke: #ffffff;
+      stroke-width: 4;
+      filter: brightness(1.1) drop-shadow(0 0 5px rgba(255,255,255,0.75));
+    }
+
+    /* Small fixed hub cap in the centre, sitting above the spinning disc. */
     .wheel-center {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 54px;
-      height: 54px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
       background: radial-gradient(circle at 35% 30%, #ffffff 0%, #eaf1ff 55%, #cfe0ff 100%);
-      box-shadow: 0 4px 10px rgba(3,21,60,0.25), 0 0 0 4px rgba(0,40,120,0.10) inset;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5em;
-      line-height: 1;
+      box-shadow: 0 3px 8px rgba(3,21,60,0.25), 0 0 0 3px rgba(0,40,120,0.10) inset;
       z-index: 5;
       pointer-events: none;
     }
@@ -956,7 +959,7 @@
     }
     @media (max-width: 520px) {
       #wheelContainer { max-width: 100%; }
-      .wheel-stage { width: 100%; max-width: 320px; }
+      .wheel-stage { width: 100%; max-width: 360px; }
     }
 
     /* --- Seasonal themes for the wheel --- */
@@ -1209,13 +1212,13 @@
   <ul id="teamList"></ul>
 
   <div id="wheelContainer">
-    <div id="wheelStatus" data-i18n="wheelStatusInitial">Drehe das Rad für einen Zufall.</div>
+    <div id="wheelStatus"></div>
     <div class="wheel-stage">
       <div class="wheel-pointer"></div>
       <div id="wheelSpinner" class="wheel-spinner">
         <svg id="wheelSvg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" aria-label="Glücksrad"></svg>
       </div>
-      <div class="wheel-center">🎯</div>
+      <div class="wheel-center"></div>
     </div>
     <div class="slot-controls">
       <button id="wheelSpinButton" class="app-button slot-spin-button" data-i18n="btnSpin">Drehen</button>
@@ -1367,6 +1370,10 @@
   </div>
 
   <script>
+  // Wrapped in an IIFE so all declarations stay local. If the host (e.g. an
+  // in-app browser/preview) ever evaluates this script twice in the same page,
+  // local scope avoids "Identifier already declared" crashes.
+  (function () {
     /**
      * Global Error Handler
      * Prevents silent failures by providing visual feedback to the user on critical exceptions.
@@ -1409,7 +1416,6 @@
         btnNext: 'Nächster Teilnehmer ▶',
         btnSlotResetRound: 'Slotmaschine Runde zurücksetzen',
         btnWheelResetRound: 'Glücksrad Runde zurücksetzen',
-        wheelStatusInitial: 'Drehe das Rad für einen Zufall.',
         slotStatusInitial: 'Drücke Starten für Zufall.',
         slotStatusRestart: 'Wähle neue Teilnehmer und starte erneut.',
         slotStatusNoSelection: 'Keine Auswahl',
@@ -1467,7 +1473,6 @@
         btnNext: 'Next participant ▶',
         btnSlotResetRound: 'Reset slot machine round',
         btnWheelResetRound: 'Reset wheel round',
-        wheelStatusInitial: 'Spin the wheel for a random pick.',
         slotStatusInitial: 'Press Start for a random pick.',
         slotStatusRestart: 'Pick new participants and start again.',
         slotStatusNoSelection: 'No selection',
@@ -1580,7 +1585,7 @@
     ];
     const DEFAULT_TOTAL_TIME_MINUTES = 15;
     const SLOT_SPIN_DURATION_MS = 2000; // spin length – long enough for a smooth decelerate
-    const WHEEL_SPIN_DURATION_MS = 4200; // a long, satisfying wheel turn
+    const WHEEL_SPIN_DURATION_MS = 3000; // capped spin length (eases in, long roll-out)
     // Bright segment palette for the wheel – cycles if there are more names.
     const WHEEL_COLORS = [
       '#1366ff', '#ff6b35', '#2fbf4f', '#ffb400', '#9b5de5',
@@ -1605,6 +1610,7 @@
     let currentWheelWinner = null;
     let wheelSessionActive = false;
     let wheelAnimating = false;
+    let wheelAwaitingFinish = false; // last name drawn, its timer runs; next click ends
     let wheelRotation = 0; // accumulated rotation so each spin keeps turning forward
     
     let individualTimeSeconds = 0; 
@@ -2215,6 +2221,18 @@
         return [cx + radius * Math.sin(a), cy - radius * Math.cos(a)];
       };
 
+      // Measure the widest name so every label can share the largest font size
+      // that still fits. Width is taken from a reusable canvas at a 100px font.
+      const upperList = list.map(name => name.trim().toUpperCase());
+      const measureCtx = buildWheel._measureCtx ||
+        (buildWheel._measureCtx = document.createElement('canvas').getContext('2d'));
+      measureCtx.font = '700 100px Helvetica, Arial, sans-serif';
+      let widthAt100 = 1;
+      upperList.forEach(nm => {
+        widthAt100 = Math.max(widthAt100, measureCtx.measureText(nm).width);
+      });
+      const widthPerPx = widthAt100 / 100; // glyph width of the longest name at 1px
+
       // A single participant fills the whole disc – an arc back to its own start
       // point would be degenerate, so draw a full circle instead.
       if (n === 1) {
@@ -2227,11 +2245,16 @@
         circle.dataset.name = upper;
         svg.appendChild(circle);
 
+        // Largest font that fits the diameter (with a small margin).
+        const soloFont = Math.max(12, Math.min(48, (r * 1.7) / widthPerPx));
         const text = document.createElementNS(NS, 'text');
         text.setAttribute('x', cx);
-        text.setAttribute('y', cy - r * 0.55);
+        text.setAttribute('y', cy);
         text.setAttribute('fill', '#ffffff');
-        text.setAttribute('font-size', '15');
+        text.setAttribute('stroke', 'rgba(0,0,0,0.28)');
+        text.setAttribute('stroke-width', '0.8');
+        text.setAttribute('paint-order', 'stroke');
+        text.setAttribute('font-size', soloFont.toFixed(1));
         text.setAttribute('font-weight', '700');
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'middle');
@@ -2240,6 +2263,17 @@
         svg.appendChild(text);
         return;
       }
+
+      // Uniform label size for all slices: the largest font bounded by both the
+      // radial room (length of the longest name) and the slice's angular width.
+      // Labels sit in an outer band so they stay clear of the hub and the tip.
+      const rInner = 0.34, rOuter = 0.95;
+      const midRadius = (rInner + rOuter) / 2 * r;
+      const lengthBudget = (rOuter - rInner) * r * 0.94;
+      const segRad = seg * Math.PI / 180;
+      const heightBudget = segRad * midRadius * 0.8;
+      let labelFont = Math.min(lengthBudget / widthPerPx, heightBudget);
+      labelFont = Math.max(9, Math.min(30, labelFont));
 
       list.forEach((name, i) => {
         const upper = name.trim().toUpperCase();
@@ -2260,11 +2294,11 @@
         svg.appendChild(path);
 
         const mid = start + seg / 2;
-        const [tx, ty] = toXY(mid, r * 0.60);
-        // Orient the label along the radius; flip it on the left half so it
-        // never reads upside down.
-        let rot = mid - 90;
-        if (mid > 180) rot += 180;
+        const [tx, ty] = toXY(mid, midRadius);
+        // Orient every label the same way along its radius (no per-side flip)
+        // and centre it within the outer band so the text never crosses the
+        // centre or the pointer tip.
+        const rot = mid - 90;
 
         const text = document.createElementNS(NS, 'text');
         text.setAttribute('x', tx.toFixed(2));
@@ -2273,7 +2307,7 @@
         text.setAttribute('stroke', 'rgba(0,0,0,0.28)');
         text.setAttribute('stroke-width', '0.6');
         text.setAttribute('paint-order', 'stroke');
-        text.setAttribute('font-size', n > 9 ? '11' : (n > 6 ? '13' : '15'));
+        text.setAttribute('font-size', labelFont.toFixed(1));
         text.setAttribute('font-weight', '700');
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'middle');
@@ -2294,13 +2328,22 @@
       });
     }
 
-    /** Dims the slices of participants who have already been drawn. */
-    function dimUsedWheelSegments() {
+    /**
+     * Applies the three slice states: the current speaker is highlighted, the
+     * already-drawn ones are greyed out, and everyone still in the round stays
+     * in full colour. A name is greyed only once the *next* one is drawn.
+     */
+    function updateWheelSegmentStates() {
       const svg = document.getElementById('wheelSvg');
       if (!svg) return;
-      svg.querySelectorAll('path, text').forEach(el => {
-        const used = usedWheelNames.has((el.dataset.name || '').trim().toUpperCase());
-        el.style.opacity = used ? (el.tagName === 'text' ? '0.4' : '0.25') : '1';
+      const curr = currentWheelWinner ? currentWheelWinner.trim().toUpperCase() : null;
+      svg.querySelectorAll('path, text, circle').forEach(el => {
+        const name = (el.dataset.name || '').trim().toUpperCase();
+        const used = usedWheelNames.has(name);
+        const isCurrent = curr && name === curr;
+        const isText = el.tagName === 'text';
+        el.style.opacity = used ? (isText ? '0.4' : '0.25') : '1';
+        if (!isText) el.classList.toggle('wheel-current', !!isCurrent);
       });
     }
 
@@ -2328,7 +2371,7 @@
       // full turns so the wheel always spins forward from its current position.
       const center = idx * seg + seg / 2;
       const base = ((-center % 360) + 360) % 360;
-      const minTurns = 5;
+      const minTurns = 3; // fewer rotations -> lower peak speed within the 3s cap
       let target = wheelRotation + minTurns * 360;
       target += (((base - (target % 360)) % 360) + 360) % 360;
       wheelRotation = target;
@@ -2341,20 +2384,34 @@
         wheelSpinner.removeEventListener('transitionend', finalize);
         wheelAnimating = false;
 
-        previousWheelWinners.push(pick.trim());
-        usedWheelNames.add(pickUpper);
-        remainingWheelParticipants = currentWheelList.filter(
-          name => !usedWheelNames.has(name.trim().toUpperCase()));
+        // The previously highlighted speaker now becomes a greyed-out slice;
+        // the freshly drawn name takes over as the highlighted current speaker.
+        if (currentWheelWinner) {
+          usedWheelNames.add(currentWheelWinner.trim().toUpperCase());
+        }
         currentWheelWinner = pick.trim();
-        dimUsedWheelSegments();
+        previousWheelWinners.push(pick.trim());
+        remainingWheelParticipants = currentWheelList.filter(name => {
+          const u = name.trim().toUpperCase();
+          return !usedWheelNames.has(u) && u !== pickUpper;
+        });
+        updateWheelSegmentStates();
         updateWheelHistory();
 
+        // The just-drawn name is the current speaker, so their time runs now –
+        // including the very last participant.
+        startTimer();
+
         if (remainingWheelParticipants.length === 0) {
-          // Last name drawn – celebrate and offer a restart, like the slot view.
-          finishDaily();
+          // Everyone has been drawn: let the last speaker's time run; the daily
+          // ends only on the next click ("End daily").
+          wheelAwaitingFinish = true;
+          if (wheelSpinButton) {
+            wheelSpinButton.disabled = false;
+            setText(wheelSpinButton, 'btnEndDaily');
+          }
         } else {
           if (wheelSpinButton) wheelSpinButton.disabled = false;
-          startTimer();
         }
       };
 
@@ -2363,8 +2420,10 @@
       wheelSpinner.addEventListener('transitionend', finalize);
 
       requestAnimationFrame(() => {
+        // Gentle ease-in (slow start), moderate middle, long roll-out to a soft
+        // stop – keeps the peak speed calm within the capped duration.
         wheelSpinner.style.transition =
-          `transform ${dur}s cubic-bezier(0.17, 0.67, 0.12, 0.99)`;
+          `transform ${dur}s cubic-bezier(0.22, 0.0, 0.22, 1.0)`;
         wheelSpinner.style.transform = `rotate(${target}deg)`;
       });
     }
@@ -2379,6 +2438,7 @@
       currentWheelWinner = null;
       wheelSessionActive = true;
       wheelAnimating = false;
+      wheelAwaitingFinish = false;
       wheelRotation = 0;
 
       teamList.style.display = 'none';
@@ -2412,7 +2472,7 @@
       timeRemainingSeconds = individualTimeSeconds;
       updateTimerDisplay();
 
-      setText(wheelStatus, 'wheelStatusInitial');
+      clearText(wheelStatus);
       if (wheelSpinButton) {
         wheelSpinButton.disabled = false;
         setText(wheelSpinButton, 'btnSpin');
@@ -2422,13 +2482,14 @@
     /** Restarts the wheel round: back to the participant selection. */
     function resetWheel() {
       wheelSessionActive = false;
+      wheelAwaitingFinish = false;
       if (wheelSpinButton) {
         wheelSpinButton.disabled = true;
         wheelSpinButton.style.display = '';
         setText(wheelSpinButton, 'btnSpin');
       }
       if (wheelRestartButton) wheelRestartButton.style.display = 'none';
-      setText(wheelStatus, 'slotStatusRestart');
+      clearText(wheelStatus);
       wheelContainer.style.display = 'none';
       participantSelection.style.display = 'flex';
       if (shuffleButton) setText(shuffleButton, 'btnStart');
@@ -2499,6 +2560,7 @@
       if (viewMode === VIEW_MODE_WHEEL) {
         // Wheel view: hide the spin button, present a single restart CTA.
         wheelSessionActive = false;
+        wheelAwaitingFinish = false;
         clearText(wheelStatus);
         if (wheelSpinButton) wheelSpinButton.style.display = 'none';
         if (wheelRestartButton) wheelRestartButton.style.display = 'inline-block';
@@ -2836,13 +2898,12 @@
             event.preventDefault();
 
             // Wheel view: Space spins for the next participant (no step-back).
+            // After the last draw it ends the daily, like the button.
             if (viewMode === VIEW_MODE_WHEEL) {
-                if (remainingWheelParticipants.length === 0) {
-                    stopTimer();
-                    setText(timerDisplay, 'dailyFinished');
-                    clearColorClasses();
-                    toggleOvertimeIcons(false);
-                } else {
+                if (wheelAwaitingFinish) {
+                    wheelAwaitingFinish = false;
+                    finishDaily();
+                } else if (remainingWheelParticipants.length > 0) {
                     spinWheel();
                 }
                 return;
@@ -2935,7 +2996,16 @@
       slotRestartButton.addEventListener('click', resetSlotMachine);
     }
     if (wheelSpinButton) {
-      wheelSpinButton.addEventListener('click', spinWheel);
+      wheelSpinButton.addEventListener('click', () => {
+        // After the last name was drawn, the button ends the daily; otherwise it
+        // spins for the next participant.
+        if (wheelAwaitingFinish) {
+          wheelAwaitingFinish = false;
+          finishDaily();
+        } else {
+          spinWheel();
+        }
+      });
     }
     if (wheelRestartButton) {
       wheelRestartButton.addEventListener('click', resetWheel);
@@ -2996,6 +3066,7 @@
     } catch (e) {
         alert(t('alertStartError', { msg: e.message }));
     }
+  })();
 
   </script>
 </body>
