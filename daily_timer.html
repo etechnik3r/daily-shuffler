@@ -983,6 +983,137 @@
       opacity: 0.85;
     }
 
+    /* --- Card Game View (Uno-like, but legally distinct) --- */
+    #cardContainer {
+      width: 100%;
+      max-width: var(--col-width);
+      margin: 8px auto 0;
+      position: relative;
+      display: none;
+    }
+    #cardStatus {
+      display: block;
+      min-height: 1.2em;
+      margin-bottom: 10px;
+      font-size: 1em;
+      font-weight: 700;
+      color: #003c88;
+      text-align: center;
+    }
+    /* The discard pile – cards are thrown on top of each other here. */
+    .card-pile {
+      position: relative;
+      width: 220px;
+      height: 300px;
+      margin: 0 auto;
+    }
+    .play-card {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 150px;
+      height: 214px;
+      /* Resting transform: centre + the card's own thrown offset/rotation. */
+      transform: translate(-50%, -50%) translate(var(--tx, 0), var(--ty, 0)) rotate(var(--rot, 0deg));
+      animation: card-throw 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    }
+    @keyframes card-throw {
+      0% {
+        transform: translate(-50%, -50%) translate(0, -360px) rotate(calc(var(--rot, 0deg) - 45deg)) scale(0.85);
+        opacity: 0;
+      }
+      60% { opacity: 1; }
+      100% {
+        transform: translate(-50%, -50%) translate(var(--tx, 0), var(--ty, 0)) rotate(var(--rot, 0deg));
+        opacity: 1;
+      }
+    }
+    /* The coloured card body with a white inner panel and rounded corners. */
+    .pc-inner {
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      padding: 8px;
+      box-sizing: border-box;
+      box-shadow: 0 10px 22px rgba(3,21,60,0.28), 0 0 0 1px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    /* White oval-free inner panel keeps it distinct from any branded design. */
+    .pc-inner::before {
+      content: '';
+      position: absolute;
+      inset: 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.92);
+      transform: rotate(0deg);
+    }
+    .pc-corner {
+      position: absolute;
+      font-size: 1em;
+      font-weight: 800;
+      line-height: 1;
+      z-index: 1;
+    }
+    .pc-tl { top: 8px; left: 10px; }
+    .pc-br { bottom: 8px; right: 10px; transform: rotate(180deg); }
+    .pc-center {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 6px;
+      word-break: break-word;
+      line-height: 1.05;
+    }
+    .pc-name {
+      font-size: 1.45em;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+    .pc-center.pc-special {
+      font-size: 2.6em;
+      font-weight: 900;
+    }
+    /* The four generic deck colours (name cards). */
+    .pc-c0 { background: #e4002c; } .pc-c0 .pc-center, .pc-c0 .pc-corner { color: #e4002c; }
+    .pc-c1 { background: #1366ff; } .pc-c1 .pc-center, .pc-c1 .pc-corner { color: #1366ff; }
+    .pc-c2 { background: #06b34a; } .pc-c2 .pc-center, .pc-c2 .pc-corner { color: #06b34a; }
+    .pc-c3 { background: #f5b800; } .pc-c3 .pc-center, .pc-c3 .pc-corner { color: #b07d00; }
+    /* Special cards. */
+    .pc-wende { background: #6a3fb5; } .pc-wende .pc-center, .pc-wende .pc-corner { color: #6a3fb5; }
+    .pc-plus2 { background: #ff7a00; } .pc-plus2 .pc-center, .pc-plus2 .pc-corner { color: #ff7a00; }
+    .pc-plus4 { background: #222b3a; } .pc-plus4 .pc-center, .pc-plus4 .pc-corner { color: #222b3a; }
+    .pc-skip  { background: #c20030; } .pc-skip .pc-center, .pc-skip .pc-corner { color: #c20030; }
+    /* +4 gets a four-colour hint instead of a brand mark. */
+    .pc-plus4 .pc-inner::before {
+      background:
+        linear-gradient(135deg, rgba(228,0,44,0.16) 0 25%, rgba(19,102,255,0.16) 25% 50%,
+          rgba(6,179,74,0.16) 50% 75%, rgba(245,184,0,0.18) 75% 100%), rgba(255,255,255,0.92);
+    }
+    @media (max-width: 520px) {
+      #cardContainer { max-width: 100%; }
+    }
+    /* Seasonal accents for the card pile. */
+    .season-halloween .play-card .pc-inner { box-shadow: 0 10px 22px rgba(255,140,0,0.28), 0 0 0 1px rgba(0,0,0,0.06); }
+    .season-winter .card-pile::after {
+      content: '';
+      position: absolute;
+      inset: -10px;
+      pointer-events: none;
+      z-index: 50;
+      background-image:
+        radial-gradient(2px 2px at 20% 30%, #fff 50%, transparent 51%),
+        radial-gradient(2px 2px at 70% 10%, #fff 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 45% 60%, #fff 50%, transparent 51%),
+        radial-gradient(2.5px 2.5px at 85% 45%, #fff 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 10% 75%, #fff 50%, transparent 51%);
+      background-size: 240px 240px;
+      animation: ev-snowfall 7s linear infinite;
+      opacity: 0.85;
+    }
+
     /* --- Notifications & Banners --- */
     #updateBanner {
       background: var(--cta-bg);
@@ -1230,6 +1361,15 @@
     </div>
   </div>
 
+  <div id="cardContainer">
+    <div id="cardStatus"></div>
+    <div id="cardPile" class="card-pile"></div>
+    <div class="slot-controls">
+      <button id="cardThrowButton" class="app-button slot-spin-button" data-i18n="btnNextCard">Nächste Karte</button>
+      <button id="cardRestartButton" class="app-button slot-spin-button slot-restart-button" data-i18n="btnRestart">Neu starten</button>
+    </div>
+  </div>
+
   <div id="evContainer">
     <div id="evRoadWrap">
       <div id="evRoad"></div>
@@ -1325,6 +1465,7 @@
         <label><input type="radio" name="viewMode" value="slot"> <span data-i18n="viewSlot">Slotmaschinen-Ansicht</span></label>
         <label><input type="radio" name="viewMode" value="ev"> <span data-i18n="viewEv">Roadtrip-Ansicht (E-Auto)</span></label>
         <label><input type="radio" name="viewMode" value="wheel"> <span data-i18n="viewWheel">Glücksrad-Ansicht</span></label>
+        <label><input type="radio" name="viewMode" value="card"> <span data-i18n="viewCard">Kartenspiel-Ansicht</span></label>
       </div>
 
       <div class="modal-button-container">
@@ -1392,6 +1533,7 @@
     const VIEW_MODE_SLOT = 'slot';
     const VIEW_MODE_EV = 'ev';
     const VIEW_MODE_WHEEL = 'wheel';
+    const VIEW_MODE_CARD = 'card';
     const EVENT_OVERRIDE_KEY = 'dailyEventOverride';
     const LANG_KEY = 'dailyLang';
     const SUPPORTED_LANGS = ['de', 'en'];
@@ -1416,6 +1558,12 @@
         btnNext: 'Nächster Teilnehmer ▶',
         btnSlotResetRound: 'Slotmaschine Runde zurücksetzen',
         btnWheelResetRound: 'Glücksrad Runde zurücksetzen',
+        btnCardResetRound: 'Kartenspiel Runde zurücksetzen',
+        btnNextCard: 'Nächste Karte',
+        cardWendeMsg: '↔ Wende – ohne Effekt',
+        cardPlus2Msg: '+2 – nur zur Show',
+        cardPlus4Msg: '+4 – nur zur Show',
+        cardSkipMsg: '⏭ {name} setzt aus und kommt später dran',
         slotStatusInitial: 'Drücke Starten für Zufall.',
         slotStatusRestart: 'Wähle neue Teilnehmer und starte erneut.',
         slotStatusNoSelection: 'Keine Auswahl',
@@ -1437,6 +1585,7 @@
         viewSlot: 'Slotmaschinen-Ansicht',
         viewEv: 'Roadtrip-Ansicht (E-Auto)',
         viewWheel: 'Glücksrad-Ansicht',
+        viewCard: 'Kartenspiel-Ansicht',
         evQueueTitle: 'Reihenfolge',
         devOptionsTitle: 'Entwickler-Optionen',
         devSeasonLabel: 'Saison-Override',
@@ -1455,7 +1604,7 @@
         helpTitle: 'So funktioniert es',
         helpIntro: 'Lege in Sekunden eine faire, zufällige Reihenfolge für die Wortbeiträge in deinem Daily fest – mit einem Timer, der die Zeit gleichmäßig auf alle verteilt.',
         helpUsageTitle: 'Auf einen Blick',
-        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Anwesenheit</b>Hake oben ab, wer heute dabei ist. Abgewählte Personen (Urlaub, krank) werden übersprungen.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Reihenfolge würfeln</b>Tippe auf „Würfeln": Die App erstellt eine zufällige Reihenfolge der aktiven Personen und startet den Timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>Die Gesamtdauer wird gleichmäßig aufgeteilt. Wird die Zeit knapp, färbt sich der Timer – erst gelb, dann rot.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Weiter zur nächsten Person</b>Tippe auf „Nächster Teilnehmer" oder drücke die Leertaste.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Einen Schritt zurück</b>Strg oder Umschalt + Leertaste springt zur vorherigen Person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slotmaschinen-Ansicht</b>Lust auf Show? In den Einstellungen schaltest du auf die animierte Slotmaschine um.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip-Ansicht</b>Ein E-Auto fährt die Daily-Strecke ab, die Batterie zeigt die Redezeit. Ist sie leer, kommt die Schildkröte.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Glücksrad-Ansicht</b>Ein buntes Rad mit allen Namen dreht sich und lost nacheinander aus, wer dran ist.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Einstellungen</b>Namen, Dauer, Ansicht und Sprache jederzeit anpassen.</div></li>',
+        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Anwesenheit</b>Hake oben ab, wer heute dabei ist. Abgewählte Personen (Urlaub, krank) werden übersprungen.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Reihenfolge würfeln</b>Tippe auf „Würfeln": Die App erstellt eine zufällige Reihenfolge der aktiven Personen und startet den Timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>Die Gesamtdauer wird gleichmäßig aufgeteilt. Wird die Zeit knapp, färbt sich der Timer – erst gelb, dann rot.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Weiter zur nächsten Person</b>Tippe auf „Nächster Teilnehmer" oder drücke die Leertaste.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Einen Schritt zurück</b>Strg oder Umschalt + Leertaste springt zur vorherigen Person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slotmaschinen-Ansicht</b>Lust auf Show? In den Einstellungen schaltest du auf die animierte Slotmaschine um.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip-Ansicht</b>Ein E-Auto fährt die Daily-Strecke ab, die Batterie zeigt die Redezeit. Ist sie leer, kommt die Schildkröte.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Glücksrad-Ansicht</b>Ein buntes Rad mit allen Namen dreht sich und lost nacheinander aus, wer dran ist.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Kartenspiel-Ansicht</b>Für jeden Sprecher fliegt eine bunte Namenskarte auf den Stapel. Sonderkarten sorgen für Spaß – „Aussetzen" verschiebt jemanden ans Ende, der Rest ist nur Show.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Einstellungen</b>Namen, Dauer, Ansicht und Sprache jederzeit anpassen.</div></li>',
         alertPickOne: 'Bitte wähle mindestens einen Teilnehmer aus!',
         alertError: 'Ein Fehler ist aufgetreten: {msg}\nBitte Seite neu laden oder Cache leeren.',
         alertStartError: 'Kritischer Start-Fehler: {msg}',
@@ -1473,6 +1622,12 @@
         btnNext: 'Next participant ▶',
         btnSlotResetRound: 'Reset slot machine round',
         btnWheelResetRound: 'Reset wheel round',
+        btnCardResetRound: 'Reset card round',
+        btnNextCard: 'Next card',
+        cardWendeMsg: '↔ Reverse – no effect',
+        cardPlus2Msg: '+2 – just for show',
+        cardPlus4Msg: '+4 – just for show',
+        cardSkipMsg: '⏭ {name} is skipped and comes later',
         slotStatusInitial: 'Press Start for a random pick.',
         slotStatusRestart: 'Pick new participants and start again.',
         slotStatusNoSelection: 'No selection',
@@ -1494,6 +1649,7 @@
         viewSlot: 'Slot machine view',
         viewEv: 'Roadtrip view (EV)',
         viewWheel: 'Wheel of fortune view',
+        viewCard: 'Card game view',
         evQueueTitle: 'Order',
         devOptionsTitle: 'Developer options',
         devSeasonLabel: 'Season override',
@@ -1512,7 +1668,7 @@
         helpTitle: 'How it works',
         helpIntro: 'Set a fair, random speaking order for your daily in seconds – with a timer that splits the time evenly across everyone.',
         helpUsageTitle: 'At a glance',
-        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Attendance</b>Tick who is in today. Unticked people (vacation, sick) are skipped.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Roll the order</b>Tap “Roll” and the app builds a random order of the active people and starts the timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>The total time is split evenly. As it runs low the timer changes colour – yellow, then red.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Next person</b>Tap “Next participant” or press the spacebar.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Step back</b>Ctrl or Shift + Space jumps to the previous person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slot machine view</b>Want a bit of show? Switch to the animated slot machine in the settings.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip view</b>An EV drives the daily route while the battery shows the speaking time. When it is empty, the turtle appears.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Wheel of fortune view</b>A colourful wheel with every name spins and draws who is up next, one by one.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Settings</b>Adjust names, duration, view and language anytime.</div></li>',
+        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Attendance</b>Tick who is in today. Unticked people (vacation, sick) are skipped.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Roll the order</b>Tap “Roll” and the app builds a random order of the active people and starts the timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>The total time is split evenly. As it runs low the timer changes colour – yellow, then red.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Next person</b>Tap “Next participant” or press the spacebar.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Step back</b>Ctrl or Shift + Space jumps to the previous person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slot machine view</b>Want a bit of show? Switch to the animated slot machine in the settings.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip view</b>An EV drives the daily route while the battery shows the speaking time. When it is empty, the turtle appears.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Wheel of fortune view</b>A colourful wheel with every name spins and draws who is up next, one by one.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Card game view</b>A colourful name card is thrown onto the pile for each speaker. Special cards add fun – “Skip” moves someone to the end, the rest are just for show.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Settings</b>Adjust names, duration, view and language anytime.</div></li>',
         alertPickOne: 'Please select at least one participant!',
         alertError: 'An error occurred: {msg}\nPlease reload the page or clear the cache.',
         alertStartError: 'Critical startup error: {msg}',
@@ -1591,6 +1747,10 @@
       '#1366ff', '#ff6b35', '#2fbf4f', '#ffb400', '#9b5de5',
       '#f15bb5', '#00bbf9', '#e4002c', '#06d6a0', '#ff8c00'
     ];
+    // Card game: chance of a special card before a name, and the special kinds.
+    const CARD_SPECIAL_CHANCE = 0.45;
+    const CARD_SPECIALS = ['wende', 'plus2', 'plus4', 'skip'];
+    const CARD_COLOR_COUNT = 4; // generic four-colour deck (pc-c0..pc-c3)
 
     // --- Application State ---
     let currentTeamMembers = [];
@@ -1612,6 +1772,14 @@
     let wheelAnimating = false;
     let wheelAwaitingFinish = false; // last name drawn, its timer runs; next click ends
     let wheelRotation = 0; // accumulated rotation so each spin keeps turning forward
+
+    // Card game state (each click throws one card onto the pile).
+    let cardDeck = [];          // upcoming cards: {type:'name',name} | {type:'special',kind}
+    let cardCurrent = null;     // current speaker (the top name card)
+    let cardSpoken = [];        // already-spoken names, in order
+    let cardThrowCount = 0;     // stacking counter -> z-index
+    let cardSessionActive = false;
+    let cardAwaitingFinish = false; // last name thrown, its timer runs; next click ends
     
     let individualTimeSeconds = 0; 
     let timeRemainingSeconds = 0; 
@@ -1641,6 +1809,11 @@
     const wheelSpinButton = document.getElementById('wheelSpinButton');
     const wheelRestartButton = document.getElementById('wheelRestartButton');
     const wheelHistoryList = document.getElementById('wheelHistoryList');
+    const cardContainer = document.getElementById('cardContainer');
+    const cardPile = document.getElementById('cardPile');
+    const cardStatus = document.getElementById('cardStatus');
+    const cardThrowButton = document.getElementById('cardThrowButton');
+    const cardRestartButton = document.getElementById('cardRestartButton');
     const evContainer = document.getElementById('evContainer');
     const evCar = document.getElementById('evCar');
     const evGoal = document.getElementById('evGoal');
@@ -2495,6 +2668,170 @@
       if (shuffleButton) setText(shuffleButton, 'btnStart');
     }
 
+    // --- Card Game View Module ---
+
+    /** The corner/centre glyph shown on each special card. */
+    function cardSpecialGlyph(kind) {
+      switch (kind) {
+        case 'wende': return '↔';
+        case 'plus2': return '+2';
+        case 'plus4': return '+4';
+        case 'skip':  return '⊘';
+      }
+      return '';
+    }
+
+    /**
+     * Builds the deck: the shuffled names with special cards randomly inserted
+     * before names (never first, never after the last name), so the deck always
+     * starts and ends with a name card.
+     */
+    function buildCardDeck(names) {
+      const order = shuffle(names.slice());
+      const deck = [];
+      order.forEach((name, i) => {
+        if (i > 0 && Math.random() < CARD_SPECIAL_CHANCE) {
+          deck.push({ type: 'special', kind: CARD_SPECIALS[Math.floor(Math.random() * CARD_SPECIALS.length)] });
+        }
+        deck.push({ type: 'name', name: name });
+      });
+      return deck;
+    }
+
+    /** Creates a thrown card element with a random offset/rotation on the pile. */
+    function throwCard(colorClass, glyph, centerText, centerClass) {
+      cardThrowCount += 1;
+      const card = document.createElement('div');
+      card.className = 'play-card';
+      card.style.setProperty('--rot', (Math.random() * 26 - 13).toFixed(1) + 'deg');
+      card.style.setProperty('--tx', (Math.random() * 36 - 18).toFixed(1) + 'px');
+      card.style.setProperty('--ty', (Math.random() * 36 - 18).toFixed(1) + 'px');
+      card.style.zIndex = String(cardThrowCount);
+
+      const inner = document.createElement('div');
+      inner.className = 'pc-inner ' + colorClass;
+      const tl = document.createElement('span'); tl.className = 'pc-corner pc-tl'; tl.textContent = glyph;
+      const br = document.createElement('span'); br.className = 'pc-corner pc-br'; br.textContent = glyph;
+      const center = document.createElement('span');
+      center.className = 'pc-center' + (centerClass ? ' ' + centerClass : '');
+      center.textContent = centerText;
+      inner.appendChild(tl);
+      inner.appendChild(center);
+      inner.appendChild(br);
+      card.appendChild(inner);
+      cardPile.appendChild(card);
+    }
+
+    function throwNameCard(name) {
+      const colorClass = 'pc-c' + (cardThrowCount % CARD_COLOR_COUNT);
+      throwCard(colorClass, '●', name.trim().toUpperCase(), 'pc-name');
+    }
+
+    function throwSpecialCard(kind) {
+      const glyph = cardSpecialGlyph(kind);
+      throwCard('pc-' + kind, glyph, glyph, 'pc-special');
+    }
+
+    /** Shows the short status line for a thrown special card. */
+    function announceCardSpecial(kind, name) {
+      if (kind === 'skip') setText(cardStatus, 'cardSkipMsg', { name: name });
+      else if (kind === 'wende') setText(cardStatus, 'cardWendeMsg');
+      else if (kind === 'plus2') setText(cardStatus, 'cardPlus2Msg');
+      else if (kind === 'plus4') setText(cardStatus, 'cardPlus4Msg');
+    }
+
+    /** Each call throws the next card; names advance the speaker, specials don't. */
+    function advanceCard() {
+      if (!cardSessionActive) return;
+      if (cardAwaitingFinish) { cardAwaitingFinish = false; finishDaily(); return; }
+      if (cardDeck.length === 0) return;
+
+      const next = cardDeck.shift();
+
+      if (next.type === 'special') {
+        throwSpecialCard(next.kind);
+        if (next.kind === 'skip') {
+          // Move the next upcoming person to the end of the round.
+          const idx = cardDeck.findIndex(c => c.type === 'name');
+          if (idx !== -1) {
+            const moved = cardDeck.splice(idx, 1)[0];
+            cardDeck.push(moved);
+            announceCardSpecial('skip', moved.name);
+          } else {
+            clearText(cardStatus);
+          }
+        } else {
+          announceCardSpecial(next.kind);
+        }
+        return; // current speaker and timer stay unchanged
+      }
+
+      // Name card: this person becomes the current speaker.
+      if (cardCurrent) cardSpoken.push(cardCurrent);
+      cardCurrent = next.name;
+      throwNameCard(cardCurrent);
+      clearText(cardStatus);
+      startTimer();
+
+      if (cardDeck.findIndex(c => c.type === 'name') === -1) {
+        // No upcoming names left: last speaker is up; end on the next click.
+        cardAwaitingFinish = true;
+        if (cardThrowButton) setText(cardThrowButton, 'btnEndDaily');
+      }
+    }
+
+    /** Renders the card view and throws the first card (first speaker). */
+    function displayCardTeam(list) {
+      currentShuffledList = list.filter(name => name.trim() !== '');
+      cardSpoken = [];
+      cardCurrent = null;
+      cardThrowCount = 0;
+      cardAwaitingFinish = false;
+      cardSessionActive = true;
+
+      teamList.style.display = 'none';
+      slotContainer.style.display = 'none';
+      wheelContainer.style.display = 'none';
+      evContainer.style.display = 'none';
+      setNextButtonVisible(false);
+      cardContainer.style.display = 'block';
+      applySeason();
+      if (cardPile) cardPile.innerHTML = '';
+      clearText(cardStatus);
+      if (cardRestartButton) cardRestartButton.style.display = 'none';
+      if (cardThrowButton) cardThrowButton.style.display = '';
+
+      if (currentShuffledList.length === 0) {
+        setText(cardStatus, 'slotStatusNoSelection');
+        if (cardThrowButton) cardThrowButton.disabled = true;
+        return;
+      }
+
+      cardDeck = buildCardDeck(currentShuffledList);
+      timerDisplay.style.display = 'inline-flex';
+      if (cardThrowButton) {
+        cardThrowButton.disabled = false;
+        setText(cardThrowButton, 'btnNextCard');
+      }
+      advanceCard(); // throws the first name card and starts its timer
+    }
+
+    /** Restarts the card round: back to the participant selection. */
+    function resetCard() {
+      cardSessionActive = false;
+      cardAwaitingFinish = false;
+      if (cardThrowButton) {
+        cardThrowButton.disabled = true;
+        cardThrowButton.style.display = '';
+        setText(cardThrowButton, 'btnNextCard');
+      }
+      if (cardRestartButton) cardRestartButton.style.display = 'none';
+      clearText(cardStatus);
+      cardContainer.style.display = 'none';
+      participantSelection.style.display = 'flex';
+      if (shuffleButton) setText(shuffleButton, 'btnStart');
+    }
+
     function displayTeam(list) {
       if (viewMode === VIEW_MODE_SLOT) {
         displaySlotTeam(list);
@@ -2502,13 +2839,15 @@
         displayEvTeam(list);
       } else if (viewMode === VIEW_MODE_WHEEL) {
         displayWheelTeam(list);
+      } else if (viewMode === VIEW_MODE_CARD) {
+        displayCardTeam(list);
       } else {
         displayClassicTeam(list);
       }
     }
 
     function setViewMode(mode) {
-      viewMode = (mode === VIEW_MODE_SLOT || mode === VIEW_MODE_EV || mode === VIEW_MODE_WHEEL)
+      viewMode = (mode === VIEW_MODE_SLOT || mode === VIEW_MODE_EV || mode === VIEW_MODE_WHEEL || mode === VIEW_MODE_CARD)
         ? mode : VIEW_MODE_CLASSIC;
       localStorage.setItem(VIEW_MODE_KEY, viewMode);
       teamList.style.display = 'none';
@@ -2516,14 +2855,17 @@
       slotContainer.style.display = 'none';
       evContainer.style.display = 'none';
       wheelContainer.style.display = 'none';
+      cardContainer.style.display = 'none';
       participantSelection.style.display = 'flex';
       shuffleButton.style.display = 'inline-block';
-      // Slot and wheel both spin after starting, so they share the "Start" label.
-      const spinFirst = viewMode === VIEW_MODE_SLOT || viewMode === VIEW_MODE_WHEEL;
+      // Slot, wheel and card all act after starting, so they share "Start".
+      const spinFirst = viewMode === VIEW_MODE_SLOT || viewMode === VIEW_MODE_WHEEL || viewMode === VIEW_MODE_CARD;
       setText(shuffleButton, spinFirst ? 'btnStart' : 'btnRoll');
       if (slotSpinButton) slotSpinButton.disabled = true;
       if (wheelSpinButton) wheelSpinButton.disabled = true;
+      if (cardThrowButton) cardThrowButton.disabled = true;
       wheelSessionActive = false;
+      cardSessionActive = false;
     }
 
     function hideResults() {
@@ -2532,6 +2874,7 @@
       slotContainer.style.display = 'none';
       evContainer.style.display = 'none';
       wheelContainer.style.display = 'none';
+      cardContainer.style.display = 'none';
       if (slotTrack) {
         slotTrack.style.transition = 'none';
       }
@@ -2541,7 +2884,11 @@
       if (wheelSpinButton) {
         wheelSpinButton.disabled = true;
       }
+      if (cardThrowButton) {
+        cardThrowButton.disabled = true;
+      }
       wheelSessionActive = false;
+      cardSessionActive = false;
     }
 
     function finishDaily() {
@@ -2564,6 +2911,16 @@
         clearText(wheelStatus);
         if (wheelSpinButton) wheelSpinButton.style.display = 'none';
         if (wheelRestartButton) wheelRestartButton.style.display = 'inline-block';
+        return;
+      }
+
+      if (viewMode === VIEW_MODE_CARD) {
+        // Card view: hide the throw button, present a single restart CTA.
+        cardSessionActive = false;
+        cardAwaitingFinish = false;
+        clearText(cardStatus);
+        if (cardThrowButton) cardThrowButton.style.display = 'none';
+        if (cardRestartButton) cardRestartButton.style.display = 'inline-block';
         return;
       }
 
@@ -2767,7 +3124,7 @@
       }
 
       const selectedViewMode = document.querySelector('input[name="viewMode"]:checked');
-      if (selectedViewMode && [VIEW_MODE_SLOT, VIEW_MODE_CLASSIC, VIEW_MODE_EV, VIEW_MODE_WHEEL].indexOf(selectedViewMode.value) !== -1) {
+      if (selectedViewMode && [VIEW_MODE_SLOT, VIEW_MODE_CLASSIC, VIEW_MODE_EV, VIEW_MODE_WHEEL, VIEW_MODE_CARD].indexOf(selectedViewMode.value) !== -1) {
           viewMode = selectedViewMode.value;
           localStorage.setItem(VIEW_MODE_KEY, viewMode);
       }
@@ -2784,10 +3141,11 @@
       hideResults();
 
       shuffleButton.style.display = 'inline-block';
-      if (viewMode === VIEW_MODE_SLOT || viewMode === VIEW_MODE_WHEEL) {
+      if (viewMode === VIEW_MODE_SLOT || viewMode === VIEW_MODE_WHEEL || viewMode === VIEW_MODE_CARD) {
           setText(shuffleButton, 'btnStart');
           if (slotSpinButton) slotSpinButton.disabled = true;
           if (wheelSpinButton) wheelSpinButton.disabled = true;
+          if (cardThrowButton) cardThrowButton.disabled = true;
       } else {
           setText(shuffleButton, 'btnRoll');
       }
@@ -2848,7 +3206,7 @@
       }
 
       const storedViewMode = localStorage.getItem(VIEW_MODE_KEY);
-      if ([VIEW_MODE_SLOT, VIEW_MODE_CLASSIC, VIEW_MODE_EV, VIEW_MODE_WHEEL].indexOf(storedViewMode) !== -1) {
+      if ([VIEW_MODE_SLOT, VIEW_MODE_CLASSIC, VIEW_MODE_EV, VIEW_MODE_WHEEL, VIEW_MODE_CARD].indexOf(storedViewMode) !== -1) {
         viewMode = storedViewMode;
       } else {
         viewMode = VIEW_MODE_CLASSIC;
@@ -2906,6 +3264,12 @@
                 } else if (remainingWheelParticipants.length > 0) {
                     spinWheel();
                 }
+                return;
+            }
+
+            // Card view: Space throws the next card (and ends after the last).
+            if (viewMode === VIEW_MODE_CARD) {
+                advanceCard();
                 return;
             }
 
@@ -2978,6 +3342,9 @@
       } else if (viewMode === VIEW_MODE_WHEEL) {
         // The timer starts after the first spin, not on roll.
         setText(shuffleButton, 'btnWheelResetRound');
+      } else if (viewMode === VIEW_MODE_CARD) {
+        // displayCardTeam throws the first card and starts the timer itself.
+        setText(shuffleButton, 'btnCardResetRound');
       } else {
         setText(shuffleButton, 'btnRollAgain');
         startTimer();
@@ -3009,6 +3376,13 @@
     }
     if (wheelRestartButton) {
       wheelRestartButton.addEventListener('click', resetWheel);
+    }
+    if (cardThrowButton) {
+      // advanceCard() handles the "end daily" step after the last card itself.
+      cardThrowButton.addEventListener('click', advanceCard);
+    }
+    if (cardRestartButton) {
+      cardRestartButton.addEventListener('click', resetCard);
     }
     const nextParticipantButton = document.getElementById('nextParticipantButton');
     if (nextParticipantButton) {
