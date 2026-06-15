@@ -1212,7 +1212,7 @@
   <ul id="teamList"></ul>
 
   <div id="wheelContainer">
-    <div id="wheelStatus" data-i18n="wheelStatusInitial">Drehe das Rad für einen Zufall.</div>
+    <div id="wheelStatus"></div>
     <div class="wheel-stage">
       <div class="wheel-pointer"></div>
       <div id="wheelSpinner" class="wheel-spinner">
@@ -1416,7 +1416,6 @@
         btnNext: 'Nächster Teilnehmer ▶',
         btnSlotResetRound: 'Slotmaschine Runde zurücksetzen',
         btnWheelResetRound: 'Glücksrad Runde zurücksetzen',
-        wheelStatusInitial: 'Drehe das Rad für einen Zufall.',
         slotStatusInitial: 'Drücke Starten für Zufall.',
         slotStatusRestart: 'Wähle neue Teilnehmer und starte erneut.',
         slotStatusNoSelection: 'Keine Auswahl',
@@ -1474,7 +1473,6 @@
         btnNext: 'Next participant ▶',
         btnSlotResetRound: 'Reset slot machine round',
         btnWheelResetRound: 'Reset wheel round',
-        wheelStatusInitial: 'Spin the wheel for a random pick.',
         slotStatusInitial: 'Press Start for a random pick.',
         slotStatusRestart: 'Pick new participants and start again.',
         slotStatusNoSelection: 'No selection',
@@ -1612,6 +1610,7 @@
     let currentWheelWinner = null;
     let wheelSessionActive = false;
     let wheelAnimating = false;
+    let wheelAwaitingFinish = false; // last name drawn, its timer runs; next click ends
     let wheelRotation = 0; // accumulated rotation so each spin keeps turning forward
     
     let individualTimeSeconds = 0; 
@@ -2399,12 +2398,20 @@
         updateWheelSegmentStates();
         updateWheelHistory();
 
+        // The just-drawn name is the current speaker, so their time runs now –
+        // including the very last participant.
+        startTimer();
+
         if (remainingWheelParticipants.length === 0) {
-          // Last name drawn – celebrate and offer a restart, like the slot view.
-          finishDaily();
+          // Everyone has been drawn: let the last speaker's time run; the daily
+          // ends only on the next click ("End daily").
+          wheelAwaitingFinish = true;
+          if (wheelSpinButton) {
+            wheelSpinButton.disabled = false;
+            setText(wheelSpinButton, 'btnEndDaily');
+          }
         } else {
           if (wheelSpinButton) wheelSpinButton.disabled = false;
-          startTimer();
         }
       };
 
@@ -2431,6 +2438,7 @@
       currentWheelWinner = null;
       wheelSessionActive = true;
       wheelAnimating = false;
+      wheelAwaitingFinish = false;
       wheelRotation = 0;
 
       teamList.style.display = 'none';
@@ -2464,7 +2472,7 @@
       timeRemainingSeconds = individualTimeSeconds;
       updateTimerDisplay();
 
-      setText(wheelStatus, 'wheelStatusInitial');
+      clearText(wheelStatus);
       if (wheelSpinButton) {
         wheelSpinButton.disabled = false;
         setText(wheelSpinButton, 'btnSpin');
@@ -2474,13 +2482,14 @@
     /** Restarts the wheel round: back to the participant selection. */
     function resetWheel() {
       wheelSessionActive = false;
+      wheelAwaitingFinish = false;
       if (wheelSpinButton) {
         wheelSpinButton.disabled = true;
         wheelSpinButton.style.display = '';
         setText(wheelSpinButton, 'btnSpin');
       }
       if (wheelRestartButton) wheelRestartButton.style.display = 'none';
-      setText(wheelStatus, 'slotStatusRestart');
+      clearText(wheelStatus);
       wheelContainer.style.display = 'none';
       participantSelection.style.display = 'flex';
       if (shuffleButton) setText(shuffleButton, 'btnStart');
@@ -2551,6 +2560,7 @@
       if (viewMode === VIEW_MODE_WHEEL) {
         // Wheel view: hide the spin button, present a single restart CTA.
         wheelSessionActive = false;
+        wheelAwaitingFinish = false;
         clearText(wheelStatus);
         if (wheelSpinButton) wheelSpinButton.style.display = 'none';
         if (wheelRestartButton) wheelRestartButton.style.display = 'inline-block';
@@ -2888,13 +2898,12 @@
             event.preventDefault();
 
             // Wheel view: Space spins for the next participant (no step-back).
+            // After the last draw it ends the daily, like the button.
             if (viewMode === VIEW_MODE_WHEEL) {
-                if (remainingWheelParticipants.length === 0) {
-                    stopTimer();
-                    setText(timerDisplay, 'dailyFinished');
-                    clearColorClasses();
-                    toggleOvertimeIcons(false);
-                } else {
+                if (wheelAwaitingFinish) {
+                    wheelAwaitingFinish = false;
+                    finishDaily();
+                } else if (remainingWheelParticipants.length > 0) {
                     spinWheel();
                 }
                 return;
@@ -2987,7 +2996,16 @@
       slotRestartButton.addEventListener('click', resetSlotMachine);
     }
     if (wheelSpinButton) {
-      wheelSpinButton.addEventListener('click', spinWheel);
+      wheelSpinButton.addEventListener('click', () => {
+        // After the last name was drawn, the button ends the daily; otherwise it
+        // spins for the next participant.
+        if (wheelAwaitingFinish) {
+          wheelAwaitingFinish = false;
+          finishDaily();
+        } else {
+          spinWheel();
+        }
+      });
     }
     if (wheelRestartButton) {
       wheelRestartButton.addEventListener('click', resetWheel);
