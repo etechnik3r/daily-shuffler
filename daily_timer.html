@@ -1370,6 +1370,10 @@
   </div>
 
   <script>
+  // Wrapped in an IIFE so all declarations stay local. If the host (e.g. an
+  // in-app browser/preview) ever evaluates this script twice in the same page,
+  // local scope avoids "Identifier already declared" crashes.
+  (function () {
     /**
      * Global Error Handler
      * Prevents silent failures by providing visual feedback to the user on critical exceptions.
@@ -3044,6 +3048,7 @@
     } catch (e) {
         alert(t('alertStartError', { msg: e.message }));
     }
+  })();
 
   </script>
 </body>
