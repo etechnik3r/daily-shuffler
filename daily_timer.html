@@ -921,6 +921,14 @@
         0 0 0 6px #ffffff,
         0 0 0 8px rgba(0,40,120,0.12);
     }
+    /* The current speaker's slice: bright white rim + soft glow, full colour. */
+    #wheelSvg path.wheel-current,
+    #wheelSvg circle.wheel-current {
+      stroke: #ffffff;
+      stroke-width: 4;
+      filter: brightness(1.1) drop-shadow(0 0 5px rgba(255,255,255,0.75));
+    }
+
     /* Small fixed hub cap in the centre, sitting above the spinning disc. */
     .wheel-center {
       position: absolute;
@@ -2255,13 +2263,14 @@
 
       // Uniform label size for all slices: the largest font bounded by both the
       // radial room (length of the longest name) and the slice's angular width.
-      const rInner = 0.12, rOuter = 0.96;
+      // Labels sit in an outer band so they stay clear of the hub and the tip.
+      const rInner = 0.34, rOuter = 0.95;
       const midRadius = (rInner + rOuter) / 2 * r;
-      const lengthBudget = (rOuter - rInner) * r * 0.92;
+      const lengthBudget = (rOuter - rInner) * r * 0.94;
       const segRad = seg * Math.PI / 180;
-      const heightBudget = segRad * midRadius * 0.82;
+      const heightBudget = segRad * midRadius * 0.8;
       let labelFont = Math.min(lengthBudget / widthPerPx, heightBudget);
-      labelFont = Math.max(9, Math.min(34, labelFont));
+      labelFont = Math.max(9, Math.min(30, labelFont));
 
       list.forEach((name, i) => {
         const upper = name.trim().toUpperCase();
@@ -2283,10 +2292,10 @@
 
         const mid = start + seg / 2;
         const [tx, ty] = toXY(mid, midRadius);
-        // Orient the label along the radius; flip it on the left half so it
-        // never reads upside down.
-        let rot = mid - 90;
-        if (mid > 180) rot += 180;
+        // Orient every label the same way along its radius (no per-side flip)
+        // and centre it within the outer band so the text never crosses the
+        // centre or the pointer tip.
+        const rot = mid - 90;
 
         const text = document.createElementNS(NS, 'text');
         text.setAttribute('x', tx.toFixed(2));
@@ -2316,13 +2325,22 @@
       });
     }
 
-    /** Dims the slices of participants who have already been drawn. */
-    function dimUsedWheelSegments() {
+    /**
+     * Applies the three slice states: the current speaker is highlighted, the
+     * already-drawn ones are greyed out, and everyone still in the round stays
+     * in full colour. A name is greyed only once the *next* one is drawn.
+     */
+    function updateWheelSegmentStates() {
       const svg = document.getElementById('wheelSvg');
       if (!svg) return;
-      svg.querySelectorAll('path, text').forEach(el => {
-        const used = usedWheelNames.has((el.dataset.name || '').trim().toUpperCase());
-        el.style.opacity = used ? (el.tagName === 'text' ? '0.4' : '0.25') : '1';
+      const curr = currentWheelWinner ? currentWheelWinner.trim().toUpperCase() : null;
+      svg.querySelectorAll('path, text, circle').forEach(el => {
+        const name = (el.dataset.name || '').trim().toUpperCase();
+        const used = usedWheelNames.has(name);
+        const isCurrent = curr && name === curr;
+        const isText = el.tagName === 'text';
+        el.style.opacity = used ? (isText ? '0.4' : '0.25') : '1';
+        if (!isText) el.classList.toggle('wheel-current', !!isCurrent);
       });
     }
 
@@ -2350,7 +2368,7 @@
       // full turns so the wheel always spins forward from its current position.
       const center = idx * seg + seg / 2;
       const base = ((-center % 360) + 360) % 360;
-      const minTurns = 5;
+      const minTurns = 3; // fewer rotations -> lower peak speed within the 3s cap
       let target = wheelRotation + minTurns * 360;
       target += (((base - (target % 360)) % 360) + 360) % 360;
       wheelRotation = target;
@@ -2363,12 +2381,18 @@
         wheelSpinner.removeEventListener('transitionend', finalize);
         wheelAnimating = false;
 
-        previousWheelWinners.push(pick.trim());
-        usedWheelNames.add(pickUpper);
-        remainingWheelParticipants = currentWheelList.filter(
-          name => !usedWheelNames.has(name.trim().toUpperCase()));
+        // The previously highlighted speaker now becomes a greyed-out slice;
+        // the freshly drawn name takes over as the highlighted current speaker.
+        if (currentWheelWinner) {
+          usedWheelNames.add(currentWheelWinner.trim().toUpperCase());
+        }
         currentWheelWinner = pick.trim();
-        dimUsedWheelSegments();
+        previousWheelWinners.push(pick.trim());
+        remainingWheelParticipants = currentWheelList.filter(name => {
+          const u = name.trim().toUpperCase();
+          return !usedWheelNames.has(u) && u !== pickUpper;
+        });
+        updateWheelSegmentStates();
         updateWheelHistory();
 
         if (remainingWheelParticipants.length === 0) {
@@ -2385,10 +2409,10 @@
       wheelSpinner.addEventListener('transitionend', finalize);
 
       requestAnimationFrame(() => {
-        // Ease in (slow, gentle start), accelerate, then a long roll-out to a
-        // soft stop – all within the capped duration.
+        // Gentle ease-in (slow start), moderate middle, long roll-out to a soft
+        // stop – keeps the peak speed calm within the capped duration.
         wheelSpinner.style.transition =
-          `transform ${dur}s cubic-bezier(0.33, 0.0, 0.08, 1.0)`;
+          `transform ${dur}s cubic-bezier(0.22, 0.0, 0.22, 1.0)`;
         wheelSpinner.style.transform = `rotate(${target}deg)`;
       });
     }
