@@ -898,7 +898,7 @@
     }
     .wheel-stage {
       position: relative;
-      width: 300px;
+      width: 360px;
       max-width: 100%;
       margin: 0 auto;
       aspect-ratio: 1 / 1;
@@ -921,22 +921,17 @@
         0 0 0 6px #ffffff,
         0 0 0 8px rgba(0,40,120,0.12);
     }
-    /* Fixed hub cap in the centre, sitting above the spinning disc. */
+    /* Small fixed hub cap in the centre, sitting above the spinning disc. */
     .wheel-center {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 54px;
-      height: 54px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
       background: radial-gradient(circle at 35% 30%, #ffffff 0%, #eaf1ff 55%, #cfe0ff 100%);
-      box-shadow: 0 4px 10px rgba(3,21,60,0.25), 0 0 0 4px rgba(0,40,120,0.10) inset;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5em;
-      line-height: 1;
+      box-shadow: 0 3px 8px rgba(3,21,60,0.25), 0 0 0 3px rgba(0,40,120,0.10) inset;
       z-index: 5;
       pointer-events: none;
     }
@@ -956,7 +951,7 @@
     }
     @media (max-width: 520px) {
       #wheelContainer { max-width: 100%; }
-      .wheel-stage { width: 100%; max-width: 320px; }
+      .wheel-stage { width: 100%; max-width: 360px; }
     }
 
     /* --- Seasonal themes for the wheel --- */
@@ -1215,7 +1210,7 @@
       <div id="wheelSpinner" class="wheel-spinner">
         <svg id="wheelSvg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" aria-label="Glücksrad"></svg>
       </div>
-      <div class="wheel-center">🎯</div>
+      <div class="wheel-center"></div>
     </div>
     <div class="slot-controls">
       <button id="wheelSpinButton" class="app-button slot-spin-button" data-i18n="btnSpin">Drehen</button>
@@ -1580,7 +1575,7 @@
     ];
     const DEFAULT_TOTAL_TIME_MINUTES = 15;
     const SLOT_SPIN_DURATION_MS = 2000; // spin length – long enough for a smooth decelerate
-    const WHEEL_SPIN_DURATION_MS = 4200; // a long, satisfying wheel turn
+    const WHEEL_SPIN_DURATION_MS = 3000; // capped spin length (eases in, long roll-out)
     // Bright segment palette for the wheel – cycles if there are more names.
     const WHEEL_COLORS = [
       '#1366ff', '#ff6b35', '#2fbf4f', '#ffb400', '#9b5de5',
@@ -2215,6 +2210,18 @@
         return [cx + radius * Math.sin(a), cy - radius * Math.cos(a)];
       };
 
+      // Measure the widest name so every label can share the largest font size
+      // that still fits. Width is taken from a reusable canvas at a 100px font.
+      const upperList = list.map(name => name.trim().toUpperCase());
+      const measureCtx = buildWheel._measureCtx ||
+        (buildWheel._measureCtx = document.createElement('canvas').getContext('2d'));
+      measureCtx.font = '700 100px Helvetica, Arial, sans-serif';
+      let widthAt100 = 1;
+      upperList.forEach(nm => {
+        widthAt100 = Math.max(widthAt100, measureCtx.measureText(nm).width);
+      });
+      const widthPerPx = widthAt100 / 100; // glyph width of the longest name at 1px
+
       // A single participant fills the whole disc – an arc back to its own start
       // point would be degenerate, so draw a full circle instead.
       if (n === 1) {
@@ -2227,11 +2234,16 @@
         circle.dataset.name = upper;
         svg.appendChild(circle);
 
+        // Largest font that fits the diameter (with a small margin).
+        const soloFont = Math.max(12, Math.min(48, (r * 1.7) / widthPerPx));
         const text = document.createElementNS(NS, 'text');
         text.setAttribute('x', cx);
-        text.setAttribute('y', cy - r * 0.55);
+        text.setAttribute('y', cy);
         text.setAttribute('fill', '#ffffff');
-        text.setAttribute('font-size', '15');
+        text.setAttribute('stroke', 'rgba(0,0,0,0.28)');
+        text.setAttribute('stroke-width', '0.8');
+        text.setAttribute('paint-order', 'stroke');
+        text.setAttribute('font-size', soloFont.toFixed(1));
         text.setAttribute('font-weight', '700');
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'middle');
@@ -2240,6 +2252,16 @@
         svg.appendChild(text);
         return;
       }
+
+      // Uniform label size for all slices: the largest font bounded by both the
+      // radial room (length of the longest name) and the slice's angular width.
+      const rInner = 0.12, rOuter = 0.96;
+      const midRadius = (rInner + rOuter) / 2 * r;
+      const lengthBudget = (rOuter - rInner) * r * 0.92;
+      const segRad = seg * Math.PI / 180;
+      const heightBudget = segRad * midRadius * 0.82;
+      let labelFont = Math.min(lengthBudget / widthPerPx, heightBudget);
+      labelFont = Math.max(9, Math.min(34, labelFont));
 
       list.forEach((name, i) => {
         const upper = name.trim().toUpperCase();
@@ -2260,7 +2282,7 @@
         svg.appendChild(path);
 
         const mid = start + seg / 2;
-        const [tx, ty] = toXY(mid, r * 0.60);
+        const [tx, ty] = toXY(mid, midRadius);
         // Orient the label along the radius; flip it on the left half so it
         // never reads upside down.
         let rot = mid - 90;
@@ -2273,7 +2295,7 @@
         text.setAttribute('stroke', 'rgba(0,0,0,0.28)');
         text.setAttribute('stroke-width', '0.6');
         text.setAttribute('paint-order', 'stroke');
-        text.setAttribute('font-size', n > 9 ? '11' : (n > 6 ? '13' : '15'));
+        text.setAttribute('font-size', labelFont.toFixed(1));
         text.setAttribute('font-weight', '700');
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'middle');
@@ -2363,8 +2385,10 @@
       wheelSpinner.addEventListener('transitionend', finalize);
 
       requestAnimationFrame(() => {
+        // Ease in (slow, gentle start), accelerate, then a long roll-out to a
+        // soft stop – all within the capped duration.
         wheelSpinner.style.transition =
-          `transform ${dur}s cubic-bezier(0.17, 0.67, 0.12, 0.99)`;
+          `transform ${dur}s cubic-bezier(0.33, 0.0, 0.08, 1.0)`;
         wheelSpinner.style.transform = `rotate(${target}deg)`;
       });
     }
