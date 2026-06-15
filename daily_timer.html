@@ -878,6 +878,108 @@
       .slot-item { font-size: 1em; padding: 14px 8px; }
     }
 
+    /* --- Wheel of Fortune View (Glücksrad) --- */
+    /* One centred column like the other views; the wheel keeps a square stage
+       so it stays a perfect circle on every breakpoint. */
+    #wheelContainer {
+      width: 100%;
+      max-width: var(--col-width);
+      margin: 8px auto 0;
+      position: relative;
+      display: none;
+    }
+    #wheelStatus {
+      display: block;
+      margin-bottom: 14px;
+      font-size: 1em;
+      font-weight: 700;
+      color: #003c88;
+      text-align: center;
+    }
+    .wheel-stage {
+      position: relative;
+      width: 300px;
+      max-width: 100%;
+      margin: 0 auto;
+      aspect-ratio: 1 / 1;
+    }
+    /* Spinner = the rotating disc. The transition is set inline from JS so the
+       spin duration and easing can drive a long, decelerating turn. */
+    .wheel-spinner {
+      position: absolute;
+      inset: 0;
+      will-change: transform;
+      transform: rotate(0deg);
+    }
+    #wheelSvg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: 50%;
+      box-shadow:
+        0 14px 30px rgba(3,21,60,0.18),
+        0 0 0 6px #ffffff,
+        0 0 0 8px rgba(0,40,120,0.12);
+    }
+    /* Fixed hub cap in the centre, sitting above the spinning disc. */
+    .wheel-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #ffffff 0%, #eaf1ff 55%, #cfe0ff 100%);
+      box-shadow: 0 4px 10px rgba(3,21,60,0.25), 0 0 0 4px rgba(0,40,120,0.10) inset;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5em;
+      line-height: 1;
+      z-index: 5;
+      pointer-events: none;
+    }
+    /* Pointer mounted at the top, aiming down into the winning segment. */
+    .wheel-pointer {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-top: 26px solid var(--accent-deep);
+      filter: drop-shadow(0 3px 3px rgba(3,21,60,0.35));
+      z-index: 7;
+    }
+    @media (max-width: 520px) {
+      #wheelContainer { max-width: 100%; }
+      .wheel-stage { width: 100%; max-width: 320px; }
+    }
+
+    /* --- Seasonal themes for the wheel --- */
+    .season-halloween .wheel-pointer { border-top-color: #ff8c1a; }
+    .season-winter .wheel-pointer { border-top-color: #2f6fd6; }
+    .season-winter .wheel-stage::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: 50%;
+      z-index: 6;
+      background-image:
+        radial-gradient(2px 2px at 20% 30%, #fff 50%, transparent 51%),
+        radial-gradient(2px 2px at 70% 10%, #fff 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 45% 60%, #fff 50%, transparent 51%),
+        radial-gradient(2.5px 2.5px at 85% 45%, #fff 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 10% 75%, #fff 50%, transparent 51%);
+      background-size: 240px 240px;
+      animation: ev-snowfall 7s linear infinite;
+      opacity: 0.85;
+    }
+
     /* --- Notifications & Banners --- */
     #updateBanner {
       background: var(--cta-bg);
@@ -1106,6 +1208,25 @@
 
   <ul id="teamList"></ul>
 
+  <div id="wheelContainer">
+    <div id="wheelStatus" data-i18n="wheelStatusInitial">Drehe das Rad für einen Zufall.</div>
+    <div class="wheel-stage">
+      <div class="wheel-pointer"></div>
+      <div id="wheelSpinner" class="wheel-spinner">
+        <svg id="wheelSvg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" aria-label="Glücksrad"></svg>
+      </div>
+      <div class="wheel-center">🎯</div>
+    </div>
+    <div class="slot-controls">
+      <button id="wheelSpinButton" class="app-button slot-spin-button" data-i18n="btnSpin">Drehen</button>
+      <button id="wheelRestartButton" class="app-button slot-spin-button slot-restart-button" data-i18n="btnRestart">Neu starten</button>
+    </div>
+    <div id="wheelHistory" class="slot-history">
+      <div class="slot-history-title" data-i18n="slotHistoryTitle">Letzte Gewinner</div>
+      <ol id="wheelHistoryList"></ol>
+    </div>
+  </div>
+
   <div id="evContainer">
     <div id="evRoadWrap">
       <div id="evRoad"></div>
@@ -1200,6 +1321,7 @@
         <label><input type="radio" name="viewMode" value="classic"> <span data-i18n="viewClassic">Klassische Ansicht</span></label>
         <label><input type="radio" name="viewMode" value="slot"> <span data-i18n="viewSlot">Slotmaschinen-Ansicht</span></label>
         <label><input type="radio" name="viewMode" value="ev"> <span data-i18n="viewEv">Roadtrip-Ansicht (E-Auto)</span></label>
+        <label><input type="radio" name="viewMode" value="wheel"> <span data-i18n="viewWheel">Glücksrad-Ansicht</span></label>
       </div>
 
       <div class="modal-button-container">
@@ -1262,6 +1384,7 @@
     const VIEW_MODE_CLASSIC = 'classic';
     const VIEW_MODE_SLOT = 'slot';
     const VIEW_MODE_EV = 'ev';
+    const VIEW_MODE_WHEEL = 'wheel';
     const EVENT_OVERRIDE_KEY = 'dailyEventOverride';
     const LANG_KEY = 'dailyLang';
     const SUPPORTED_LANGS = ['de', 'en'];
@@ -1285,6 +1408,8 @@
         btnRestart: 'Neu starten',
         btnNext: 'Nächster Teilnehmer ▶',
         btnSlotResetRound: 'Slotmaschine Runde zurücksetzen',
+        btnWheelResetRound: 'Glücksrad Runde zurücksetzen',
+        wheelStatusInitial: 'Drehe das Rad für einen Zufall.',
         slotStatusInitial: 'Drücke Starten für Zufall.',
         slotStatusRestart: 'Wähle neue Teilnehmer und starte erneut.',
         slotStatusNoSelection: 'Keine Auswahl',
@@ -1305,6 +1430,7 @@
         viewClassic: 'Klassische Ansicht',
         viewSlot: 'Slotmaschinen-Ansicht',
         viewEv: 'Roadtrip-Ansicht (E-Auto)',
+        viewWheel: 'Glücksrad-Ansicht',
         evQueueTitle: 'Reihenfolge',
         devOptionsTitle: 'Entwickler-Optionen',
         devSeasonLabel: 'Saison-Override',
@@ -1323,7 +1449,7 @@
         helpTitle: 'So funktioniert es',
         helpIntro: 'Lege in Sekunden eine faire, zufällige Reihenfolge für die Wortbeiträge in deinem Daily fest – mit einem Timer, der die Zeit gleichmäßig auf alle verteilt.',
         helpUsageTitle: 'Auf einen Blick',
-        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Anwesenheit</b>Hake oben ab, wer heute dabei ist. Abgewählte Personen (Urlaub, krank) werden übersprungen.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Reihenfolge würfeln</b>Tippe auf „Würfeln": Die App erstellt eine zufällige Reihenfolge der aktiven Personen und startet den Timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>Die Gesamtdauer wird gleichmäßig aufgeteilt. Wird die Zeit knapp, färbt sich der Timer – erst gelb, dann rot.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Weiter zur nächsten Person</b>Tippe auf „Nächster Teilnehmer" oder drücke die Leertaste.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Einen Schritt zurück</b>Strg oder Umschalt + Leertaste springt zur vorherigen Person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slotmaschinen-Ansicht</b>Lust auf Show? In den Einstellungen schaltest du auf die animierte Slotmaschine um.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip-Ansicht</b>Ein E-Auto fährt die Daily-Strecke ab, die Batterie zeigt die Redezeit. Ist sie leer, kommt die Schildkröte.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Einstellungen</b>Namen, Dauer, Ansicht und Sprache jederzeit anpassen.</div></li>',
+        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Anwesenheit</b>Hake oben ab, wer heute dabei ist. Abgewählte Personen (Urlaub, krank) werden übersprungen.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Reihenfolge würfeln</b>Tippe auf „Würfeln": Die App erstellt eine zufällige Reihenfolge der aktiven Personen und startet den Timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>Die Gesamtdauer wird gleichmäßig aufgeteilt. Wird die Zeit knapp, färbt sich der Timer – erst gelb, dann rot.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Weiter zur nächsten Person</b>Tippe auf „Nächster Teilnehmer" oder drücke die Leertaste.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Einen Schritt zurück</b>Strg oder Umschalt + Leertaste springt zur vorherigen Person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slotmaschinen-Ansicht</b>Lust auf Show? In den Einstellungen schaltest du auf die animierte Slotmaschine um.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip-Ansicht</b>Ein E-Auto fährt die Daily-Strecke ab, die Batterie zeigt die Redezeit. Ist sie leer, kommt die Schildkröte.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Glücksrad-Ansicht</b>Ein buntes Rad mit allen Namen dreht sich und lost nacheinander aus, wer dran ist.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Einstellungen</b>Namen, Dauer, Ansicht und Sprache jederzeit anpassen.</div></li>',
         alertPickOne: 'Bitte wähle mindestens einen Teilnehmer aus!',
         alertError: 'Ein Fehler ist aufgetreten: {msg}\nBitte Seite neu laden oder Cache leeren.',
         alertStartError: 'Kritischer Start-Fehler: {msg}',
@@ -1340,6 +1466,8 @@
         btnRestart: 'Restart',
         btnNext: 'Next participant ▶',
         btnSlotResetRound: 'Reset slot machine round',
+        btnWheelResetRound: 'Reset wheel round',
+        wheelStatusInitial: 'Spin the wheel for a random pick.',
         slotStatusInitial: 'Press Start for a random pick.',
         slotStatusRestart: 'Pick new participants and start again.',
         slotStatusNoSelection: 'No selection',
@@ -1360,6 +1488,7 @@
         viewClassic: 'Classic view',
         viewSlot: 'Slot machine view',
         viewEv: 'Roadtrip view (EV)',
+        viewWheel: 'Wheel of fortune view',
         evQueueTitle: 'Order',
         devOptionsTitle: 'Developer options',
         devSeasonLabel: 'Season override',
@@ -1378,7 +1507,7 @@
         helpTitle: 'How it works',
         helpIntro: 'Set a fair, random speaking order for your daily in seconds – with a timer that splits the time evenly across everyone.',
         helpUsageTitle: 'At a glance',
-        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Attendance</b>Tick who is in today. Unticked people (vacation, sick) are skipped.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Roll the order</b>Tap “Roll” and the app builds a random order of the active people and starts the timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>The total time is split evenly. As it runs low the timer changes colour – yellow, then red.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Next person</b>Tap “Next participant” or press the spacebar.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Step back</b>Ctrl or Shift + Space jumps to the previous person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slot machine view</b>Want a bit of show? Switch to the animated slot machine in the settings.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip view</b>An EV drives the daily route while the battery shows the speaking time. When it is empty, the turtle appears.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Settings</b>Adjust names, duration, view and language anytime.</div></li>',
+        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Attendance</b>Tick who is in today. Unticked people (vacation, sick) are skipped.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Roll the order</b>Tap “Roll” and the app builds a random order of the active people and starts the timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>The total time is split evenly. As it runs low the timer changes colour – yellow, then red.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Next person</b>Tap “Next participant” or press the spacebar.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Step back</b>Ctrl or Shift + Space jumps to the previous person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slot machine view</b>Want a bit of show? Switch to the animated slot machine in the settings.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip view</b>An EV drives the daily route while the battery shows the speaking time. When it is empty, the turtle appears.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Wheel of fortune view</b>A colourful wheel with every name spins and draws who is up next, one by one.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Settings</b>Adjust names, duration, view and language anytime.</div></li>',
         alertPickOne: 'Please select at least one participant!',
         alertError: 'An error occurred: {msg}\nPlease reload the page or clear the cache.',
         alertStartError: 'Critical startup error: {msg}',
@@ -1451,16 +1580,32 @@
     ];
     const DEFAULT_TOTAL_TIME_MINUTES = 15;
     const SLOT_SPIN_DURATION_MS = 2000; // spin length – long enough for a smooth decelerate
-    
+    const WHEEL_SPIN_DURATION_MS = 4200; // a long, satisfying wheel turn
+    // Bright segment palette for the wheel – cycles if there are more names.
+    const WHEEL_COLORS = [
+      '#1366ff', '#ff6b35', '#2fbf4f', '#ffb400', '#9b5de5',
+      '#f15bb5', '#00bbf9', '#e4002c', '#06d6a0', '#ff8c00'
+    ];
+
     // --- Application State ---
     let currentTeamMembers = [];
-    let totalDailyTimeMinutes = DEFAULT_TOTAL_TIME_MINUTES; 
+    let totalDailyTimeMinutes = DEFAULT_TOTAL_TIME_MINUTES;
     let activeIndex = -1;
     let currentShuffledList = [];
     let remainingSlotParticipants = [];
     let previousSlotWinners = [];
     let currentSlotWinner = null;
     let slotSessionActive = false;
+
+    // Wheel-of-fortune state (mirrors the slot machine's spin-to-pick flow).
+    let currentWheelList = [];
+    let remainingWheelParticipants = [];
+    let previousWheelWinners = [];
+    let usedWheelNames = new Set();
+    let currentWheelWinner = null;
+    let wheelSessionActive = false;
+    let wheelAnimating = false;
+    let wheelRotation = 0; // accumulated rotation so each spin keeps turning forward
     
     let individualTimeSeconds = 0; 
     let timeRemainingSeconds = 0; 
@@ -1484,6 +1629,12 @@
     const slotStatus = document.getElementById('slotStatus');
     const slotSpinButton = document.getElementById('slotSpinButton');
     const slotHistoryList = document.getElementById('slotHistoryList');
+    const wheelContainer = document.getElementById('wheelContainer');
+    const wheelSpinner = document.getElementById('wheelSpinner');
+    const wheelStatus = document.getElementById('wheelStatus');
+    const wheelSpinButton = document.getElementById('wheelSpinButton');
+    const wheelRestartButton = document.getElementById('wheelRestartButton');
+    const wheelHistoryList = document.getElementById('wheelHistoryList');
     const evContainer = document.getElementById('evContainer');
     const evCar = document.getElementById('evCar');
     const evGoal = document.getElementById('evGoal');
@@ -2041,29 +2192,277 @@
       setText(slotSpinButton, 'btnSpin');
     }
 
+    // --- Wheel of Fortune View Module ---
+
+    /**
+     * Renders the wheel as coloured SVG segments, one per participant, with the
+     * name written radially inside each slice. Built once per round; picked
+     * participants are dimmed rather than removed so the wheel stays stable.
+     */
+    function buildWheel(list) {
+      const svg = document.getElementById('wheelSvg');
+      if (!svg) return;
+      svg.innerHTML = '';
+
+      const NS = 'http://www.w3.org/2000/svg';
+      const cx = 150, cy = 150, r = 148;
+      const n = list.length;
+      const seg = 360 / n;
+
+      // Point on the rim at a clockwise angle (degrees) measured from the top.
+      const toXY = (angleDeg, radius) => {
+        const a = angleDeg * Math.PI / 180;
+        return [cx + radius * Math.sin(a), cy - radius * Math.cos(a)];
+      };
+
+      // A single participant fills the whole disc – an arc back to its own start
+      // point would be degenerate, so draw a full circle instead.
+      if (n === 1) {
+        const upper = list[0].trim().toUpperCase();
+        const circle = document.createElementNS(NS, 'circle');
+        circle.setAttribute('cx', cx);
+        circle.setAttribute('cy', cy);
+        circle.setAttribute('r', r);
+        circle.setAttribute('fill', WHEEL_COLORS[0]);
+        circle.dataset.name = upper;
+        svg.appendChild(circle);
+
+        const text = document.createElementNS(NS, 'text');
+        text.setAttribute('x', cx);
+        text.setAttribute('y', cy - r * 0.55);
+        text.setAttribute('fill', '#ffffff');
+        text.setAttribute('font-size', '15');
+        text.setAttribute('font-weight', '700');
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'middle');
+        text.dataset.name = upper;
+        text.textContent = upper;
+        svg.appendChild(text);
+        return;
+      }
+
+      list.forEach((name, i) => {
+        const upper = name.trim().toUpperCase();
+        const start = i * seg;
+        const end = (i + 1) * seg;
+        const [x1, y1] = toXY(start, r);
+        const [x2, y2] = toXY(end, r);
+        const largeArc = seg > 180 ? 1 : 0;
+
+        const path = document.createElementNS(NS, 'path');
+        path.setAttribute('d',
+          `M ${cx} ${cy} L ${x1.toFixed(2)} ${y1.toFixed(2)} ` +
+          `A ${r} ${r} 0 ${largeArc} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`);
+        path.setAttribute('fill', WHEEL_COLORS[i % WHEEL_COLORS.length]);
+        path.setAttribute('stroke', 'rgba(255,255,255,0.85)');
+        path.setAttribute('stroke-width', '2');
+        path.dataset.name = upper;
+        svg.appendChild(path);
+
+        const mid = start + seg / 2;
+        const [tx, ty] = toXY(mid, r * 0.60);
+        // Orient the label along the radius; flip it on the left half so it
+        // never reads upside down.
+        let rot = mid - 90;
+        if (mid > 180) rot += 180;
+
+        const text = document.createElementNS(NS, 'text');
+        text.setAttribute('x', tx.toFixed(2));
+        text.setAttribute('y', ty.toFixed(2));
+        text.setAttribute('fill', '#ffffff');
+        text.setAttribute('stroke', 'rgba(0,0,0,0.28)');
+        text.setAttribute('stroke-width', '0.6');
+        text.setAttribute('paint-order', 'stroke');
+        text.setAttribute('font-size', n > 9 ? '11' : (n > 6 ? '13' : '15'));
+        text.setAttribute('font-weight', '700');
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'middle');
+        text.setAttribute('transform', `rotate(${rot.toFixed(2)} ${tx.toFixed(2)} ${ty.toFixed(2)})`);
+        text.dataset.name = upper;
+        text.textContent = upper;
+        svg.appendChild(text);
+      });
+    }
+
+    function updateWheelHistory() {
+      if (!wheelHistoryList) return;
+      wheelHistoryList.innerHTML = '';
+      previousWheelWinners.forEach(name => {
+        const item = document.createElement('li');
+        item.textContent = name;
+        wheelHistoryList.appendChild(item);
+      });
+    }
+
+    /** Dims the slices of participants who have already been drawn. */
+    function dimUsedWheelSegments() {
+      const svg = document.getElementById('wheelSvg');
+      if (!svg) return;
+      svg.querySelectorAll('path, text').forEach(el => {
+        const used = usedWheelNames.has((el.dataset.name || '').trim().toUpperCase());
+        el.style.opacity = used ? (el.tagName === 'text' ? '0.4' : '0.25') : '1';
+      });
+    }
+
+    /**
+     * Spins the wheel to a randomly chosen remaining participant. The disc keeps
+     * turning forward (several full passes) and decelerates so the winning slice
+     * settles under the top pointer; the per-speaker timer starts on landing.
+     */
+    function spinWheel() {
+      if (!wheelSessionActive || wheelAnimating || remainingWheelParticipants.length === 0) return;
+      wheelAnimating = true;
+      if (wheelSpinButton) wheelSpinButton.disabled = true;
+      clearText(wheelStatus);
+
+      const n = currentWheelList.length;
+      const seg = 360 / n;
+
+      const pick = remainingWheelParticipants[
+        Math.floor(Math.random() * remainingWheelParticipants.length)];
+      const pickUpper = pick.trim().toUpperCase();
+      const idx = currentWheelList.findIndex(
+        name => name.trim().toUpperCase() === pickUpper);
+
+      // Rotation that brings slice `idx` centre under the top pointer, plus a few
+      // full turns so the wheel always spins forward from its current position.
+      const center = idx * seg + seg / 2;
+      const base = ((-center % 360) + 360) % 360;
+      const minTurns = 5;
+      let target = wheelRotation + minTurns * 360;
+      target += (((base - (target % 360)) % 360) + 360) % 360;
+      wheelRotation = target;
+
+      const dur = WHEEL_SPIN_DURATION_MS / 1000;
+
+      const finalize = (event) => {
+        if (event && event.propertyName && event.propertyName !== 'transform') return;
+        clearTimeout(transitionTimeout);
+        wheelSpinner.removeEventListener('transitionend', finalize);
+        wheelAnimating = false;
+
+        previousWheelWinners.push(pick.trim());
+        usedWheelNames.add(pickUpper);
+        remainingWheelParticipants = currentWheelList.filter(
+          name => !usedWheelNames.has(name.trim().toUpperCase()));
+        currentWheelWinner = pick.trim();
+        dimUsedWheelSegments();
+        updateWheelHistory();
+
+        if (remainingWheelParticipants.length === 0) {
+          // Last name drawn – celebrate and offer a restart, like the slot view.
+          finishDaily();
+        } else {
+          if (wheelSpinButton) wheelSpinButton.disabled = false;
+          startTimer();
+        }
+      };
+
+      // Fallback in case transitionend never fires (e.g. background tab).
+      const transitionTimeout = setTimeout(finalize, WHEEL_SPIN_DURATION_MS + 300);
+      wheelSpinner.addEventListener('transitionend', finalize);
+
+      requestAnimationFrame(() => {
+        wheelSpinner.style.transition =
+          `transform ${dur}s cubic-bezier(0.17, 0.67, 0.12, 0.99)`;
+        wheelSpinner.style.transform = `rotate(${target}deg)`;
+      });
+    }
+
+    /** Renders the wheel view and prepares the first spin. */
+    function displayWheelTeam(list) {
+      currentShuffledList = list.filter(name => name.trim() !== '');
+      currentWheelList = currentShuffledList.slice();
+      remainingWheelParticipants = currentWheelList.slice();
+      previousWheelWinners = [];
+      usedWheelNames = new Set();
+      currentWheelWinner = null;
+      wheelSessionActive = true;
+      wheelAnimating = false;
+      wheelRotation = 0;
+
+      teamList.style.display = 'none';
+      slotContainer.style.display = 'none';
+      evContainer.style.display = 'none';
+      setNextButtonVisible(false);
+      wheelContainer.style.display = 'block';
+      applySeason();
+      updateWheelHistory();
+
+      if (wheelRestartButton) wheelRestartButton.style.display = 'none';
+      if (wheelSpinButton) wheelSpinButton.style.display = '';
+
+      // Reset the disc to its start position without animation.
+      wheelSpinner.style.transition = 'none';
+      wheelSpinner.style.transform = 'rotate(0deg)';
+
+      if (currentWheelList.length === 0) {
+        document.getElementById('wheelSvg').innerHTML = '';
+        setText(wheelStatus, 'slotStatusNoSelection');
+        activeIndex = -1;
+        if (wheelSpinButton) wheelSpinButton.disabled = true;
+        return;
+      }
+
+      buildWheel(currentWheelList);
+
+      // Show the per-speaker time as a preview; the timer runs after a spin.
+      timerDisplay.style.display = 'inline-flex';
+      individualTimeSeconds = Math.floor((totalDailyTimeMinutes * 60) / currentWheelList.length);
+      timeRemainingSeconds = individualTimeSeconds;
+      updateTimerDisplay();
+
+      setText(wheelStatus, 'wheelStatusInitial');
+      if (wheelSpinButton) {
+        wheelSpinButton.disabled = false;
+        setText(wheelSpinButton, 'btnSpin');
+      }
+    }
+
+    /** Restarts the wheel round: back to the participant selection. */
+    function resetWheel() {
+      wheelSessionActive = false;
+      if (wheelSpinButton) {
+        wheelSpinButton.disabled = true;
+        wheelSpinButton.style.display = '';
+        setText(wheelSpinButton, 'btnSpin');
+      }
+      if (wheelRestartButton) wheelRestartButton.style.display = 'none';
+      setText(wheelStatus, 'slotStatusRestart');
+      wheelContainer.style.display = 'none';
+      participantSelection.style.display = 'flex';
+      if (shuffleButton) setText(shuffleButton, 'btnStart');
+    }
+
     function displayTeam(list) {
       if (viewMode === VIEW_MODE_SLOT) {
         displaySlotTeam(list);
       } else if (viewMode === VIEW_MODE_EV) {
         displayEvTeam(list);
+      } else if (viewMode === VIEW_MODE_WHEEL) {
+        displayWheelTeam(list);
       } else {
         displayClassicTeam(list);
       }
     }
 
     function setViewMode(mode) {
-      viewMode = (mode === VIEW_MODE_SLOT || mode === VIEW_MODE_EV) ? mode : VIEW_MODE_CLASSIC;
+      viewMode = (mode === VIEW_MODE_SLOT || mode === VIEW_MODE_EV || mode === VIEW_MODE_WHEEL)
+        ? mode : VIEW_MODE_CLASSIC;
       localStorage.setItem(VIEW_MODE_KEY, viewMode);
       teamList.style.display = 'none';
       setNextButtonVisible(false);
       slotContainer.style.display = 'none';
       evContainer.style.display = 'none';
+      wheelContainer.style.display = 'none';
       participantSelection.style.display = 'flex';
       shuffleButton.style.display = 'inline-block';
-      setText(shuffleButton, viewMode === VIEW_MODE_SLOT ? 'btnStart' : 'btnRoll');
-      if (slotSpinButton) {
-        slotSpinButton.disabled = true;
-      }
+      // Slot and wheel both spin after starting, so they share the "Start" label.
+      const spinFirst = viewMode === VIEW_MODE_SLOT || viewMode === VIEW_MODE_WHEEL;
+      setText(shuffleButton, spinFirst ? 'btnStart' : 'btnRoll');
+      if (slotSpinButton) slotSpinButton.disabled = true;
+      if (wheelSpinButton) wheelSpinButton.disabled = true;
+      wheelSessionActive = false;
     }
 
     function hideResults() {
@@ -2071,12 +2470,17 @@
       setNextButtonVisible(false);
       slotContainer.style.display = 'none';
       evContainer.style.display = 'none';
+      wheelContainer.style.display = 'none';
       if (slotTrack) {
         slotTrack.style.transition = 'none';
       }
       if (slotSpinButton) {
         slotSpinButton.disabled = true;
       }
+      if (wheelSpinButton) {
+        wheelSpinButton.disabled = true;
+      }
+      wheelSessionActive = false;
     }
 
     function finishDaily() {
@@ -2085,15 +2489,25 @@
       toggleOvertimeIcons(false);
       // Big celebration in the timer pill (consistent with the classic view).
       setText(timerDisplay, 'dailyFinished');
-      clearText(slotStatus);
       showConfetti();
 
-      slotSessionActive = false;
       if (shuffleButton) {
         shuffleButton.style.display = 'inline-block';
         setText(shuffleButton, 'btnRestart');
       }
-      // Hide the spin button and present a single clear restart CTA below.
+
+      if (viewMode === VIEW_MODE_WHEEL) {
+        // Wheel view: hide the spin button, present a single restart CTA.
+        wheelSessionActive = false;
+        clearText(wheelStatus);
+        if (wheelSpinButton) wheelSpinButton.style.display = 'none';
+        if (wheelRestartButton) wheelRestartButton.style.display = 'inline-block';
+        return;
+      }
+
+      // Slot view (default spin-to-pick finisher).
+      clearText(slotStatus);
+      slotSessionActive = false;
       if (slotSpinButton) {
         slotSpinButton.style.display = 'none';
       }
@@ -2291,7 +2705,7 @@
       }
 
       const selectedViewMode = document.querySelector('input[name="viewMode"]:checked');
-      if (selectedViewMode && [VIEW_MODE_SLOT, VIEW_MODE_CLASSIC, VIEW_MODE_EV].indexOf(selectedViewMode.value) !== -1) {
+      if (selectedViewMode && [VIEW_MODE_SLOT, VIEW_MODE_CLASSIC, VIEW_MODE_EV, VIEW_MODE_WHEEL].indexOf(selectedViewMode.value) !== -1) {
           viewMode = selectedViewMode.value;
           localStorage.setItem(VIEW_MODE_KEY, viewMode);
       }
@@ -2308,11 +2722,10 @@
       hideResults();
 
       shuffleButton.style.display = 'inline-block';
-      if (viewMode === VIEW_MODE_SLOT) {
+      if (viewMode === VIEW_MODE_SLOT || viewMode === VIEW_MODE_WHEEL) {
           setText(shuffleButton, 'btnStart');
-          if (slotSpinButton) {
-              slotSpinButton.disabled = true;
-          }
+          if (slotSpinButton) slotSpinButton.disabled = true;
+          if (wheelSpinButton) wheelSpinButton.disabled = true;
       } else {
           setText(shuffleButton, 'btnRoll');
       }
@@ -2373,7 +2786,7 @@
       }
 
       const storedViewMode = localStorage.getItem(VIEW_MODE_KEY);
-      if ([VIEW_MODE_SLOT, VIEW_MODE_CLASSIC, VIEW_MODE_EV].indexOf(storedViewMode) !== -1) {
+      if ([VIEW_MODE_SLOT, VIEW_MODE_CLASSIC, VIEW_MODE_EV, VIEW_MODE_WHEEL].indexOf(storedViewMode) !== -1) {
         viewMode = storedViewMode;
       } else {
         viewMode = VIEW_MODE_CLASSIC;
@@ -2415,12 +2828,25 @@
      * Modifier + Space: Previous participant
      */
     document.addEventListener('keydown', (event) => {
-        if (configModal.style.display === 'block' || helpModal.style.display === 'block' || currentShuffledList.length === 0 || slotAnimating) {
+        if (configModal.style.display === 'block' || helpModal.style.display === 'block' || currentShuffledList.length === 0 || slotAnimating || wheelAnimating) {
             return;
         }
 
         if (event.code === 'Space') {
             event.preventDefault();
+
+            // Wheel view: Space spins for the next participant (no step-back).
+            if (viewMode === VIEW_MODE_WHEEL) {
+                if (remainingWheelParticipants.length === 0) {
+                    stopTimer();
+                    setText(timerDisplay, 'dailyFinished');
+                    clearColorClasses();
+                    toggleOvertimeIcons(false);
+                } else {
+                    spinWheel();
+                }
+                return;
+            }
 
             const listItems = teamList.querySelectorAll('li');
             if (viewMode === VIEW_MODE_CLASSIC && listItems.length === 0) return;
@@ -2484,10 +2910,13 @@
       
       participantSelection.style.display = 'none';
       
-      const shuffled = shuffle([...activeNames]); 
+      const shuffled = shuffle([...activeNames]);
       displayTeam(shuffled);
       if (viewMode === VIEW_MODE_SLOT) {
         setText(shuffleButton, 'btnSlotResetRound');
+      } else if (viewMode === VIEW_MODE_WHEEL) {
+        // The timer starts after the first spin, not on roll.
+        setText(shuffleButton, 'btnWheelResetRound');
       } else {
         setText(shuffleButton, 'btnRollAgain');
         startTimer();
@@ -2504,6 +2933,12 @@
     const slotRestartButton = document.getElementById('slotRestartButton');
     if (slotRestartButton) {
       slotRestartButton.addEventListener('click', resetSlotMachine);
+    }
+    if (wheelSpinButton) {
+      wheelSpinButton.addEventListener('click', spinWheel);
+    }
+    if (wheelRestartButton) {
+      wheelRestartButton.addEventListener('click', resetWheel);
     }
     const nextParticipantButton = document.getElementById('nextParticipantButton');
     if (nextParticipantButton) {
