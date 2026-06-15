@@ -1068,12 +1068,22 @@
       line-height: 1.05;
     }
     .pc-name {
-      font-size: 1.45em;
+      font-size: 1.55em;
       font-weight: 800;
       letter-spacing: 0.01em;
     }
+    /* The big central emblem on special cards – deliberately large. */
     .pc-center.pc-special {
-      font-size: 2.6em;
+      font-size: 4.2em;
+      font-weight: 900;
+      line-height: 0.95;
+    }
+    /* Bigger corner glyphs on special cards so the symbol reads clearly. */
+    .pc-skip .pc-corner,
+    .pc-wende .pc-corner,
+    .pc-plus2 .pc-corner,
+    .pc-plus4 .pc-corner {
+      font-size: 1.5em;
       font-weight: 900;
     }
     /* The four generic deck colours (name cards). */
@@ -1560,6 +1570,7 @@
         btnWheelResetRound: 'Glücksrad Runde zurücksetzen',
         btnCardResetRound: 'Kartenspiel Runde zurücksetzen',
         btnNextCard: 'Nächste Karte',
+        btnPlayAgain: 'Nochmal spielen',
         cardWendeMsg: '↔ Wende – ohne Effekt',
         cardPlus2Msg: '+2 – nur zur Show',
         cardPlus4Msg: '+4 – nur zur Show',
@@ -1624,6 +1635,7 @@
         btnWheelResetRound: 'Reset wheel round',
         btnCardResetRound: 'Reset card round',
         btnNextCard: 'Next card',
+        btnPlayAgain: 'Play again',
         cardWendeMsg: '↔ Reverse – no effect',
         cardPlus2Msg: '+2 – just for show',
         cardPlus4Msg: '+4 – just for show',
@@ -1747,10 +1759,13 @@
       '#1366ff', '#ff6b35', '#2fbf4f', '#ffb400', '#9b5de5',
       '#f15bb5', '#00bbf9', '#e4002c', '#06d6a0', '#ff8c00'
     ];
-    // Card game: chance of a special card before a name, and the special kinds.
-    const CARD_SPECIAL_CHANCE = 0.45;
-    const CARD_SPECIALS = ['wende', 'plus2', 'plus4', 'skip'];
-    const CARD_COLOR_COUNT = 4; // generic four-colour deck (pc-c0..pc-c3)
+    // Card game: interlude chances and the cosmetic special kinds / timings.
+    const CARD_SKIP_CHANCE = 0.25;   // chance the next person is skipped to the end
+    const CARD_FLAIR_CHANCE = 0.30;  // chance a cosmetic card flashes before the next
+    const CARD_FLAIR = ['wende', 'plus2', 'plus4'];
+    const CARD_STEP_MS = 1000;       // delay between the cards in a skip sequence
+    const CARD_FLAIR_MS = 900;       // how long a cosmetic card shows before the next
+    const CARD_COLOR_COUNT = 4;      // generic four-colour deck (pc-c0..pc-c3)
 
     // --- Application State ---
     let currentTeamMembers = [];
@@ -1773,13 +1788,16 @@
     let wheelAwaitingFinish = false; // last name drawn, its timer runs; next click ends
     let wheelRotation = 0; // accumulated rotation so each spin keeps turning forward
 
-    // Card game state (each click throws one card onto the pile).
-    let cardDeck = [];          // upcoming cards: {type:'name',name} | {type:'special',kind}
+    // Card game state (each click reveals the next speaker, with playful
+    // interludes thrown onto the pile).
+    let cardQueue = [];         // upcoming speakers (names), excluding the current one
     let cardCurrent = null;     // current speaker (the top name card)
     let cardSpoken = [];        // already-spoken names, in order
     let cardThrowCount = 0;     // stacking counter -> z-index
     let cardSessionActive = false;
-    let cardAwaitingFinish = false; // last name thrown, its timer runs; next click ends
+    let cardAwaitingFinish = false; // last speaker is up; next click ends the daily
+    let cardAnimating = false;  // a skip/flair interlude is playing
+    let cardTimeouts = [];      // pending interlude timers, cleared on reset
     
     let individualTimeSeconds = 0; 
     let timeRemainingSeconds = 0; 
@@ -2681,21 +2699,13 @@
       return '';
     }
 
-    /**
-     * Builds the deck: the shuffled names with special cards randomly inserted
-     * before names (never first, never after the last name), so the deck always
-     * starts and ends with a name card.
-     */
-    function buildCardDeck(names) {
-      const order = shuffle(names.slice());
-      const deck = [];
-      order.forEach((name, i) => {
-        if (i > 0 && Math.random() < CARD_SPECIAL_CHANCE) {
-          deck.push({ type: 'special', kind: CARD_SPECIALS[Math.floor(Math.random() * CARD_SPECIALS.length)] });
-        }
-        deck.push({ type: 'name', name: name });
-      });
-      return deck;
+    /** Clears any pending skip/flair interlude timers. */
+    function clearCardTimeouts() {
+      cardTimeouts.forEach(id => clearTimeout(id));
+      cardTimeouts = [];
+    }
+    function cardLater(fn, ms) {
+      cardTimeouts.push(setTimeout(fn, ms));
     }
 
     /** Creates a thrown card element with a random offset/rotation on the pile. */
@@ -2740,53 +2750,89 @@
       else if (kind === 'plus4') setText(cardStatus, 'cardPlus4Msg');
     }
 
-    /** Each call throws the next card; names advance the speaker, specials don't. */
-    function advanceCard() {
-      if (!cardSessionActive) return;
-      if (cardAwaitingFinish) { cardAwaitingFinish = false; finishDaily(); return; }
-      if (cardDeck.length === 0) return;
+    /** True while the card session is still the live, visible one. */
+    function cardSequenceValid() {
+      return cardSessionActive && viewMode === VIEW_MODE_CARD;
+    }
 
-      const next = cardDeck.shift();
-
-      if (next.type === 'special') {
-        throwSpecialCard(next.kind);
-        if (next.kind === 'skip') {
-          // Move the next upcoming person to the end of the round.
-          const idx = cardDeck.findIndex(c => c.type === 'name');
-          if (idx !== -1) {
-            const moved = cardDeck.splice(idx, 1)[0];
-            cardDeck.push(moved);
-            announceCardSpecial('skip', moved.name);
-          } else {
-            clearText(cardStatus);
-          }
-        } else {
-          announceCardSpecial(next.kind);
-        }
-        return; // current speaker and timer stay unchanged
-      }
-
-      // Name card: this person becomes the current speaker.
+    /** Reveals the next person from the queue as the current speaker. */
+    function playNextSpeaker() {
       if (cardCurrent) cardSpoken.push(cardCurrent);
-      cardCurrent = next.name;
+      cardCurrent = cardQueue.shift();
       throwNameCard(cardCurrent);
       clearText(cardStatus);
       startTimer();
-
-      if (cardDeck.findIndex(c => c.type === 'name') === -1) {
-        // No upcoming names left: last speaker is up; end on the next click.
+      if (cardQueue.length === 0) {
+        // Last speaker is up; their time runs and the daily ends on the next click.
         cardAwaitingFinish = true;
         if (cardThrowButton) setText(cardThrowButton, 'btnEndDaily');
       }
     }
 
-    /** Renders the card view and throws the first card (first speaker). */
+    /**
+     * Skip sequence, all from a single click: the next person's card is played
+     * (they look like they're up), one second later the skip card lands on top,
+     * and one second after that they are sent to the back and the real next
+     * speaker is played – so it reads as "Lea's up… nope, skip… next, and Lea
+     * goes last".
+     */
+    function startSkipSequence() {
+      cardAnimating = true;
+      const victim = cardQueue.shift();
+      throwNameCard(victim);
+      clearText(cardStatus);
+
+      cardLater(() => {
+        if (!cardSequenceValid()) { cardAnimating = false; return; }
+        throwSpecialCard('skip');
+        announceCardSpecial('skip', victim);
+
+        cardLater(() => {
+          if (!cardSequenceValid()) { cardAnimating = false; return; }
+          cardQueue.push(victim);   // the skipped person speaks at the very end
+          cardAnimating = false;
+          playNextSpeaker();
+        }, CARD_STEP_MS);
+      }, CARD_STEP_MS);
+    }
+
+    /** Flashes a cosmetic card, then reveals the next speaker (one click). */
+    function startFlairThenNext() {
+      cardAnimating = true;
+      const kind = CARD_FLAIR[Math.floor(Math.random() * CARD_FLAIR.length)];
+      throwSpecialCard(kind);
+      announceCardSpecial(kind);
+      cardLater(() => {
+        if (!cardSequenceValid()) { cardAnimating = false; return; }
+        cardAnimating = false;
+        playNextSpeaker();
+      }, CARD_FLAIR_MS);
+    }
+
+    /** One click → next speaker, sometimes with a skip or cosmetic interlude. */
+    function advanceCard() {
+      if (cardAnimating || !cardSessionActive) return;
+      if (cardAwaitingFinish) { cardAwaitingFinish = false; finishDaily(); return; }
+      if (cardQueue.length === 0) return;
+
+      if (cardQueue.length >= 2 && Math.random() < CARD_SKIP_CHANCE) {
+        startSkipSequence();
+      } else if (Math.random() < CARD_FLAIR_CHANCE) {
+        startFlairThenNext();
+      } else {
+        playNextSpeaker();
+      }
+    }
+
+    /** Renders the card view and reveals the first speaker. */
     function displayCardTeam(list) {
       currentShuffledList = list.filter(name => name.trim() !== '');
+      clearCardTimeouts();
       cardSpoken = [];
       cardCurrent = null;
       cardThrowCount = 0;
       cardAwaitingFinish = false;
+      cardAnimating = false;
       cardSessionActive = true;
 
       teamList.style.display = 'none';
@@ -2802,34 +2848,29 @@
       if (cardThrowButton) cardThrowButton.style.display = '';
 
       if (currentShuffledList.length === 0) {
+        cardQueue = [];
         setText(cardStatus, 'slotStatusNoSelection');
         if (cardThrowButton) cardThrowButton.disabled = true;
         return;
       }
 
-      cardDeck = buildCardDeck(currentShuffledList);
+      cardQueue = shuffle(currentShuffledList.slice());
       timerDisplay.style.display = 'inline-flex';
       if (cardThrowButton) {
         cardThrowButton.disabled = false;
         setText(cardThrowButton, 'btnNextCard');
       }
-      advanceCard(); // throws the first name card and starts its timer
+      playNextSpeaker(); // reveal the first speaker (plain, no interlude)
     }
 
-    /** Restarts the card round: back to the participant selection. */
-    function resetCard() {
-      cardSessionActive = false;
-      cardAwaitingFinish = false;
-      if (cardThrowButton) {
-        cardThrowButton.disabled = true;
-        cardThrowButton.style.display = '';
-        setText(cardThrowButton, 'btnNextCard');
-      }
-      if (cardRestartButton) cardRestartButton.style.display = 'none';
-      clearText(cardStatus);
-      cardContainer.style.display = 'none';
-      participantSelection.style.display = 'flex';
-      if (shuffleButton) setText(shuffleButton, 'btnStart');
+    /** Plays another card round with the same participants (no detour back). */
+    function playCardAgain() {
+      const names = (currentShuffledList || []).slice();
+      if (names.length === 0) { participantSelection.style.display = 'flex'; cardContainer.style.display = 'none'; return; }
+      participantSelection.style.display = 'none';
+      shuffleButton.style.display = 'inline-block';
+      setText(shuffleButton, 'btnCardResetRound');
+      displayCardTeam(names);
     }
 
     function displayTeam(list) {
@@ -2887,6 +2928,8 @@
       if (cardThrowButton) {
         cardThrowButton.disabled = true;
       }
+      clearCardTimeouts();
+      cardAnimating = false;
       wheelSessionActive = false;
       cardSessionActive = false;
     }
@@ -2915,12 +2958,19 @@
       }
 
       if (viewMode === VIEW_MODE_CARD) {
-        // Card view: hide the throw button, present a single restart CTA.
+        // Card view: a single "Play again" CTA that re-deals the same people –
+        // no detour back to the participant selection.
         cardSessionActive = false;
         cardAwaitingFinish = false;
+        cardAnimating = false;
+        clearCardTimeouts();
         clearText(cardStatus);
         if (cardThrowButton) cardThrowButton.style.display = 'none';
-        if (cardRestartButton) cardRestartButton.style.display = 'inline-block';
+        if (shuffleButton) shuffleButton.style.display = 'none';
+        if (cardRestartButton) {
+          cardRestartButton.style.display = 'inline-block';
+          setText(cardRestartButton, 'btnPlayAgain');
+        }
         return;
       }
 
@@ -3248,7 +3298,7 @@
      * Modifier + Space: Previous participant
      */
     document.addEventListener('keydown', (event) => {
-        if (configModal.style.display === 'block' || helpModal.style.display === 'block' || currentShuffledList.length === 0 || slotAnimating || wheelAnimating) {
+        if (configModal.style.display === 'block' || helpModal.style.display === 'block' || currentShuffledList.length === 0 || slotAnimating || wheelAnimating || cardAnimating) {
             return;
         }
 
@@ -3382,7 +3432,7 @@
       cardThrowButton.addEventListener('click', advanceCard);
     }
     if (cardRestartButton) {
-      cardRestartButton.addEventListener('click', resetCard);
+      cardRestartButton.addEventListener('click', playCardAgain);
     }
     const nextParticipantButton = document.getElementById('nextParticipantButton');
     if (nextParticipantButton) {
