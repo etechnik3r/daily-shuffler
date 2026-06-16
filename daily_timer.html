@@ -989,6 +989,9 @@
       max-width: var(--col-width);
       margin: 8px auto 0;
       position: relative;
+      /* Keep each card's high stacking z-index contained here, so the pile
+         never paints over modals (settings) or other overlays. */
+      isolation: isolate;
       display: none;
     }
     #cardStatus {
