@@ -1642,10 +1642,6 @@
         btnCardResetRound: 'Kartenspiel Runde zurücksetzen',
         btnNextCard: 'Nächste Karte',
         btnPlayAgain: 'Nochmal spielen',
-        cardWendeMsg: '↔ Wende – ohne Effekt',
-        cardPlus2Msg: '+2 – nur zur Show',
-        cardPlus4Msg: '+4 – nur zur Show',
-        cardSkipMsg: '⏭ {name} setzt aus und kommt später dran',
         slotStatusInitial: 'Drücke Starten für Zufall.',
         slotStatusRestart: 'Wähle neue Teilnehmer und starte erneut.',
         slotStatusNoSelection: 'Keine Auswahl',
@@ -1709,10 +1705,6 @@
         btnCardResetRound: 'Reset card round',
         btnNextCard: 'Next card',
         btnPlayAgain: 'Play again',
-        cardWendeMsg: '↔ Reverse – no effect',
-        cardPlus2Msg: '+2 – just for show',
-        cardPlus4Msg: '+4 – just for show',
-        cardSkipMsg: '⏭ {name} is skipped and comes later',
         slotStatusInitial: 'Press Start for a random pick.',
         slotStatusRestart: 'Pick new participants and start again.',
         slotStatusNoSelection: 'No selection',
@@ -2887,14 +2879,6 @@
       cardPile.appendChild(card);
     }
 
-    /** Shows the short status line for a thrown special card. */
-    function announceCardSpecial(kind, name) {
-      if (kind === 'skip') setText(cardStatus, 'cardSkipMsg', { name: name });
-      else if (kind === 'wende') setText(cardStatus, 'cardWendeMsg');
-      else if (kind === 'plus2') setText(cardStatus, 'cardPlus2Msg');
-      else if (kind === 'plus4') setText(cardStatus, 'cardPlus4Msg');
-    }
-
     /** True while the card session is still the live, visible one. */
     function cardSequenceValid() {
       return cardSessionActive && viewMode === VIEW_MODE_CARD;
@@ -2930,7 +2914,6 @@
       cardLater(() => {
         if (!cardSequenceValid()) { cardAnimating = false; return; }
         throwSpecialCard('skip');
-        announceCardSpecial('skip', victim);
 
         cardLater(() => {
           if (!cardSequenceValid()) { cardAnimating = false; return; }
@@ -2946,7 +2929,6 @@
       cardAnimating = true;
       const kind = CARD_FLAIR[Math.floor(Math.random() * CARD_FLAIR.length)];
       throwSpecialCard(kind);
-      announceCardSpecial(kind);
       cardLater(() => {
         if (!cardSequenceValid()) { cardAnimating = false; return; }
         cardAnimating = false;
