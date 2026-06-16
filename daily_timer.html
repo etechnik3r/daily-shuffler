@@ -621,7 +621,7 @@
       min-width: 56px;
       text-align: left;
     }
-    /* Staged VW warning pictograms next to the SoC display. */
+    /* Staged warning pictograms next to the SoC display. */
     #evWarnIcons {
       display: inline-flex;
       align-items: center;
@@ -983,12 +983,15 @@
       opacity: 0.85;
     }
 
-    /* --- Card Game View (Uno-like, but legally distinct) --- */
+    /* --- Card Game View (inspired by classic colour-card games, brand-free) --- */
     #cardContainer {
       width: 100%;
       max-width: var(--col-width);
       margin: 8px auto 0;
       position: relative;
+      /* Keep each card's high stacking z-index contained here, so the pile
+         never paints over modals (settings) or other overlays. */
+      isolation: isolate;
       display: none;
     }
     #cardStatus {
@@ -1003,23 +1006,23 @@
     /* The discard pile – cards are thrown on top of each other here. */
     .card-pile {
       position: relative;
-      width: 220px;
-      height: 300px;
+      width: 264px;
+      height: 360px;
       margin: 0 auto;
     }
     .play-card {
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 150px;
-      height: 214px;
+      width: 180px;
+      height: 257px;
       /* Resting transform: centre + the card's own thrown offset/rotation. */
       transform: translate(-50%, -50%) translate(var(--tx, 0), var(--ty, 0)) rotate(var(--rot, 0deg));
       animation: card-throw 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
     }
     @keyframes card-throw {
       0% {
-        transform: translate(-50%, -50%) translate(0, -360px) rotate(calc(var(--rot, 0deg) - 45deg)) scale(0.85);
+        transform: translate(-50%, -50%) translate(0, -420px) rotate(calc(var(--rot, 0deg) - 45deg)) scale(0.85);
         opacity: 0;
       }
       60% { opacity: 1; }
@@ -1062,9 +1065,12 @@
     .pc-center {
       position: relative;
       z-index: 1;
+      width: 100%;
+      box-sizing: border-box;
       text-align: center;
-      padding: 6px;
-      word-break: break-word;
+      padding: 6px 16px;
+      /* Names never wrap; the font is shrunk in JS until they fit one line. */
+      white-space: nowrap;
       line-height: 1.05;
     }
     .pc-name {
@@ -1072,19 +1078,37 @@
       font-weight: 800;
       letter-spacing: 0.01em;
     }
-    /* The big central emblem on special cards – deliberately large. */
+    /* The big central emblem on special cards – deliberately large so the
+       special symbols clearly dominate the card. */
     .pc-center.pc-special {
-      font-size: 4.2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      font-size: 5.1em;
       font-weight: 900;
       line-height: 0.95;
     }
-    /* Bigger corner glyphs on special cards so the symbol reads clearly. */
+    /* Inline-SVG emblems (skip / reverse) fill most of the white panel. */
+    .pc-emblem {
+      display: block;
+      width: 78%;
+      max-width: 124px;
+      height: auto;
+      aspect-ratio: 1 / 1;
+    }
+    /* Bigger corner marks on special cards so the symbol reads clearly. */
     .pc-skip .pc-corner,
     .pc-wende .pc-corner,
     .pc-plus2 .pc-corner,
     .pc-plus4 .pc-corner {
-      font-size: 1.5em;
+      font-size: 1.7em;
       font-weight: 900;
+    }
+    .pc-corner-icon {
+      display: block;
+      width: 26px;
+      height: 26px;
     }
     /* The four generic deck colours (name cards). */
     .pc-c0 { background: #e4002c; } .pc-c0 .pc-center, .pc-c0 .pc-corner { color: #e4002c; }
@@ -1124,22 +1148,54 @@
       opacity: 0.85;
     }
 
-    /* --- Notifications & Banners --- */
-    #updateBanner {
-      background: var(--cta-bg);
-      color: white;
-      padding: 12px 16px;
-      border-radius: 14px;
-      margin-top: 15px;
-      font-size: 0.9em;
-      text-align: center;
-      width: 90%;
-      max-width: var(--col-width);
-      box-sizing: border-box;
-      box-shadow: var(--cta-shadow);
-      transition: opacity 0.5s ease-out;
+    /* --- Season: Carnival (February) – confetti & party colours --- */
+    .season-carnival #teamList li.active-participant::before { content: '🎉 '; }
+    .season-carnival .slot-history-title::before { content: '🎊 '; }
+    .season-carnival .wheel-pointer { border-top-color: #e0249a; }
+    .season-carnival .play-card .pc-inner {
+      box-shadow: 0 10px 22px rgba(224,36,154,0.26), 0 0 0 1px rgba(0,0,0,0.06);
     }
-    
+    .season-carnival .card-pile::after {
+      content: '';
+      position: absolute;
+      inset: -10px;
+      pointer-events: none;
+      z-index: 50;
+      background-image:
+        radial-gradient(3px 3px at 18% 26%, #e0249a 50%, transparent 51%),
+        radial-gradient(3px 3px at 68% 12%, #1366ff 50%, transparent 51%),
+        radial-gradient(2.5px 2.5px at 44% 58%, #06b34a 50%, transparent 51%),
+        radial-gradient(3px 3px at 86% 42%, #f5b800 50%, transparent 51%),
+        radial-gradient(2.5px 2.5px at 9% 74%, #ff7a00 50%, transparent 51%);
+      background-size: 220px 220px;
+      animation: ev-snowfall 6s linear infinite;
+      opacity: 0.9;
+    }
+
+    /* --- Season: Easter (April) – pastel eggs --- */
+    .season-easter #teamList li.active-participant::before { content: '🐰 '; }
+    .season-easter .slot-history-title::before { content: '🥚 '; }
+    .season-easter .wheel-pointer { border-top-color: #8bcf72; }
+    .season-easter .play-card .pc-inner {
+      box-shadow: 0 10px 22px rgba(140,200,120,0.30), 0 0 0 1px rgba(0,0,0,0.06);
+    }
+    .season-easter .card-pile::after {
+      content: '';
+      position: absolute;
+      inset: -10px;
+      pointer-events: none;
+      z-index: 50;
+      background-image:
+        radial-gradient(3.5px 3.5px at 20% 28%, #ffb3c7 50%, transparent 51%),
+        radial-gradient(3.5px 3.5px at 70% 14%, #a8e6cf 50%, transparent 51%),
+        radial-gradient(3px 3px at 45% 60%, #fff3a0 50%, transparent 51%),
+        radial-gradient(3.5px 3.5px at 85% 46%, #c5b3ff 50%, transparent 51%),
+        radial-gradient(3px 3px at 10% 76%, #b3d9ff 50%, transparent 51%);
+      background-size: 240px 240px;
+      animation: ev-snowfall 9s linear infinite;
+      opacity: 0.85;
+    }
+
     /* --- Modal Dialogs --- */
     .modal {
       display: none;
@@ -1315,10 +1371,6 @@
     <button id="helpButton" class="app-button" data-i18n="btnHelp">Anleitung</button>
   </div>
   
-  <div id="updateBanner" style="display: none;">
-    **NEU in V1.17:** Liste untereinander & Auto-Hide.
-  </div>
-  
   <div id="timerContainer">
     <span id="timerIconLeft" class="timer-icon"></span>
     
@@ -1386,9 +1438,9 @@
       <div id="evGoal">🏁</div>
       <div id="evCar">
         <span class="ev-roof ev-sled">🛷</span>
-        <svg viewBox="0 -18 150 71" xmlns="http://www.w3.org/2000/svg" aria-label="VW ID.3">
-          <!-- ID.3 one-box profile: short nose, windscreen flowing into the
-               bonnet, high arched roof falling to a rear spoiler lip -->
+        <svg viewBox="0 -18 150 71" xmlns="http://www.w3.org/2000/svg" aria-label="Elektroauto">
+          <!-- generic one-box EV profile: short nose, windscreen flowing into
+               the bonnet, high arched roof falling to a rear spoiler lip -->
           <path d="M13 44 C10 40 9 33 11 27 C12 19 15 12 22 9 C38 3 62 2 78 6 C92 10 102 15 110 20 C120 23 128 28 132 33 C136 36 137 41 133 43 L121 44 A14 14 0 0 1 93 44 L52 44 A14 14 0 0 1 24 44 Z"
                 fill="#a9b2bc" stroke="#4a5562" stroke-width="2" stroke-linejoin="round"/>
           <!-- glasshouse hugging the roofline, rising beltline -->
@@ -1434,7 +1486,7 @@
       <div id="evBattery"><div id="evBatteryFill"></div></div>
       <span id="evBatteryPct">100 %</span>
       <span id="evWarnIcons">
-        <!-- official VW pictograms: staged warnings at 20% / 10% / 5% SoC -->
+        <!-- generic warning pictograms: staged warnings at 20% / 10% / 5% SoC -->
         <svg id="evIconBattYellow" viewBox="0 0 2042 2041" xmlns="http://www.w3.org/2000/svg"><path d="M1796 511v944H261v-112h1421V511h114zm196 141v1000H430v-114h1451V652h111zM161 1145h1325V457H161v688zm987-434v-83h85v-83h84v83h84v83h-84v85h-84v-85h-85zm-902 0v-83h255v83H246zm1353 547H50V345h225V224h196v121h706V224h196v121h226v913z" fill="#ffd100"/></svg>
         <svg id="evIconTurtleYellow" viewBox="0 0 1864 2041" xmlns="http://www.w3.org/2000/svg"><path d="M934 35q123 0 237 32t212.5 89.5 180 139 139 180T1792 688t32 237q0 124-32 238.5t-89.5 214-139 180.5-180 139-212.5 90-237 32q-124 0-238.5-32t-214-90T301 1558t-139-180.5-90-214T40 925q0-123 32-237t90-212.5 139-180 180.5-139 214-89.5T934 35zm0 1688q109 0 210.5-28.5t189.5-80 160.5-124.5 124.5-161.5 80.5-190.5 28.5-213q0-109-28.5-210.5T1619 525t-124.5-160.5-160.5-124-189.5-80T934 132q-110 0-212 28.5t-190.5 80-161.5 124T245.5 525t-80 189.5T137 925q0 110 28.5 212.5t80 191 124.5 161T531.5 1614t190.5 80.5 212 28.5zm127-1062q72 0 137 20t120.5 56.5 99.5 87 72 111.5q-1 0-1 1 0 2 3.5 7t8 10 8 8.5l3.5 3.5q0 2-4 3.5t-4 6.5 2.5 14 2.5 17q0 7-6 13t-11 6q-6 0-17-3.5t-16-3.5q-3 0-3 2 0 5 6.5 14t14.5 17q10 10 22 21 6 15 10 28 4 11 7 24t3 22q0 2 3 6t6 8.5 6 8 3 4.5q0 2-4.5 2h-9.5q-15 0-37-1.5t-42-3.5q-24-2-48-5h-2q-8 0-13.5-13t-9.5-29q-4-18-8-42-12 4-37 7t-56 5.5-65 4.5-64.5 3.5-54.5 2-35 .5-34.5-.5-53.5-1.5-63-2-63-3.5-54-5.5-35-7q-6 26-11 50t-10 50q-34-2-62-4-24-2-46-3t-28-3q-2-1-7.5-12t-5.5-14q0-8 8.5-18.5t19-21.5 19-23 8.5-24q0-8-1.5-16.5T630 1034v-5l1 5q-30-4-70-18.5T479 980t-83-46-73-51-52-49.5-20-41.5q0-10 11-21.5t29.5-21.5 43-16.5T386 726q55 0 100 22.5t78 49 53.5 49T645 869q12 0 24-6.5t17-14.5q28-46 68.5-81t89.5-58.5T948 673t113-12z" fill="#ffd100"/></svg>
         <svg id="evIconTurtleRed" viewBox="0 0 1864 2041" xmlns="http://www.w3.org/2000/svg"><path d="M934 35q123 0 237 32t212.5 89.5 180 139 139 180T1792 688t32 237q0 124-32 238.5t-89.5 214-139 180.5-180 139-212.5 90-237 32q-124 0-238.5-32t-214-90T301 1558t-139-180.5-90-214T40 925q0-123 32-237t90-212.5 139-180 180.5-139 214-89.5T934 35zm0 1688q109 0 210.5-28.5t189.5-80 160.5-124.5 124.5-161.5 80.5-190.5 28.5-213q0-109-28.5-210.5T1619 525t-124.5-160.5-160.5-124-189.5-80T934 132q-110 0-212 28.5t-190.5 80-161.5 124T245.5 525t-80 189.5T137 925q0 110 28.5 212.5t80 191 124.5 161T531.5 1614t190.5 80.5 212 28.5zm127-1062q72 0 137 20t120.5 56.5 99.5 87 72 111.5q-1 0-1 1 0 2 3.5 7t8 10 8 8.5l3.5 3.5q0 2-4 3.5t-4 6.5 2.5 14 2.5 17q0 7-6 13t-11 6q-6 0-17-3.5t-16-3.5q-3 0-3 2 0 5 6.5 14t14.5 17q10 10 22 21 6 15 10 28 4 11 7 24t3 22q0 2 3 6t6 8.5 6 8 3 4.5q0 2-4.5 2h-9.5q-15 0-37-1.5t-42-3.5q-24-2-48-5h-2q-8 0-13.5-13t-9.5-29q-4-18-8-42-12 4-37 7t-56 5.5-65 4.5-64.5 3.5-54.5 2-35 .5-34.5-.5-53.5-1.5-63-2-63-3.5-54-5.5-35-7q-6 26-11 50t-10 50q-34-2-62-4-24-2-46-3t-28-3q-2-1-7.5-12t-5.5-14q0-8 8.5-18.5t19-21.5 19-23 8.5-24q0-8-1.5-16.5T630 1034v-5l1 5q-30-4-70-18.5T479 980t-83-46-73-51-52-49.5-20-41.5q0-10 11-21.5t29.5-21.5 43-16.5T386 726q55 0 100 22.5t78 49 53.5 49T645 869q12 0 24-6.5t17-14.5q28-46 68.5-81t89.5-58.5T948 673t113-12z" fill="#e4002c"/></svg>
@@ -1489,6 +1541,8 @@
           <label for="seasonOverrideSelect" data-i18n="devSeasonLabel">Saison-Override</label>
           <select id="seasonOverrideSelect">
             <option value="auto" data-i18n="seasonAuto">Automatisch (Systemdatum)</option>
+            <option value="carnival" data-i18n="seasonCarnival">Karneval erzwingen</option>
+            <option value="easter" data-i18n="seasonEaster">Ostern erzwingen</option>
             <option value="halloween" data-i18n="seasonHalloween">Halloween erzwingen</option>
             <option value="winter" data-i18n="seasonWinter">Winter erzwingen</option>
             <option value="off" data-i18n="seasonOff">Events deaktivieren</option>
@@ -1536,9 +1590,7 @@
     // --- Configuration & Constants ---
     const STORAGE_KEY = 'dailyTeamNames';
     const TOTAL_TIME_KEY = 'dailyTotalTime';
-    const VERSION_KEY = 'dailyAppVersion';
     const VIEW_MODE_KEY = 'dailyViewMode';
-    const CURRENT_VERSION = '1.17'; 
     const VIEW_MODE_CLASSIC = 'classic';
     const VIEW_MODE_SLOT = 'slot';
     const VIEW_MODE_EV = 'ev';
@@ -1571,10 +1623,6 @@
         btnCardResetRound: 'Kartenspiel Runde zurücksetzen',
         btnNextCard: 'Nächste Karte',
         btnPlayAgain: 'Nochmal spielen',
-        cardWendeMsg: '↔ Wende – ohne Effekt',
-        cardPlus2Msg: '+2 – nur zur Show',
-        cardPlus4Msg: '+4 – nur zur Show',
-        cardSkipMsg: '⏭ {name} setzt aus und kommt später dran',
         slotStatusInitial: 'Drücke Starten für Zufall.',
         slotStatusRestart: 'Wähle neue Teilnehmer und starte erneut.',
         slotStatusNoSelection: 'Keine Auswahl',
@@ -1601,6 +1649,8 @@
         devOptionsTitle: 'Entwickler-Optionen',
         devSeasonLabel: 'Saison-Override',
         seasonAuto: 'Automatisch (Systemdatum)',
+        seasonCarnival: 'Karneval erzwingen',
+        seasonEaster: 'Ostern erzwingen',
         seasonHalloween: 'Halloween erzwingen',
         seasonWinter: 'Winter erzwingen',
         seasonOff: 'Events deaktivieren',
@@ -1618,8 +1668,7 @@
         helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Anwesenheit</b>Hake oben ab, wer heute dabei ist. Abgewählte Personen (Urlaub, krank) werden übersprungen.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Reihenfolge würfeln</b>Tippe auf „Würfeln": Die App erstellt eine zufällige Reihenfolge der aktiven Personen und startet den Timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>Die Gesamtdauer wird gleichmäßig aufgeteilt. Wird die Zeit knapp, färbt sich der Timer – erst gelb, dann rot.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Weiter zur nächsten Person</b>Tippe auf „Nächster Teilnehmer" oder drücke die Leertaste.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Einen Schritt zurück</b>Strg oder Umschalt + Leertaste springt zur vorherigen Person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slotmaschinen-Ansicht</b>Lust auf Show? In den Einstellungen schaltest du auf die animierte Slotmaschine um.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip-Ansicht</b>Ein E-Auto fährt die Daily-Strecke ab, die Batterie zeigt die Redezeit. Ist sie leer, kommt die Schildkröte.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Glücksrad-Ansicht</b>Ein buntes Rad mit allen Namen dreht sich und lost nacheinander aus, wer dran ist.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Kartenspiel-Ansicht</b>Für jeden Sprecher fliegt eine bunte Namenskarte auf den Stapel. Sonderkarten sorgen für Spaß – „Aussetzen" verschiebt jemanden ans Ende, der Rest ist nur Show.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Einstellungen</b>Namen, Dauer, Ansicht und Sprache jederzeit anpassen.</div></li>',
         alertPickOne: 'Bitte wähle mindestens einen Teilnehmer aus!',
         alertError: 'Ein Fehler ist aufgetreten: {msg}\nBitte Seite neu laden oder Cache leeren.',
-        alertStartError: 'Kritischer Start-Fehler: {msg}',
-        updateBanner: '**NEU in V{version}:** Teilnehmer-Checkliste steht jetzt ordentlich untereinander und verschwindet nach dem Start.'
+        alertStartError: 'Kritischer Start-Fehler: {msg}'
       },
       en: {
         docTitle: 'Daily Team Randomizer & Timer',
@@ -1636,10 +1685,6 @@
         btnCardResetRound: 'Reset card round',
         btnNextCard: 'Next card',
         btnPlayAgain: 'Play again',
-        cardWendeMsg: '↔ Reverse – no effect',
-        cardPlus2Msg: '+2 – just for show',
-        cardPlus4Msg: '+4 – just for show',
-        cardSkipMsg: '⏭ {name} is skipped and comes later',
         slotStatusInitial: 'Press Start for a random pick.',
         slotStatusRestart: 'Pick new participants and start again.',
         slotStatusNoSelection: 'No selection',
@@ -1666,6 +1711,8 @@
         devOptionsTitle: 'Developer options',
         devSeasonLabel: 'Season override',
         seasonAuto: 'Automatic (system date)',
+        seasonCarnival: 'Force carnival',
+        seasonEaster: 'Force Easter',
         seasonHalloween: 'Force Halloween',
         seasonWinter: 'Force winter',
         seasonOff: 'Disable events',
@@ -1683,8 +1730,7 @@
         helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Attendance</b>Tick who is in today. Unticked people (vacation, sick) are skipped.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Roll the order</b>Tap “Roll” and the app builds a random order of the active people and starts the timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>The total time is split evenly. As it runs low the timer changes colour – yellow, then red.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Next person</b>Tap “Next participant” or press the spacebar.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Step back</b>Ctrl or Shift + Space jumps to the previous person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slot machine view</b>Want a bit of show? Switch to the animated slot machine in the settings.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip view</b>An EV drives the daily route while the battery shows the speaking time. When it is empty, the turtle appears.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Wheel of fortune view</b>A colourful wheel with every name spins and draws who is up next, one by one.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Card game view</b>A colourful name card is thrown onto the pile for each speaker. Special cards add fun – “Skip” moves someone to the end, the rest are just for show.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Settings</b>Adjust names, duration, view and language anytime.</div></li>',
         alertPickOne: 'Please select at least one participant!',
         alertError: 'An error occurred: {msg}\nPlease reload the page or clear the cache.',
-        alertStartError: 'Critical startup error: {msg}',
-        updateBanner: '**NEW in V{version}:** The participant checklist is now neatly stacked and disappears after starting.'
+        alertStartError: 'Critical startup error: {msg}'
       }
     };
 
@@ -1852,8 +1898,7 @@
     const teamNamesInput = document.getElementById('teamNamesInput');
     const totalTimeInput = document.getElementById('totalTimeInput');
     const saveConfigButton = document.getElementById('saveConfigButton');
-    const resetNamesButton = document.getElementById('resetNamesButton'); 
-    const updateBanner = document.getElementById('updateBanner');
+    const resetNamesButton = document.getElementById('resetNamesButton');
 
     // --- Timer Module ---
     
@@ -2084,11 +2129,14 @@
     function getActiveSeason() {
       let override = null;
       try { override = localStorage.getItem(EVENT_OVERRIDE_KEY); } catch (e) {}
-      if (override === 'halloween' || override === 'winter') return override;
+      if (override === 'carnival' || override === 'easter' ||
+          override === 'halloween' || override === 'winter') return override;
       if (override === 'off') return 'none';
       const month = new Date().getMonth();
-      if (month === 9) return 'halloween';
-      if (month === 11) return 'winter';
+      if (month === 1) return 'carnival';   // February – carnival / Fasching
+      if (month === 3) return 'easter';      // April – Easter
+      if (month === 9) return 'halloween';   // October – Halloween
+      if (month === 11) return 'winter';     // December – winter
       return 'none';
     }
 
@@ -2097,7 +2145,14 @@
       const season = getActiveSeason();
       document.body.classList.toggle('season-halloween', season === 'halloween');
       document.body.classList.toggle('season-winter', season === 'winter');
-      if (evGoal) evGoal.textContent = season === 'halloween' ? '🎃' : '🏁';
+      document.body.classList.toggle('season-carnival', season === 'carnival');
+      document.body.classList.toggle('season-easter', season === 'easter');
+      if (evGoal) {
+        evGoal.textContent =
+          season === 'halloween' ? '🎃' :
+          season === 'carnival' ? '🎉' :
+          season === 'easter' ? '🥚' : '🏁';
+      }
     }
 
     /** Renders the speaker order below the gauge (done / current / upcoming). */
@@ -2114,7 +2169,7 @@
       });
     }
 
-    /** Shows exactly one staged VW warning pictogram (or none). */
+    /** Shows exactly one staged warning pictogram (or none). */
     function setEvWarnIcon(stage) {
       const icons = {
         battYellow: document.getElementById('evIconBattYellow'),
@@ -2688,14 +2743,39 @@
 
     // --- Card Game View Module ---
 
-    /** The corner/centre glyph shown on each special card. */
-    function cardSpecialGlyph(kind) {
-      switch (kind) {
-        case 'wende': return '↔';
-        case 'plus2': return '+2';
-        case 'plus4': return '+4';
-        case 'skip':  return '⊘';
+    /**
+     * Builds an inline-SVG emblem for a special card. Inline SVGs render crisply
+     * at any size and look cleaner than font glyphs (which vary across systems).
+     * `currentColor` makes each emblem inherit its card's own accent colour.
+     */
+    function cardSpecialSvg(kind, cls) {
+      const wrap = document.createElement('div');
+      let markup = '';
+      if (kind === 'skip') {
+        // A crisp "no entry" ring with a diagonal bar = sit this turn out.
+        markup =
+          '<svg viewBox="0 0 100 100" class="' + cls + '" aria-hidden="true">' +
+            '<circle cx="50" cy="50" r="37" fill="none" stroke="currentColor" stroke-width="13"/>' +
+            '<line x1="26.5" y1="26.5" x2="73.5" y2="73.5" stroke="currentColor" stroke-width="13" stroke-linecap="round"/>' +
+          '</svg>';
+      } else if (kind === 'wende') {
+        // Two opposed arrows = reverse / turn the order around.
+        markup =
+          '<svg viewBox="0 0 100 100" class="' + cls + '" aria-hidden="true">' +
+            '<g fill="currentColor">' +
+              '<path d="M16 33 H58 V20 L88 39 L58 58 V45 H16 Z"/>' +
+              '<path d="M84 67 H42 V80 L12 61 L42 42 V55 H84 Z"/>' +
+            '</g>' +
+          '</svg>';
       }
+      wrap.innerHTML = markup.trim();
+      return wrap.firstChild;
+    }
+
+    /** The short text shown on +2 / +4 cards (skip & wende use SVG instead). */
+    function cardSpecialText(kind) {
+      if (kind === 'plus2') return '+2';
+      if (kind === 'plus4') return '+4';
       return '';
     }
 
@@ -2708,46 +2788,73 @@
       cardTimeouts.push(setTimeout(fn, ms));
     }
 
-    /** Creates a thrown card element with a random offset/rotation on the pile. */
-    function throwCard(colorClass, glyph, centerText, centerClass) {
+    /** Shared card shell: a thrown card with a random offset/rotation. */
+    function createCardShell(colorClass) {
       cardThrowCount += 1;
       const card = document.createElement('div');
       card.className = 'play-card';
       card.style.setProperty('--rot', (Math.random() * 26 - 13).toFixed(1) + 'deg');
-      card.style.setProperty('--tx', (Math.random() * 36 - 18).toFixed(1) + 'px');
-      card.style.setProperty('--ty', (Math.random() * 36 - 18).toFixed(1) + 'px');
+      card.style.setProperty('--tx', (Math.random() * 40 - 20).toFixed(1) + 'px');
+      card.style.setProperty('--ty', (Math.random() * 40 - 20).toFixed(1) + 'px');
       card.style.zIndex = String(cardThrowCount);
-
       const inner = document.createElement('div');
       inner.className = 'pc-inner ' + colorClass;
-      const tl = document.createElement('span'); tl.className = 'pc-corner pc-tl'; tl.textContent = glyph;
-      const br = document.createElement('span'); br.className = 'pc-corner pc-br'; br.textContent = glyph;
-      const center = document.createElement('span');
-      center.className = 'pc-center' + (centerClass ? ' ' + centerClass : '');
-      center.textContent = centerText;
-      inner.appendChild(tl);
-      inner.appendChild(center);
-      inner.appendChild(br);
       card.appendChild(inner);
-      cardPile.appendChild(card);
+      return { card, inner };
+    }
+
+    /** Adds the two opposite corner badges, each built fresh by `build()`. */
+    function addCardCorners(inner, build) {
+      const tl = document.createElement('span'); tl.className = 'pc-corner pc-tl';
+      const br = document.createElement('span'); br.className = 'pc-corner pc-br';
+      tl.appendChild(build());
+      br.appendChild(build());
+      inner.appendChild(tl);
+      inner.appendChild(br);
+    }
+
+    /**
+     * Shrinks a name card's font until the (non-wrapping) name fits on one line,
+     * so long names never break awkwardly across two rows.
+     */
+    function fitCardName(center) {
+      let size = 1.55; // em – matches the .pc-name default
+      center.style.fontSize = size + 'em';
+      let guard = 0;
+      while (center.scrollWidth > center.clientWidth + 1 && size > 0.7 && guard < 40) {
+        size -= 0.05;
+        center.style.fontSize = size.toFixed(2) + 'em';
+        guard += 1;
+      }
     }
 
     function throwNameCard(name) {
       const colorClass = 'pc-c' + (cardThrowCount % CARD_COLOR_COUNT);
-      throwCard(colorClass, '●', name.trim().toUpperCase(), 'pc-name');
+      const { card, inner } = createCardShell(colorClass);
+      const center = document.createElement('span');
+      center.className = 'pc-center pc-name';
+      center.textContent = name.trim().toUpperCase();
+      inner.appendChild(center);
+      addCardCorners(inner, () => document.createTextNode('●'));
+      cardPile.appendChild(card);
+      fitCardName(center);
     }
 
     function throwSpecialCard(kind) {
-      const glyph = cardSpecialGlyph(kind);
-      throwCard('pc-' + kind, glyph, glyph, 'pc-special');
-    }
-
-    /** Shows the short status line for a thrown special card. */
-    function announceCardSpecial(kind, name) {
-      if (kind === 'skip') setText(cardStatus, 'cardSkipMsg', { name: name });
-      else if (kind === 'wende') setText(cardStatus, 'cardWendeMsg');
-      else if (kind === 'plus2') setText(cardStatus, 'cardPlus2Msg');
-      else if (kind === 'plus4') setText(cardStatus, 'cardPlus4Msg');
+      const { card, inner } = createCardShell('pc-' + kind);
+      const center = document.createElement('span');
+      center.className = 'pc-center pc-special';
+      if (kind === 'skip' || kind === 'wende') {
+        center.appendChild(cardSpecialSvg(kind, 'pc-emblem'));
+        inner.appendChild(center);
+        addCardCorners(inner, () => cardSpecialSvg(kind, 'pc-corner-icon'));
+      } else {
+        const text = cardSpecialText(kind);
+        center.textContent = text;
+        inner.appendChild(center);
+        addCardCorners(inner, () => document.createTextNode(text));
+      }
+      cardPile.appendChild(card);
     }
 
     /** True while the card session is still the live, visible one. */
@@ -2785,7 +2892,6 @@
       cardLater(() => {
         if (!cardSequenceValid()) { cardAnimating = false; return; }
         throwSpecialCard('skip');
-        announceCardSpecial('skip', victim);
 
         cardLater(() => {
           if (!cardSequenceValid()) { cardAnimating = false; return; }
@@ -2801,7 +2907,6 @@
       cardAnimating = true;
       const kind = CARD_FLAIR[Math.floor(Math.random() * CARD_FLAIR.length)];
       throwSpecialCard(kind);
-      announceCardSpecial(kind);
       cardLater(() => {
         if (!cardSequenceValid()) { cardAnimating = false; return; }
         cardAnimating = false;
@@ -3127,7 +3232,8 @@
       if (seasonSel) {
         let ov = null;
         try { ov = localStorage.getItem(EVENT_OVERRIDE_KEY); } catch (e) {}
-        seasonSel.value = (ov === 'halloween' || ov === 'winter' || ov === 'off') ? ov : 'auto';
+        seasonSel.value = (ov === 'carnival' || ov === 'easter' || ov === 'halloween' ||
+          ov === 'winter' || ov === 'off') ? ov : 'auto';
       }
       configModal.style.display = 'block';
     }
@@ -3262,31 +3368,6 @@
         viewMode = VIEW_MODE_CLASSIC;
       }
       setViewMode(viewMode);
-    }
-    
-    /**
-     * Handles version checking to display update banners to returning users.
-     */
-    function checkVersionAndShowBanner() {
-        const storedVersion = localStorage.getItem(VERSION_KEY);
-        
-        if (storedVersion !== CURRENT_VERSION) {
-            setText(updateBanner, 'updateBanner', { version: CURRENT_VERSION });
-            updateBanner.style.display = 'block';
-            
-            localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
-
-            setTimeout(() => {
-                updateBanner.style.opacity = '0';
-                setTimeout(() => {
-                    updateBanner.style.display = 'none';
-                    updateBanner.style.opacity = '1';
-                }, 500);
-            }, 8000);
-            
-        } else {
-            updateBanner.style.display = 'none';
-        }
     }
 
 
@@ -3484,7 +3565,6 @@
     try {
         loadLanguage();
         loadInitialConfig();
-        checkVersionAndShowBanner();
         applyLanguage(currentLang);
         applySeason();
     } catch (e) {

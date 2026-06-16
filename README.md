@@ -12,7 +12,7 @@ Da das Tool ohne Backend auskommt und Daten nur lokal speichert, ist es besonder
 - **Fünf Anzeigemodi:** Klassische Liste, animierte Slotmaschine, Roadtrip-Ansicht mit E-Auto, das bunte Glücksrad oder das Kartenspiel (siehe unten).
 - **Visuelles Feedback:** Der Timer ändert seine Farbe bei nahendem Zeitende (Gelb &rarr; Orange &rarr; Rot) und zeigt bei Überziehung einen Overtime-Indikator an.
 - **Zweisprachig:** Die komplette Oberfläche ist auf Deutsch und Englisch verfügbar — umschaltbar in den Einstellungen, live und ohne Neuladen.
-- **Saisonale Events:** Im Oktober (Halloween 🎃) und Dezember (Winter ❄️) bekommen alle Ansichten automatisch ein passendes Thema.
+- **Saisonale Events:** Rund ums Jahr bekommen alle Ansichten automatisch ein passendes Thema – im Februar (Karneval 🎉), im April (Ostern 🥚), im Oktober (Halloween 🎃) und im Dezember (Winter ❄️).
 - **Touch-tauglich:** Ein „Nächster Teilnehmer“-Button ersetzt die Leertaste auf Geräten ohne Tastatur.
 - **Konfetti:** Wenn alle durch sind, wird das Daily mit grünem Haken und Konfettiregen beendet. 🎉
 - **Privacy by Design:** Es gibt kein Backend. Die Team-Stammdaten und Einstellungen werden ausschließlich lokal in deinem Browser (`Local Storage`) gespeichert.
@@ -26,7 +26,7 @@ In den Einstellungen wählst du zwischen fünf Darstellungen:
 - **Slotmaschinen-Ansicht:** Eine animierte Walze mit Hebel lost den nächsten Sprecher aus — inklusive Gewinner-Historie.
 - **Roadtrip-Ansicht (E-Auto):** Ein graues Elektroauto fährt pro Sprecher die Strecke bis zur Zielflagge ab. Die Batterieanzeige (SoC) zeigt die verbleibende Redezeit; bei knapper Zeit erscheinen nacheinander Warnsymbole (Batterie gelb &rarr; Schildkröte gelb &rarr; Schildkröte rot). Ist die Batterie leer, bleibt das Auto stehen. Die Reihenfolge mit den nächsten Teilnehmern wird darunter angezeigt.
 - **Glücksrad-Ansicht:** Ein buntes Rad mit allen Namen dreht sich und lost per Klick auf „Drehen" (oder Leertaste) nacheinander den nächsten Sprecher aus. Bereits gezogene Namen werden abgedunkelt, der Timer pro Person läuft wie gewohnt, und eine Gewinner-Historie zeigt die bisherige Reihenfolge.
-- **Kartenspiel-Ansicht:** Für jeden Sprecher fliegt eine bunte Namenskarte auf den Stapel (per Klick auf „Nächste Karte" oder Leertaste); der Timer pro Person läuft wie in der klassischen Ansicht. Dazwischen tauchen Sonderkarten auf – „Aussetzen" schiebt die betroffene Person ans Ende der Runde, „+2", „+4" und „Wende" sind reine Show. Stilistisch an bekannte Kartenspiele angelehnt, aber bewusst eigenständig gestaltet (eigene Symbole/Farben, keine Marken).
+- **Kartenspiel-Ansicht:** Für jeden Sprecher fliegt eine bunte Namenskarte auf den Stapel (per Klick auf „Nächste Karte" oder Leertaste); der Timer pro Person läuft wie in der klassischen Ansicht. Lange Namen werden automatisch verkleinert, sodass sie immer auf eine Zeile passen. Dazwischen tauchen Sonderkarten mit großen, gut erkennbaren Symbolen auf – „Aussetzen" schiebt die betroffene Person ans Ende der Runde, „+2", „+4" und „Wende" sind reine Show. Stilistisch an bekannte Kartenspiele angelehnt, aber bewusst eigenständig gestaltet (eigene Symbole/Farben, keine Marken).
 
 ## 🚀 Live Demo / Nutzung
 
@@ -42,7 +42,7 @@ Klicke im Tool auf **Einstellungen**, um deine Stammdaten anzupassen:
 - **Daily-Dauer:** Gib die Gesamtzeit deines Meetings in Minuten an (Standard: 15).
 - **Team-Mitglieder:** Trage die Namen deines Teams ein (getrennt durch Kommas oder Zeilenumbrüche).
 - **Anzeigemodus:** Klassisch, Slotmaschine, Roadtrip (E-Auto), Glücksrad oder Kartenspiel.
-- **Entwickler-Optionen** (ausklappbar): Saison-Override zum Testen der Halloween-/Winter-Themes unabhängig vom Systemdatum sowie ein Schnelltest-Button, der den laufenden Timer auf 3 Sekunden setzt.
+- **Entwickler-Optionen** (ausklappbar): Saison-Override zum Testen der Karneval-, Oster-, Halloween- und Winter-Themes unabhängig vom Systemdatum sowie ein Schnelltest-Button, der den laufenden Timer auf 3 Sekunden setzt.
 
 Diese Daten bleiben für deinen nächsten Besuch im Browser gespeichert.
 
