@@ -1196,22 +1196,6 @@
       opacity: 0.85;
     }
 
-    /* --- Notifications & Banners --- */
-    #updateBanner {
-      background: var(--cta-bg);
-      color: white;
-      padding: 12px 16px;
-      border-radius: 14px;
-      margin-top: 15px;
-      font-size: 0.9em;
-      text-align: center;
-      width: 90%;
-      max-width: var(--col-width);
-      box-sizing: border-box;
-      box-shadow: var(--cta-shadow);
-      transition: opacity 0.5s ease-out;
-    }
-    
     /* --- Modal Dialogs --- */
     .modal {
       display: none;
@@ -1385,10 +1369,6 @@
   <div class="control-buttons-container">
     <button id="editButton" class="app-button" data-i18n="btnSettings">Einstellungen</button>
     <button id="helpButton" class="app-button" data-i18n="btnHelp">Anleitung</button>
-  </div>
-  
-  <div id="updateBanner" style="display: none;">
-    **NEU in V1.17:** Liste untereinander & Auto-Hide.
   </div>
   
   <div id="timerContainer">
@@ -1610,9 +1590,7 @@
     // --- Configuration & Constants ---
     const STORAGE_KEY = 'dailyTeamNames';
     const TOTAL_TIME_KEY = 'dailyTotalTime';
-    const VERSION_KEY = 'dailyAppVersion';
     const VIEW_MODE_KEY = 'dailyViewMode';
-    const CURRENT_VERSION = '1.17'; 
     const VIEW_MODE_CLASSIC = 'classic';
     const VIEW_MODE_SLOT = 'slot';
     const VIEW_MODE_EV = 'ev';
@@ -1690,8 +1668,7 @@
         helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Anwesenheit</b>Hake oben ab, wer heute dabei ist. Abgewählte Personen (Urlaub, krank) werden übersprungen.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Reihenfolge würfeln</b>Tippe auf „Würfeln": Die App erstellt eine zufällige Reihenfolge der aktiven Personen und startet den Timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>Die Gesamtdauer wird gleichmäßig aufgeteilt. Wird die Zeit knapp, färbt sich der Timer – erst gelb, dann rot.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Weiter zur nächsten Person</b>Tippe auf „Nächster Teilnehmer" oder drücke die Leertaste.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Einen Schritt zurück</b>Strg oder Umschalt + Leertaste springt zur vorherigen Person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slotmaschinen-Ansicht</b>Lust auf Show? In den Einstellungen schaltest du auf die animierte Slotmaschine um.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip-Ansicht</b>Ein E-Auto fährt die Daily-Strecke ab, die Batterie zeigt die Redezeit. Ist sie leer, kommt die Schildkröte.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Glücksrad-Ansicht</b>Ein buntes Rad mit allen Namen dreht sich und lost nacheinander aus, wer dran ist.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Kartenspiel-Ansicht</b>Für jeden Sprecher fliegt eine bunte Namenskarte auf den Stapel. Sonderkarten sorgen für Spaß – „Aussetzen" verschiebt jemanden ans Ende, der Rest ist nur Show.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Einstellungen</b>Namen, Dauer, Ansicht und Sprache jederzeit anpassen.</div></li>',
         alertPickOne: 'Bitte wähle mindestens einen Teilnehmer aus!',
         alertError: 'Ein Fehler ist aufgetreten: {msg}\nBitte Seite neu laden oder Cache leeren.',
-        alertStartError: 'Kritischer Start-Fehler: {msg}',
-        updateBanner: '**NEU in V{version}:** Teilnehmer-Checkliste steht jetzt ordentlich untereinander und verschwindet nach dem Start.'
+        alertStartError: 'Kritischer Start-Fehler: {msg}'
       },
       en: {
         docTitle: 'Daily Team Randomizer & Timer',
@@ -1753,8 +1730,7 @@
         helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Attendance</b>Tick who is in today. Unticked people (vacation, sick) are skipped.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Roll the order</b>Tap “Roll” and the app builds a random order of the active people and starts the timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>The total time is split evenly. As it runs low the timer changes colour – yellow, then red.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Next person</b>Tap “Next participant” or press the spacebar.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Step back</b>Ctrl or Shift + Space jumps to the previous person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slot machine view</b>Want a bit of show? Switch to the animated slot machine in the settings.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip view</b>An EV drives the daily route while the battery shows the speaking time. When it is empty, the turtle appears.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Wheel of fortune view</b>A colourful wheel with every name spins and draws who is up next, one by one.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Card game view</b>A colourful name card is thrown onto the pile for each speaker. Special cards add fun – “Skip” moves someone to the end, the rest are just for show.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Settings</b>Adjust names, duration, view and language anytime.</div></li>',
         alertPickOne: 'Please select at least one participant!',
         alertError: 'An error occurred: {msg}\nPlease reload the page or clear the cache.',
-        alertStartError: 'Critical startup error: {msg}',
-        updateBanner: '**NEW in V{version}:** The participant checklist is now neatly stacked and disappears after starting.'
+        alertStartError: 'Critical startup error: {msg}'
       }
     };
 
@@ -1922,8 +1898,7 @@
     const teamNamesInput = document.getElementById('teamNamesInput');
     const totalTimeInput = document.getElementById('totalTimeInput');
     const saveConfigButton = document.getElementById('saveConfigButton');
-    const resetNamesButton = document.getElementById('resetNamesButton'); 
-    const updateBanner = document.getElementById('updateBanner');
+    const resetNamesButton = document.getElementById('resetNamesButton');
 
     // --- Timer Module ---
     
@@ -3394,31 +3369,6 @@
       }
       setViewMode(viewMode);
     }
-    
-    /**
-     * Handles version checking to display update banners to returning users.
-     */
-    function checkVersionAndShowBanner() {
-        const storedVersion = localStorage.getItem(VERSION_KEY);
-        
-        if (storedVersion !== CURRENT_VERSION) {
-            setText(updateBanner, 'updateBanner', { version: CURRENT_VERSION });
-            updateBanner.style.display = 'block';
-            
-            localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
-
-            setTimeout(() => {
-                updateBanner.style.opacity = '0';
-                setTimeout(() => {
-                    updateBanner.style.display = 'none';
-                    updateBanner.style.opacity = '1';
-                }, 500);
-            }, 8000);
-            
-        } else {
-            updateBanner.style.display = 'none';
-        }
-    }
 
 
 // --- Event Listeners ---
@@ -3615,7 +3565,6 @@
     try {
         loadLanguage();
         loadInitialConfig();
-        checkVersionAndShowBanner();
         applyLanguage(currentLang);
         applySeason();
     } catch (e) {
