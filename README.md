@@ -15,6 +15,7 @@ Da das Tool ohne Backend auskommt und Daten nur lokal speichert, ist es besonder
 - **Saisonale Events:** Rund ums Jahr bekommen alle Ansichten automatisch ein passendes Thema – im Februar (Karneval 🎉), im April (Ostern 🥚), im Oktober (Halloween 🎃) und im Dezember (Winter ❄️).
 - **Touch-tauglich:** Ein „Nächster Teilnehmer“-Button ersetzt die Leertaste auf Geräten ohne Tastatur.
 - **Konfetti:** Wenn alle durch sind, wird das Daily mit grünem Haken und Konfettiregen beendet. 🎉
+- **Installierbar & Offline (PWA):** Der Taktgeber ist eine Progressive Web App. Über den **„App installieren"**-Button in den Einstellungen (erscheint, sobald der Browser die Installation anbietet) landet das Tool als eigene App auf dem Homescreen und läuft danach auch ohne Internet. Neue Versionen werden im Hintergrund gefunden und über ein dezentes **„Neu laden"**-Banner angeboten – ohne das laufende Daily zu unterbrechen.
 - **Privacy by Design:** Es gibt kein Backend. Die Team-Stammdaten und Einstellungen werden ausschließlich lokal in deinem Browser (`Local Storage`) gespeichert.
 - **Tastatursteuerung:** Bequeme Navigation durch das Meeting ganz ohne Maus.
 
