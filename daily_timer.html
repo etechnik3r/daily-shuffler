@@ -1492,22 +1492,22 @@
     }
     .flap-head {
       display: grid;
-      grid-template-columns: 2.4em 1fr 5.4em;
+      grid-template-columns: 2.6em 1fr 5.2em;
       gap: 8px;
       padding: 0 4px 8px;
       border-bottom: 1px solid rgba(255,255,255,0.14);
       margin-bottom: 8px;
       font-family: var(--flap-font);
-      font-size: 0.82em;
+      font-size: 0.95em;
       font-weight: 700;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.45);
+      color: rgba(255,255,255,0.5);
     }
     .flap-head-state { text-align: right; }
     .flap-row {
       display: grid;
-      grid-template-columns: 2.4em 1fr 5.4em;
+      grid-template-columns: 2.6em 1fr 5.2em;
       gap: 8px;
       align-items: center;
       padding: 4px 4px;
@@ -1516,8 +1516,8 @@
       font-family: var(--flap-font);
       font-variant-numeric: tabular-nums;
       font-weight: 700;
-      font-size: 1.05em;
-      color: rgba(255,255,255,0.4);
+      font-size: 1.15em;
+      color: rgba(255,255,255,0.45);
     }
     .flap-name { display: flex; gap: 2px; overflow: hidden; }
     /* One cell per character – the split flap itself. */
@@ -1557,11 +1557,11 @@
     .flap-state {
       text-align: right;
       font-family: var(--flap-font);
-      font-size: 0.8em;
+      font-size: 1.05em;
       font-weight: 700;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.02em;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.35);
+      color: rgba(255,255,255,0.4);
     }
     .flap-row.is-current .flap-cell { background: var(--flap-accent); color: hsl(var(--brand-h), calc(21% * var(--brand-sat)), 13%); }
     /* While the row is still clattering it stays grey; the yellow lands with
@@ -4206,15 +4206,65 @@
     const FLAP_SETTLE_MS = 850;   // until the leftmost cell locks in
     const FLAP_STAGGER_MS = 95;   // extra delay for each cell to its right
     const FLAP_TICK_MS = 55;      // how fast the flaps change while running
-    const FLAP_MAX_CELLS = 13;    // keeps the board inside the column width
+    // Upper bound only – the real count comes from measuring the row. Keeps a
+    // very wide column from turning into an absurd number of tiny flaps.
+    const FLAP_MAX_CELLS = 20;
     // A blank flap. Deliberately a no-break space: a plain space collapses, and
     // a cell without a text line is shorter than one with a letter – which made
     // the whole board grow a few pixels with every name revealed.
     const FLAP_BLANK = '\u00A0';
 
     /**
-     * Builds an empty board: one row per participant, numbered, with as many
-     * flap cells as the longest name needs.
+     * Measures how many flaps fit across one row at full size, by rendering a
+     * throwaway row and reading the real geometry. Done live rather than
+     * calculated, because cell width depends on the font the browser actually
+     * resolved and on the current column width.
+     *
+     * @param {HTMLElement} rows - The container the rows are built into.
+     * @returns {{fit: number, cellW: number, gap: number, avail: number}} Row geometry.
+     */
+    function measureFlapCapacity(rows) {
+      const probeRow = document.createElement('div');
+      probeRow.className = 'flap-row';
+      probeRow.style.visibility = 'hidden';
+      const pos = document.createElement('span');
+      pos.className = 'flap-pos';
+      pos.textContent = '00.';
+      const nameCol = document.createElement('span');
+      nameCol.className = 'flap-name';
+      const cell = document.createElement('span');
+      cell.className = 'flap-cell blank';
+      cell.textContent = FLAP_BLANK;
+      nameCol.appendChild(cell);
+      const state = document.createElement('span');
+      state.className = 'flap-state';
+      state.textContent = t('flapStateWaiting');
+      probeRow.appendChild(pos);
+      probeRow.appendChild(nameCol);
+      probeRow.appendChild(state);
+      rows.appendChild(probeRow);
+
+      const avail = nameCol.getBoundingClientRect().width;
+      const cellW = cell.getBoundingClientRect().width;
+      const gap = parseFloat(getComputedStyle(nameCol).columnGap) || 0;
+      rows.removeChild(probeRow);
+
+      if (!(avail > 0) || !(cellW > 0)) {
+        return { fit: Math.max(3, FLAP_MAX_CELLS), cellW: 0, gap: gap, avail: 0 };
+      }
+      // n cells need n*cellW + (n-1)*gap
+      const n = Math.floor((avail + gap) / (cellW + gap));
+      return {
+        fit: Math.max(3, Math.min(FLAP_MAX_CELLS, n)),
+        cellW: cellW,
+        gap: gap,
+        avail: avail
+      };
+    }
+
+    /**
+     * Builds an empty board: one row per participant, numbered, with flaps
+     * across the full width of the name column.
      *
      * @param {Array<string>} list - Participants of this round.
      */
@@ -4224,9 +4274,27 @@
       rows.innerHTML = '';
 
       const longest = list.reduce((max, name) => Math.max(max, name.trim().length), 1);
-      flapCellCount = Math.min(FLAP_MAX_CELLS, Math.max(3, longest));
-      // Only shrink once the name really needs more room than the column has.
-      const fontSize = flapCellCount > 10 ? (10 / flapCellCount) : 1;
+
+      // How many flaps actually fit across the name column? A real departure
+      // board is flaps edge to edge, not a short strip sized to the longest
+      // name with dead board next to it – so measure the row and fill it.
+      const geom = measureFlapCapacity(rows);
+
+      let fontSize = 1;
+      if (longest <= geom.fit) {
+        // Room to spare: fill the whole width with (mostly blank) flaps.
+        flapCellCount = geom.fit;
+      } else {
+        // The longest name needs more flaps than fit at full size, so shrink
+        // them. The gap between flaps is a fixed pixel value and does NOT
+        // shrink with the type, so it has to come off the available width
+        // first – scaling by fit/longest alone overflows by exactly the gaps
+        // of the extra cells.
+        flapCellCount = Math.min(FLAP_MAX_CELLS, longest);
+        const gaps = (flapCellCount - 1) * geom.gap;
+        const perCell = (geom.avail - gaps) / flapCellCount;
+        fontSize = Math.max(0.4, geom.cellW > 0 ? perCell / geom.cellW : 1);
+      }
 
       list.forEach((_, i) => {
         const row = document.createElement('div');
