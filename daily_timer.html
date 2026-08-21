@@ -185,7 +185,8 @@
     .participant-label {
         display: flex;
         align-items: center;
-        justify-content: flex-start;
+        /* The pair inside is centred as a fixed-width block – see below. */
+        justify-content: center;
         background: #ffffff;
         padding: 13px 16px;
         border-radius: 12px;
@@ -209,8 +210,29 @@
         margin-right: 14px;
         width: 20px;
         height: 20px;
+        flex: 0 0 auto;
         accent-color: var(--accent);
         cursor: pointer;
+    }
+
+    /* First names are short, so left-aligned rows left a lot of empty space to
+       the right and the names looked stranded. Centring each name on its own
+       would make the text edge jump from row to row; instead the checkbox and
+       the name share a block of ONE fixed width – wide enough for a typical
+       first name – and that block is centred. The text edge is therefore
+       identical in every row, and only unusually long names extend past it,
+       into the space that is free anyway. */
+    .participant-inner {
+        display: flex;
+        align-items: center;
+        /* checkbox (20px) + gap (14px) + room for a ~9-character first name */
+        width: calc(34px + 9ch);
+        max-width: 100%;
+    }
+
+    .participant-name {
+        flex: 0 0 auto;
+        white-space: nowrap;
     }
 
     /* State: Participant unselected */
@@ -226,7 +248,10 @@
     #timerContainer {
         display: flex;
         align-items: center;
+        justify-content: center;
         margin: 20px 0;
+        width: 100%;
+        max-width: var(--col-width);
     }
 
     .timer-icon {
@@ -238,7 +263,11 @@
     }
     
     #timerDisplay {
-        font-size: 3.3em;
+        /* Scales with the viewport but never past the ceiling, so even the
+           six-character overtime reading ("+01:32") stays inside the pill. */
+        font-size: clamp(2.1rem, 11vw, 3.2rem);
+        max-width: 100%;
+        box-sizing: border-box;
         font-weight: 800;
         color: var(--accent-deep);
         display: none;
@@ -1320,7 +1349,11 @@
     /* Forms within Modals */
     textarea {
       width: 100%;
-      min-height: 60px;
+      /* Room for roughly eight lines: a whole team should be readable without
+         scrolling inside a 60px-tall box. */
+      min-height: 150px;
+      resize: vertical;
+      line-height: 1.5;
       padding: 12px;
       margin: 10px 0 20px 0;
       border: 1px solid hsl(var(--brand-h), calc(52% * var(--brand-sat)), 89%);
@@ -1694,6 +1727,9 @@
     .theme-custom {
       width: 38px;
       height: 38px;
+      /* Without this the <label> adds its border on top of the width while the
+         <button> does not, so the colour well rendered larger than the presets. */
+      box-sizing: border-box;
       padding: 0;
       border: 2px solid transparent;
       border-radius: 50%;
@@ -1716,19 +1752,15 @@
     .theme-dot:hover, .theme-custom:hover { transform: scale(1.08); }
     .theme-dot.is-active { border-color: var(--accent); }
     .theme-custom {
-      position: relative;
       overflow: hidden;
-      padding: 3px;
       border: 2px dashed hsla(var(--brand-h), calc(50% * var(--brand-sat)), 40%, 0.45);
     }
     .theme-custom.is-active { border-style: solid; border-color: var(--accent); }
     /* The native swatch fills the circle exactly. Oversizing it to hide the
        browser's own chrome made the colour bleed past the rounded edge. */
     .theme-custom input[type="color"] {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
+      width: 28px;
+      height: 28px;
       padding: 0;
       border: none;
       border-radius: 50%;
@@ -1748,18 +1780,15 @@
        up scales the column and the type instead of stretching it.
        =================================================================== */
     @media (min-width: 1100px) {
-      :root { --col-width: 460px; }
-      body { padding: 32px 20px; font-size: 18px; }
-      h1 { font-size: 2.4em; }
-      #timerDisplay { font-size: 4.4em; }
-      .focus-name { font-size: 2.6em; }
-      .focus-glass { width: 132px; height: 198px; }
+      :root { --col-width: 420px; }
+      body { padding: 28px 20px; }
+      h1 { font-size: 2em; }
+      .focus-name { font-size: 2.3em; }
+      .focus-glass { width: 120px; height: 180px; }
     }
     @media (min-width: 1600px) {
-      :root { --col-width: 560px; }
-      body { font-size: 20px; }
-      h1 { font-size: 2.8em; }
-      #timerDisplay { font-size: 5.2em; }
+      :root { --col-width: 480px; }
+      h1 { font-size: 2.2em; }
     }
 
     /* ===================================================================
@@ -2108,7 +2137,7 @@
           </div>
 
           <h2 data-i18n="cfgMembersTitle">Team-Mitglieder bearbeiten</h2>
-          <p data-i18n="cfgMembersDesc">Gib die Namen der Teammitglieder ein, getrennt durch Kommas (oder Zeilenumbrüche). Leerzeichen werden automatisch entfernt.</p>
+          <p data-i18n="cfgMembersDesc">Gib die Namen der Teammitglieder ein, getrennt durch Kommas oder Zeilenumbrüche. Mehrteilige Namen wie „Anna Maria“ bleiben zusammen.</p>
           <textarea id="teamNamesInput"></textarea>
           <label class="config-check" for="firstMemberLastInput">
             <input type="checkbox" id="firstMemberLastInput">
@@ -2462,7 +2491,7 @@
         cfgDurationTitle: 'Daily-Dauer einstellen',
         cfgDurationDesc: 'Gesamtdauer in Minuten, die auf alle Teilnehmer aufgeteilt wird (Standard: 15 Min.).',
         cfgMembersTitle: 'Team-Mitglieder bearbeiten',
-        cfgMembersDesc: 'Gib die Namen der Teammitglieder ein, getrennt durch Kommas (oder Zeilenumbrüche). Leerzeichen werden automatisch entfernt.',
+        cfgMembersDesc: 'Gib die Namen der Teammitglieder ein, getrennt durch Kommas oder Zeilenumbrüche. Mehrteilige Namen wie „Anna Maria“ bleiben zusammen.',
         cfgFirstLastLabel: 'Erstes Mitglied der Liste kommt zum Schluss',
         cfgFirstLastDesc: 'Ist die Option aktiv, wird der zuerst eingetragene Name erst in den letzten 20 % der Reihenfolge gezogen – praktisch für alle, die das Daily abschließen.',
         cfgViewTitle: 'Anzeigemodus',
@@ -2551,7 +2580,7 @@
         cfgDurationTitle: 'Set daily duration',
         cfgDurationDesc: 'Total time in minutes, divided among all participants (default: 15 min).',
         cfgMembersTitle: 'Edit team members',
-        cfgMembersDesc: 'Enter the team member names, separated by commas (or line breaks). Spaces are removed automatically.',
+        cfgMembersDesc: 'Enter the team member names, separated by commas or line breaks. Multi-part names like \u201cAnna Maria\u201d stay together.',
         cfgFirstLastLabel: 'First member on the list goes last',
         cfgFirstLastDesc: 'With this on, the name entered first is only drawn within the final 20 % of the order – handy for whoever wraps up the daily.',
         cfgViewTitle: 'Display mode',
@@ -4668,9 +4697,18 @@
                 }
             });
 
-            label.appendChild(checkbox);
-            label.appendChild(document.createTextNode(name));
-            
+            // Checkbox and name travel as one block so the row can place them
+            // together instead of pinning them to the left edge (see
+            // .participant-inner).
+            const inner = document.createElement('span');
+            inner.className = 'participant-inner';
+            const nameEl = document.createElement('span');
+            nameEl.className = 'participant-name';
+            nameEl.textContent = name;
+            inner.appendChild(checkbox);
+            inner.appendChild(nameEl);
+            label.appendChild(inner);
+
             participantSelection.appendChild(label);
         });
     }

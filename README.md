@@ -46,7 +46,7 @@ Klicke im Tool auf **Einstellungen**, um deine Stammdaten anzupassen:
 
 - **Sprache:** Deutsch oder Englisch.
 - **Daily-Dauer:** Gib die Gesamtzeit deines Meetings in Minuten an (Standard: 15).
-- **Team-Mitglieder:** Trage die Namen deines Teams ein, getrennt durch Kommas, Semikolons oder Zeilenumbrüche. Leerzeichen trennen *nicht*, mehrteilige Namen wie „Anna Maria“ bleiben also eine Person.
+- **Team-Mitglieder:** Trage die Namen deines Teams ein, getrennt durch Kommas, Semikolons oder Zeilenumbrüche. Leerzeichen trennen *nicht*, mehrteilige Namen wie „Anna Maria“ bleiben also eine Person. Das Eingabefeld zeigt ein ganzes Team ohne Scrollen und lässt sich bei Bedarf nach unten aufziehen.
 - **Erstes Mitglied der Liste kommt zum Schluss:** Ist diese Option aktiv, wird der zuerst eingetragene Name erst in den letzten 20 % der Reihenfolge gezogen – praktisch für alle, die das Daily abschließen (Moderation, Scrum Master). Die Regel gilt in allen Ansichten; bei kleinen Teams ist es schlicht der letzte Platz. Fehlt die Person heute, läuft die Runde ganz normal.
 - **Farbthema:** Klassisch (Blau), Waldgrün, Terrakotta, Pflaume, Petrol — oder eine eigene Farbe über den Farbwähler. Aus der Wahl werden Farbton und Sättigung übernommen; die Helligkeitsabstufungen für Flächen, Text, Ränder und Schatten erzeugt die App selbst, sodass jede Farbe lesbar bleibt. Bewusst *nicht* eingefärbt werden die Glücksrad-Segmente, die Spielkarten, die saisonalen Verzierungen und die Warnsymbole des E-Autos — die sind absichtlich bunt bzw. tragen eine feste Bedeutung (Rot = Zeit vorbei).
 - **Anzeigemodus:** Klassisch, Slotmaschine, Roadtrip (E-Auto), Glücksrad, Kartenspiel, Abfahrtstafel, Linienplan oder Fokus.
