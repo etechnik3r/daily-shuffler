@@ -15,7 +15,7 @@
  * changes the bytes of this file, which is what makes the browser register a
  * new worker → triggers the in-app "new version available" banner.
  */
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v6';
 const CACHE_NAME = `daily-taktgeber-${CACHE_VERSION}`;
 
 // Same-origin core assets that make up the offline app shell.

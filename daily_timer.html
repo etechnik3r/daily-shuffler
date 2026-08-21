@@ -1476,6 +1476,12 @@
       margin: 8px auto 0;
       display: none;
     }
+    /* The board speaks one language: the same mechanical face for the flaps,
+       the position numbers, the status column and the header. */
+    #flapContainer {
+      --flap-font: 'Courier New', 'Cutive Mono', monospace;
+      --flap-accent: #f5c518;
+    }
     .flap-board {
       background: linear-gradient(180deg, hsl(var(--brand-h), calc(26% * var(--brand-sat)), 15%) 0%, hsl(var(--brand-h), calc(31% * var(--brand-sat)), 11%) 100%);
       border: 1px solid rgba(0,0,0,0.5);
@@ -1486,29 +1492,31 @@
     }
     .flap-head {
       display: grid;
-      grid-template-columns: 2.2em 1fr 4.6em;
+      grid-template-columns: 2.4em 1fr 5.4em;
       gap: 8px;
       padding: 0 4px 8px;
       border-bottom: 1px solid rgba(255,255,255,0.14);
       margin-bottom: 8px;
-      font-size: 0.68em;
-      font-weight: 800;
-      letter-spacing: 0.12em;
+      font-family: var(--flap-font);
+      font-size: 0.82em;
+      font-weight: 700;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
       color: rgba(255,255,255,0.45);
     }
     .flap-head-state { text-align: right; }
     .flap-row {
       display: grid;
-      grid-template-columns: 2.2em 1fr 4.6em;
+      grid-template-columns: 2.4em 1fr 5.4em;
       gap: 8px;
       align-items: center;
-      padding: 3px 4px;
+      padding: 4px 4px;
     }
     .flap-pos {
+      font-family: var(--flap-font);
       font-variant-numeric: tabular-nums;
-      font-weight: 800;
-      font-size: 0.85em;
+      font-weight: 700;
+      font-size: 1.05em;
       color: rgba(255,255,255,0.4);
     }
     .flap-name { display: flex; gap: 2px; overflow: hidden; }
@@ -1516,14 +1524,21 @@
     .flap-cell {
       position: relative;
       flex: 0 0 auto;
-      min-width: 0.72em;
-      padding: 3px 1px;
+      min-width: 0.82em;
+      /* An explicit box, not a text-driven one: a blank flap must be exactly as
+         tall as a lettered one, otherwise the board grows a little with every
+         name that is revealed. */
+      height: 1.5em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      white-space: pre;
       background: hsl(var(--brand-h), calc(22% * var(--brand-sat)), 22%);
       border-radius: 2px;
-      font-family: 'Courier New', monospace;
+      font-family: var(--flap-font);
       font-weight: 700;
-      font-size: 1.05em;
-      line-height: 1.05;
+      font-size: 1.35em;
+      line-height: 1;
       text-align: center;
       color: hsl(var(--brand-h), calc(53% * var(--brand-sat)), 97%);
       box-shadow: inset 0 -1px 0 rgba(0,0,0,0.5);
@@ -1536,23 +1551,31 @@
       height: 1px;
       background: rgba(0,0,0,0.55);
     }
-    .flap-cell.flipping { color: hsl(var(--brand-h), calc(28% * var(--brand-sat)), 85%); }
+    /* Flipping uses the resting grey – yellow is reserved for "up now". */
+    .flap-cell.flipping { color: hsl(var(--brand-h), calc(20% * var(--brand-sat)), 62%); }
     .flap-cell.blank { background: hsl(var(--brand-h), calc(24% * var(--brand-sat)), 17%); color: transparent; }
     .flap-state {
       text-align: right;
-      font-size: 0.66em;
-      font-weight: 800;
-      letter-spacing: 0.06em;
+      font-family: var(--flap-font);
+      font-size: 0.8em;
+      font-weight: 700;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
       color: rgba(255,255,255,0.35);
     }
-    .flap-row.is-current .flap-cell { background: #f5c518; color: hsl(var(--brand-h), calc(21% * var(--brand-sat)), 13%); }
+    .flap-row.is-current .flap-cell { background: var(--flap-accent); color: hsl(var(--brand-h), calc(21% * var(--brand-sat)), 13%); }
+    /* While the row is still clattering it stays grey; the yellow lands with
+       the last flap, so the colour change *is* the "settled" signal. */
+    .flap-row.is-current .flap-cell.flipping {
+      background: hsl(var(--brand-h), calc(22% * var(--brand-sat)), 22%);
+      color: hsl(var(--brand-h), calc(20% * var(--brand-sat)), 62%);
+    }
     /* ...but the padding cells after a short name stay dark, so the row reads as
        the name it shows rather than as a full-width yellow bar. */
     .flap-row.is-current .flap-cell.blank { background: hsl(var(--brand-h), calc(22% * var(--brand-sat)), 24%); }
     .flap-row.is-done .flap-cell.blank { background: hsl(var(--brand-h), calc(24% * var(--brand-sat)), 17%); }
     .flap-row.is-current .flap-pos,
-    .flap-row.is-current .flap-state { color: #f5c518; }
+    .flap-row.is-current .flap-state { color: var(--flap-accent); }
     .flap-row.is-done .flap-cell { background: hsl(var(--brand-h), calc(22% * var(--brand-sat)), 19%); color: hsla(var(--brand-h), calc(53% * var(--brand-sat)), 97%, 0.42); }
     .flap-row.is-done .flap-pos { color: rgba(255,255,255,0.25); }
 
@@ -4184,6 +4207,10 @@
     const FLAP_STAGGER_MS = 95;   // extra delay for each cell to its right
     const FLAP_TICK_MS = 55;      // how fast the flaps change while running
     const FLAP_MAX_CELLS = 13;    // keeps the board inside the column width
+    // A blank flap. Deliberately a no-break space: a plain space collapses, and
+    // a cell without a text line is shorter than one with a letter – which made
+    // the whole board grow a few pixels with every name revealed.
+    const FLAP_BLANK = '\u00A0';
 
     /**
      * Builds an empty board: one row per participant, numbered, with as many
@@ -4198,8 +4225,8 @@
 
       const longest = list.reduce((max, name) => Math.max(max, name.trim().length), 1);
       flapCellCount = Math.min(FLAP_MAX_CELLS, Math.max(3, longest));
-      // Shrink the type instead of overflowing once names get long.
-      const fontSize = flapCellCount > 9 ? (9 / flapCellCount) : 1;
+      // Only shrink once the name really needs more room than the column has.
+      const fontSize = flapCellCount > 10 ? (10 / flapCellCount) : 1;
 
       list.forEach((_, i) => {
         const row = document.createElement('div');
@@ -4215,7 +4242,7 @@
         for (let c = 0; c < flapCellCount; c++) {
           const cell = document.createElement('span');
           cell.className = 'flap-cell blank';
-          cell.textContent = ' ';
+          cell.textContent = FLAP_BLANK;
           name.appendChild(cell);
         }
 
@@ -4259,11 +4286,12 @@
 
         cells.forEach((cell, i) => {
           const settleAt = settleMs + i * staggerMs;
-          const finalChar = target[i] || ' ';
+          const finalChar = target[i] || FLAP_BLANK;
+          const isBlank = finalChar === FLAP_BLANK || finalChar === ' ';
           if (elapsed >= settleAt) {
-            cell.textContent = finalChar;
+            cell.textContent = isBlank ? FLAP_BLANK : finalChar;
             cell.classList.remove('flipping');
-            cell.classList.toggle('blank', finalChar === ' ');
+            cell.classList.toggle('blank', isBlank);
             return;
           }
           settled = false;
