@@ -9,7 +9,7 @@ Da das Tool ohne Backend auskommt und Daten nur lokal speichert, ist es besonder
 - **Zufallsgenerator:** Bestimmt jeden Tag eine neue, faire Reihenfolge der Teammitglieder.
 - **Abwesenheits-Checkliste:** Mit einem Klick können fehlende Teilnehmer (Urlaub/Krankheit) für das aktuelle Daily abgewählt werden.
 - **Smart Timer:** Berechnet die Zeit pro Person automatisch (z.B. 15 Minuten Gesamtzeit / 5 aktive Personen = 3 Minuten pro Person).
-- **Fünf Anzeigemodi:** Klassische Liste, animierte Slotmaschine, Roadtrip-Ansicht mit E-Auto, das bunte Glücksrad oder das Kartenspiel (siehe unten).
+- **Acht Anzeigemodi:** Klassische Liste, animierte Slotmaschine, Roadtrip-Ansicht mit E-Auto, das bunte Glücksrad, das Kartenspiel, die Abfahrtstafel, der Linienplan oder die ruhige Fokus-Ansicht (siehe unten).
 - **Visuelles Feedback:** Der Timer ändert seine Farbe bei nahendem Zeitende (Gelb &rarr; Orange &rarr; Rot) und zeigt bei Überziehung einen Overtime-Indikator an.
 - **Zweisprachig:** Die komplette Oberfläche ist auf Deutsch und Englisch verfügbar — umschaltbar in den Einstellungen, live und ohne Neuladen.
 - **Saisonale Events:** Rund ums Jahr bekommen alle Ansichten automatisch ein passendes Thema – im Februar (Karneval 🎉), im April (Ostern 🥚), im Oktober (Halloween 🎃) und im Dezember (Winter ❄️).
@@ -21,13 +21,16 @@ Da das Tool ohne Backend auskommt und Daten nur lokal speichert, ist es besonder
 
 ## 🖥️ Anzeigemodi
 
-In den Einstellungen wählst du zwischen fünf Darstellungen:
+In den Einstellungen wählst du zwischen acht Darstellungen:
 
 - **Klassische Ansicht:** Die gewürfelte Reihenfolge als Liste; wer dran ist, wird hervorgehoben.
 - **Slotmaschinen-Ansicht:** Eine animierte Walze mit Hebel lost den nächsten Sprecher aus — inklusive Gewinner-Historie.
 - **Roadtrip-Ansicht (E-Auto):** Ein graues Elektroauto fährt pro Sprecher die Strecke bis zur Zielflagge ab. Die Batterieanzeige (SoC) zeigt die verbleibende Redezeit; bei knapper Zeit erscheinen nacheinander Warnsymbole (Batterie gelb &rarr; Schildkröte gelb &rarr; Schildkröte rot). Ist die Batterie leer, bleibt das Auto stehen. Die Reihenfolge mit den nächsten Teilnehmern wird darunter angezeigt.
 - **Glücksrad-Ansicht:** Ein buntes Rad mit allen Namen dreht sich und lost per Klick auf „Drehen" (oder Leertaste) nacheinander den nächsten Sprecher aus. Bereits gezogene Namen werden abgedunkelt, der Timer pro Person läuft wie gewohnt, und eine Gewinner-Historie zeigt die bisherige Reihenfolge.
 - **Kartenspiel-Ansicht:** Für jeden Sprecher fliegt eine bunte Namenskarte auf den Stapel (per Klick auf „Nächste Karte" oder Leertaste); der Timer pro Person läuft wie in der klassischen Ansicht. Lange Namen werden automatisch verkleinert, sodass sie immer auf eine Zeile passen. Dazwischen tauchen Sonderkarten mit großen, gut erkennbaren Symbolen auf – „Aussetzen" schiebt die betroffene Person ans Ende der Runde, „+2", „+4" und „Wende" sind reine Show. Stilistisch an bekannte Kartenspiele angelehnt, aber bewusst eigenständig gestaltet (eigene Symbole/Farben, keine Marken).
+- **Abfahrtstafel-Ansicht:** Eine Fallblatt-Anzeige wie am Bahnhof. Pro Klick auf „Anzeige stellen" (oder Leertaste) klappert eine Zeile durch zufällige Zeichen und rastet auf dem nächsten Sprecher ein. Anders als bei der Slotmaschine bleibt die komplette Reihenfolge sichtbar: erledigte Zeilen sind abgedunkelt, die aktuelle leuchtet gelb, die übrigen warten leer.
+- **Linienplan-Ansicht:** Die gewürfelte Reihenfolge als Strecke. Jede Person ist eine Haltestelle, ganz unten liegt die Endstation. Der Zug fährt während der Redezeit von der aktuellen zur nächsten Haltestelle – die Position auf der Strecke zeigt damit gleichzeitig die Restzeit der Person und den Fortschritt des gesamten Dailys.
+- **Fokus-Ansicht:** Bewusst ruhig und ohne Ablenkung: der Name des Sprechers groß, darunter eine Sanduhr, deren Sand in Echtzeit vom oberen in den unteren Kolben rieselt. Dazu dezent „3 von 8" und wer als Nächstes kommt. Bei Überziehung färbt sich der Sand rot.
 
 ## 🚀 Live Demo / Nutzung
 
@@ -41,9 +44,9 @@ Klicke im Tool auf **Einstellungen**, um deine Stammdaten anzupassen:
 
 - **Sprache:** Deutsch oder Englisch.
 - **Daily-Dauer:** Gib die Gesamtzeit deines Meetings in Minuten an (Standard: 15).
-- **Team-Mitglieder:** Trage die Namen deines Teams ein (getrennt durch Kommas oder Zeilenumbrüche).
+- **Team-Mitglieder:** Trage die Namen deines Teams ein, getrennt durch Kommas, Semikolons oder Zeilenumbrüche. Leerzeichen trennen *nicht*, mehrteilige Namen wie „Anna Maria“ bleiben also eine Person.
 - **Erstes Mitglied der Liste kommt zum Schluss:** Ist diese Option aktiv, wird der zuerst eingetragene Name erst in den letzten 20 % der Reihenfolge gezogen – praktisch für alle, die das Daily abschließen (Moderation, Scrum Master). Die Regel gilt in allen Ansichten; bei kleinen Teams ist es schlicht der letzte Platz. Fehlt die Person heute, läuft die Runde ganz normal.
-- **Anzeigemodus:** Klassisch, Slotmaschine, Roadtrip (E-Auto), Glücksrad oder Kartenspiel.
+- **Anzeigemodus:** Klassisch, Slotmaschine, Roadtrip (E-Auto), Glücksrad, Kartenspiel, Abfahrtstafel, Linienplan oder Fokus.
 - **Entwickler-Optionen** (ausklappbar): Saison-Override zum Testen der Karneval-, Oster-, Halloween- und Winter-Themes unabhängig vom Systemdatum sowie ein Schnelltest-Button, der den laufenden Timer auf 3 Sekunden setzt.
 
 Diese Daten bleiben für deinen nächsten Besuch im Browser gespeichert.
