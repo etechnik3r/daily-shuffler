@@ -1492,32 +1492,26 @@
     }
     .flap-head {
       display: grid;
-      grid-template-columns: 2.6em 1fr 5.2em;
+      grid-template-columns: auto 1fr auto;
       gap: 8px;
-      padding: 0 4px 8px;
+      align-items: center;
+      padding: 0 4px 10px;
       border-bottom: 1px solid rgba(255,255,255,0.14);
       margin-bottom: 8px;
-      font-family: var(--flap-font);
-      font-size: 0.95em;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.5);
     }
-    .flap-head-state { text-align: right; }
     .flap-row {
       display: grid;
-      grid-template-columns: 2.6em 1fr 5.2em;
+      grid-template-columns: auto 1fr auto;
       gap: 8px;
       align-items: center;
       padding: 4px 4px;
     }
-    .flap-pos {
-      font-family: var(--flap-font);
-      font-variant-numeric: tabular-nums;
-      font-weight: 700;
-      font-size: 1.15em;
-      color: rgba(255,255,255,0.45);
+    /* Position and status are strips of flaps, exactly like the name column. */
+    .flap-pos,
+    .flap-state {
+      display: flex;
+      gap: 2px;
+      flex: 0 0 auto;
     }
     .flap-name { display: flex; gap: 2px; overflow: hidden; }
     /* One cell per character – the split flap itself. */
@@ -1554,14 +1548,14 @@
     /* Flipping uses the resting grey – yellow is reserved for "up now". */
     .flap-cell.flipping { color: hsl(var(--brand-h), calc(20% * var(--brand-sat)), 62%); }
     .flap-cell.blank { background: hsl(var(--brand-h), calc(24% * var(--brand-sat)), 17%); color: transparent; }
-    .flap-state {
-      text-align: right;
-      font-family: var(--flap-font);
-      font-size: 1.05em;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.4);
+    /* Headings sit on the board as well, just quieter than live data. */
+    .flap-cell.is-label {
+      background: hsl(var(--brand-h), calc(24% * var(--brand-sat)), 18%);
+      color: rgba(255,255,255,0.5);
+      font-size: 0.78em;
+    }
+    .flap-cell.is-label.blank {
+      background: hsl(var(--brand-h), calc(26% * var(--brand-sat)), 14%);
     }
     .flap-row.is-current .flap-cell { background: var(--flap-accent); color: hsl(var(--brand-h), calc(21% * var(--brand-sat)), 13%); }
     /* While the row is still clattering it stays grey; the yellow lands with
@@ -1574,10 +1568,25 @@
        the name it shows rather than as a full-width yellow bar. */
     .flap-row.is-current .flap-cell.blank { background: hsl(var(--brand-h), calc(22% * var(--brand-sat)), 24%); }
     .flap-row.is-done .flap-cell.blank { background: hsl(var(--brand-h), calc(24% * var(--brand-sat)), 17%); }
-    .flap-row.is-current .flap-pos,
-    .flap-row.is-current .flap-state { color: var(--flap-accent); }
     .flap-row.is-done .flap-cell { background: hsl(var(--brand-h), calc(22% * var(--brand-sat)), 19%); color: hsla(var(--brand-h), calc(53% * var(--brand-sat)), 97%, 0.42); }
-    .flap-row.is-done .flap-pos { color: rgba(255,255,255,0.25); }
+    .flap-pos .flap-cell,
+    .flap-state .flap-cell { font-size: 0.86em; }
+
+    /* Done rows recede; the current row's position and status wear the accent. */
+    .flap-row.is-done .flap-pos .flap-cell,
+    .flap-row.is-done .flap-state .flap-cell {
+      background: hsl(var(--brand-h), calc(24% * var(--brand-sat)), 17%);
+      color: hsla(var(--brand-h), calc(53% * var(--brand-sat)), 97%, 0.4);
+    }
+    .flap-row.is-current .flap-pos .flap-cell,
+    .flap-row.is-current .flap-state .flap-cell {
+      background: var(--flap-accent);
+      color: hsl(var(--brand-h), calc(21% * var(--brand-sat)), 13%);
+    }
+    .flap-row.is-current .flap-pos .flap-cell.blank,
+    .flap-row.is-current .flap-state .flap-cell.blank {
+      background: hsl(var(--brand-h), calc(22% * var(--brand-sat)), 24%);
+    }
 
     /* ===================================================================
        Line map (view: line)
@@ -2085,11 +2094,9 @@
        whole running order on screen (unlike the slot machine's single window). -->
   <div id="flapContainer" data-view="flap">
     <div class="flap-board">
-      <div class="flap-head">
-        <span class="flap-head-pos" data-i18n="flapColPos">Pos</span>
-        <span class="flap-head-name" data-i18n="flapColName">Sprecher</span>
-        <span class="flap-head-state" data-i18n="flapColState">Status</span>
-      </div>
+      <!-- Filled with flaps by buildFlapBoard(): on a real departure board the
+           column headings are on the board too, not printed beside it. -->
+      <div class="flap-head" id="flapHead"></div>
       <div id="flapRows"></div>
     </div>
     <div class="slot-controls">
@@ -2452,6 +2459,21 @@
       el.textContent = t('announceSpeaker', { name: name, n: index + 1, total: total });
     }
 
+    /**
+     * Re-letters the flap board's headings and status flaps after a language
+     * change. Defined here (not in the board module) so applyLanguage can call
+     * it during start-up, before a board has ever been built – it simply does
+     * nothing while there is none.
+     */
+    function relabelFlapBoard() {
+      if (!document.getElementById('flapHead')) return;
+      if (typeof buildFlapHeader !== 'function' || !flapCellCount) return;
+      const first = document.querySelector('#flapRows .flap-row .flap-name');
+      const scale = first ? (parseFloat(first.style.fontSize) || 1) : 1;
+      buildFlapHeader(scale);
+      updateFlapRowStates();
+    }
+
     /** Clears the announcement (end of the daily, or back to the selection). */
     function clearAnnouncement() {
       const el = document.getElementById('speakerAnnouncer');
@@ -2700,6 +2722,11 @@
         el.placeholder = t(el.dataset.i18nPlaceholder);
       });
 
+      // The departure board's headings and status column are built from flaps in
+      // JS, so data-i18n cannot reach them. Re-letter them in place – rebuilding
+      // the board would throw away the running round.
+      relabelFlapBoard();
+
       document.querySelectorAll('#langSwitch .lang-option').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.lang === lang);
       });
@@ -2767,6 +2794,7 @@
     let flapAnimating = false;
     let flapAwaitingFinish = false; // last row is up; next click ends the daily
     let flapCellCount = 0;
+    let flapPosTotal = 0;       // team size, so the position column can be sized
     let flapRaf = null;             // pending flip animation, cancelled on reset
 
     let individualTimeSeconds = 0; 
@@ -4214,6 +4242,54 @@
     // the whole board grow a few pixels with every name revealed.
     const FLAP_BLANK = '\u00A0';
 
+    // Every column on the board is flaps – position, name and status. Their
+    // widths are derived, not fixed: the status column has to hold the longest
+    // of its own words plus its heading, and those differ per language
+    // ("WARTET" is six, "WAITING" seven), while the position column grows with
+    // the size of the team.
+
+    /** Flaps needed by the status column in the current language. */
+    function flapStateCells() {
+      return Math.max(
+        t('flapColState').length,
+        t('flapStateNow').length,
+        t('flapStateDone').length,
+        t('flapStateWaiting').length
+      );
+    }
+
+    /** Flaps needed by the position column, e.g. 3 for "10." – plus "POS". */
+    function flapPosCells(total) {
+      return Math.max(t('flapColPos').length, String(Math.max(1, total)).length + 1);
+    }
+
+    /**
+     * Renders a string as a row of flaps, one per character.
+     *
+     * @param {HTMLElement} container - Element to fill (is emptied first).
+     * @param {string} text - The text to show.
+     * @param {number} [width] - Pad/trim to exactly this many flaps.
+     * @param {string} [extraClass] - Extra class for every flap.
+     */
+    function renderFlaps(container, text, width, extraClass) {
+      if (!container) return;
+      container.innerHTML = '';
+      let chars = String(text).toUpperCase();
+      if (width) {
+        chars = chars.length > width ? chars.slice(0, width)
+          : chars.padStart(width, ' ');   // right-aligned, like a real board
+      }
+      for (let i = 0; i < chars.length; i++) {
+        const ch = chars.charAt(i);
+        const cell = document.createElement('span');
+        cell.className = 'flap-cell' + (extraClass ? ' ' + extraClass : '');
+        const blank = ch === ' ';
+        if (blank) cell.classList.add('blank');
+        cell.textContent = blank ? FLAP_BLANK : ch;
+        container.appendChild(cell);
+      }
+    }
+
     /**
      * Measures how many flaps fit across one row at full size, by rendering a
      * throwaway row and reading the real geometry. Done live rather than
@@ -4229,7 +4305,7 @@
       probeRow.style.visibility = 'hidden';
       const pos = document.createElement('span');
       pos.className = 'flap-pos';
-      pos.textContent = '00.';
+      renderFlaps(pos, '00.', flapPosCells(flapPosTotal));
       const nameCol = document.createElement('span');
       nameCol.className = 'flap-name';
       const cell = document.createElement('span');
@@ -4238,7 +4314,7 @@
       nameCol.appendChild(cell);
       const state = document.createElement('span');
       state.className = 'flap-state';
-      state.textContent = t('flapStateWaiting');
+      renderFlaps(state, t('flapStateWaiting'), flapStateCells());
       probeRow.appendChild(pos);
       probeRow.appendChild(nameCol);
       probeRow.appendChild(state);
@@ -4273,6 +4349,7 @@
       if (!rows) return;
       rows.innerHTML = '';
 
+      flapPosTotal = list.length;
       const longest = list.reduce((max, name) => Math.max(max, name.trim().length), 1);
 
       // How many flaps actually fit across the name column? A real departure
@@ -4302,7 +4379,7 @@
 
         const pos = document.createElement('span');
         pos.className = 'flap-pos';
-        pos.textContent = (i + 1) + '.';
+        renderFlaps(pos, (i + 1) + '.', flapPosCells(list.length));
 
         const name = document.createElement('span');
         name.className = 'flap-name';
@@ -4316,13 +4393,46 @@
 
         const state = document.createElement('span');
         state.className = 'flap-state';
-        state.textContent = '–';
+        renderFlaps(state, '', flapStateCells());
 
         row.appendChild(pos);
         row.appendChild(name);
         row.appendChild(state);
         rows.appendChild(row);
       });
+
+      buildFlapHeader(fontSize);
+    }
+
+    /**
+     * The column headings, also as flaps. "SPRECHER" is padded to the same
+     * flap count as the names below it, so the whole board is one grid.
+     *
+     * @param {number} fontSize - Same scale factor the name flaps use.
+     */
+    function buildFlapHeader(fontSize) {
+      const head = document.getElementById('flapHead');
+      if (!head) return;
+      head.innerHTML = '';
+
+      const pos = document.createElement('span');
+      pos.className = 'flap-pos';
+      renderFlaps(pos, t('flapColPos'), flapPosCells(flapPosTotal), 'is-label');
+
+      const name = document.createElement('span');
+      name.className = 'flap-name';
+      name.style.fontSize = fontSize.toFixed(3) + 'em';
+      // Left-aligned heading, padded on the right to the full row width.
+      const label = String(t('flapColName')).toUpperCase().slice(0, flapCellCount);
+      renderFlaps(name, label.padEnd(flapCellCount, ' '), flapCellCount, 'is-label');
+
+      const state = document.createElement('span');
+      state.className = 'flap-state';
+      renderFlaps(state, t('flapColState'), flapStateCells(), 'is-label');
+
+      head.appendChild(pos);
+      head.appendChild(name);
+      head.appendChild(state);
     }
 
     /**
@@ -4335,7 +4445,10 @@
      * @param {Function} onDone - Called once the last cell has locked in.
      */
     function flipRowTo(row, name, onDone) {
-      const cells = Array.from(row.querySelectorAll('.flap-cell'));
+      // Only the name column: the row also holds the position and status flaps
+      // now, and a row-wide query would spell the name across all of them.
+      const nameCol = row.querySelector('.flap-name');
+      const cells = Array.from(nameCol ? nameCol.querySelectorAll('.flap-cell') : []);
       const target = name.trim().toUpperCase().slice(0, cells.length);
       const start = performance.now();
       // Reduced motion: show the result, skip the clatter.
@@ -4393,9 +4506,10 @@
         row.classList.toggle('is-done', isDone);
         const state = row.querySelector('.flap-state');
         if (state) {
-          state.textContent = isCurrent ? t('flapStateNow')
+          const text = isCurrent ? t('flapStateNow')
             : isDone ? t('flapStateDone')
-            : (i < flapDrawn.length ? '' : t('flapStateWaiting'));
+            : t('flapStateWaiting');
+          renderFlaps(state, text, flapStateCells());
         }
       });
     }
