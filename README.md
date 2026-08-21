@@ -11,6 +11,8 @@ Da das Tool ohne Backend auskommt und Daten nur lokal speichert, ist es besonder
 - **Smart Timer:** Berechnet die Zeit pro Person automatisch (z.B. 15 Minuten Gesamtzeit / 5 aktive Personen = 3 Minuten pro Person).
 - **Acht Anzeigemodi:** Klassische Liste, animierte Slotmaschine, Roadtrip-Ansicht mit E-Auto, das bunte Glücksrad, das Kartenspiel, die Abfahrtstafel, der Linienplan oder die ruhige Fokus-Ansicht (siehe unten).
 - **Visuelles Feedback:** Der Timer ändert seine Farbe bei nahendem Zeitende (Gelb &rarr; Orange &rarr; Rot) und zeigt bei Überziehung einen Overtime-Indikator an.
+- **Freie Farbwahl:** Die gesamte Oberfläche wird aus **einem** Grundton berechnet. Neben dem klassischen Blau stehen vier Voreinstellungen (Waldgrün, Terrakotta, Pflaume, Petrol) und ein Farbwähler für jede beliebige Farbe bereit — Flächen, Verläufe, Ränder und Schatten passen sich automatisch an.
+- **Barrierefrei bedienbar:** Bildschirmleser bekommen jeden Sprecherwechsel angesagt, die Dialoge lassen sich mit Tabulator und **Esc** bedienen, und wer im Betriebssystem reduzierte Bewegung eingestellt hat, sieht die Ergebnisse ohne Dreh- und Flug-Animationen.
 - **Zweisprachig:** Die komplette Oberfläche ist auf Deutsch und Englisch verfügbar — umschaltbar in den Einstellungen, live und ohne Neuladen.
 - **Saisonale Events:** Rund ums Jahr bekommen alle Ansichten automatisch ein passendes Thema – im Februar (Karneval 🎉), im April (Ostern 🥚), im Oktober (Halloween 🎃) und im Dezember (Winter ❄️).
 - **Touch-tauglich:** Ein „Nächster Teilnehmer“-Button ersetzt die Leertaste auf Geräten ohne Tastatur.
@@ -46,6 +48,7 @@ Klicke im Tool auf **Einstellungen**, um deine Stammdaten anzupassen:
 - **Daily-Dauer:** Gib die Gesamtzeit deines Meetings in Minuten an (Standard: 15).
 - **Team-Mitglieder:** Trage die Namen deines Teams ein, getrennt durch Kommas, Semikolons oder Zeilenumbrüche. Leerzeichen trennen *nicht*, mehrteilige Namen wie „Anna Maria“ bleiben also eine Person.
 - **Erstes Mitglied der Liste kommt zum Schluss:** Ist diese Option aktiv, wird der zuerst eingetragene Name erst in den letzten 20 % der Reihenfolge gezogen – praktisch für alle, die das Daily abschließen (Moderation, Scrum Master). Die Regel gilt in allen Ansichten; bei kleinen Teams ist es schlicht der letzte Platz. Fehlt die Person heute, läuft die Runde ganz normal.
+- **Farbthema:** Klassisch (Blau), Waldgrün, Terrakotta, Pflaume, Petrol — oder eine eigene Farbe über den Farbwähler. Aus der Wahl werden Farbton und Sättigung übernommen; die Helligkeitsabstufungen für Flächen, Text, Ränder und Schatten erzeugt die App selbst, sodass jede Farbe lesbar bleibt. Bewusst *nicht* eingefärbt werden die Glücksrad-Segmente, die Spielkarten, die saisonalen Verzierungen und die Warnsymbole des E-Autos — die sind absichtlich bunt bzw. tragen eine feste Bedeutung (Rot = Zeit vorbei).
 - **Anzeigemodus:** Klassisch, Slotmaschine, Roadtrip (E-Auto), Glücksrad, Kartenspiel, Abfahrtstafel, Linienplan oder Fokus.
 - **Entwickler-Optionen** (ausklappbar): Saison-Override zum Testen der Karneval-, Oster-, Halloween- und Winter-Themes unabhängig vom Systemdatum sowie ein Schnelltest-Button, der den laufenden Timer auf 3 Sekunden setzt.
 
@@ -57,3 +60,6 @@ Sobald das Daily gestartet wurde (Klick auf *„Würfeln“*), kannst du das Too
 
 - <kbd>Leertaste</kbd> (`Space`): Springt zum nächsten Teammitglied und setzt den Timer zurück.
 - <kbd>Shift</kbd> + <kbd>Leertaste</kbd> (oder <kbd>Strg</kbd> + <kbd>Leertaste</kbd>): Springt zum vorherigen Teammitglied (Rückgängig-Funktion).
+- <kbd>Esc</kbd>: Schließt Einstellungen und Anleitung.
+
+Liegt der Fokus auf einer Schaltfläche, löst die Leertaste diese Schaltfläche aus — die Kürzel greifen also nur, wenn nichts anderes im Weg steht.
