@@ -16,7 +16,9 @@
   <meta name="apple-mobile-web-app-title" content="Taktgeber">
   <style>
     /* --- Base Styles & Typography --- */
-    @import url('https://fonts.googleapis.com/css2?family=Helvetica&display=swap');
+    /* No web font on purpose: the stack below is resolved locally on every
+       target platform, which keeps the app fully offline-capable and stops any
+       request leaving the device. */
 
     /* --- Design tokens: one source of truth so every view shares the same
        surfaces, accent, depth and column width ("aus einem Guss"). --- */
@@ -1415,6 +1417,254 @@
 /* OVERRIDE: compact, content-sized primary button (fits the long slot label). */
 #shuffleButton { max-width: 300px !important; width: auto !important; padding: 12px 22px !important; font-size: 1.05em !important; }
 
+    /* ===================================================================
+       Split-flap departure board (view: flap)
+       A dark board of monospace cells. Drawing a speaker makes one row
+       clatter through characters and settle, left to right.
+       =================================================================== */
+    #flapContainer {
+      width: 100%;
+      max-width: var(--col-width);
+      margin: 8px auto 0;
+      display: none;
+    }
+    .flap-board {
+      background: linear-gradient(180deg, #1c2430 0%, #131a24 100%);
+      border: 1px solid rgba(0,0,0,0.5);
+      border-radius: var(--card-radius);
+      box-shadow: var(--card-shadow), inset 0 1px 0 rgba(255,255,255,0.06);
+      padding: 12px 10px;
+      overflow: hidden;
+    }
+    .flap-head {
+      display: grid;
+      grid-template-columns: 2.2em 1fr 4.6em;
+      gap: 8px;
+      padding: 0 4px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.14);
+      margin-bottom: 8px;
+      font-size: 0.68em;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+    }
+    .flap-head-state { text-align: right; }
+    .flap-row {
+      display: grid;
+      grid-template-columns: 2.2em 1fr 4.6em;
+      gap: 8px;
+      align-items: center;
+      padding: 3px 4px;
+    }
+    .flap-pos {
+      font-variant-numeric: tabular-nums;
+      font-weight: 800;
+      font-size: 0.85em;
+      color: rgba(255,255,255,0.4);
+    }
+    .flap-name { display: flex; gap: 2px; overflow: hidden; }
+    /* One cell per character – the split flap itself. */
+    .flap-cell {
+      position: relative;
+      flex: 0 0 auto;
+      min-width: 0.72em;
+      padding: 3px 1px;
+      background: #2b3543;
+      border-radius: 2px;
+      font-family: 'Courier New', monospace;
+      font-weight: 700;
+      font-size: 1.05em;
+      line-height: 1.05;
+      text-align: center;
+      color: #f2f6fb;
+      box-shadow: inset 0 -1px 0 rgba(0,0,0,0.5);
+    }
+    /* The hinge line that makes it read as a flap rather than a tile. */
+    .flap-cell::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; top: 50%;
+      height: 1px;
+      background: rgba(0,0,0,0.55);
+    }
+    .flap-cell.flipping { color: #cfd8e4; }
+    .flap-cell.blank { background: #222b37; color: transparent; }
+    .flap-state {
+      text-align: right;
+      font-size: 0.66em;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    }
+    .flap-row.is-current .flap-cell { background: #f5c518; color: #1b2029; }
+    /* ...but the padding cells after a short name stay dark, so the row reads as
+       the name it shows rather than as a full-width yellow bar. */
+    .flap-row.is-current .flap-cell.blank { background: #2f3a49; }
+    .flap-row.is-done .flap-cell.blank { background: #222b37; }
+    .flap-row.is-current .flap-pos,
+    .flap-row.is-current .flap-state { color: #f5c518; }
+    .flap-row.is-done .flap-cell { background: #262f3c; color: rgba(242,246,251,0.42); }
+    .flap-row.is-done .flap-pos { color: rgba(255,255,255,0.25); }
+
+    /* ===================================================================
+       Line map (view: line)
+       The running order as a route: stops top to bottom, the train riding
+       the rail between them driven by the per-speaker timer.
+       =================================================================== */
+    #lineContainer {
+      width: 100%;
+      max-width: var(--col-width);
+      margin: 8px auto 0;
+      display: none;
+    }
+    .line-map {
+      position: relative;
+      background: var(--card-bg);
+      border: var(--card-border);
+      border-radius: var(--card-radius);
+      box-shadow: var(--card-shadow);
+      padding: 18px 16px 18px 14px;
+    }
+    /* The rail sits behind the stops; --line-top/--line-span are set from JS so
+       it spans exactly from the first stop's centre to the last one's. */
+    .line-rail {
+      position: absolute;
+      /* 14px map padding + 2px stop padding + 15px dot margin + 9px half dot */
+      left: 37px;
+      top: var(--line-top, 30px);
+      height: var(--line-span, 0px);
+      width: 6px;
+      border-radius: 3px;
+      background: rgba(0,40,120,0.14);
+    }
+    .line-rail-done {
+      width: 100%;
+      height: 0;
+      border-radius: 3px;
+      background: var(--cta-bg);
+      transition: height 0.9s linear;
+    }
+    .line-train {
+      position: absolute;
+      left: 40px;
+      top: 0;
+      font-size: 1.35em;
+      line-height: 1;
+      transform: translate(-50%, -50%);
+      transition: top 0.9s linear;
+      filter: drop-shadow(0 3px 6px rgba(3,21,60,0.30));
+      z-index: 2;
+    }
+    #lineStops {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      position: relative;
+      z-index: 1;
+    }
+    .line-stop {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-height: var(--line-gap, 46px);
+      padding-left: 2px;
+    }
+    .line-dot {
+      flex: 0 0 auto;
+      width: 18px;
+      height: 18px;
+      margin-left: 15px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 4px solid rgba(0,40,120,0.22);
+      box-sizing: border-box;
+      transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+    }
+    .line-label {
+      font-weight: 700;
+      font-size: 1.02em;
+      color: #002878;
+      transition: opacity 0.25s ease;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .line-stop.is-done .line-dot { background: var(--accent); border-color: var(--accent); }
+    .line-stop.is-done .line-label { opacity: 0.45; text-decoration: line-through; }
+    .line-stop.is-current .line-dot {
+      transform: scale(1.35);
+      background: #ffffff;
+      border-color: var(--accent);
+      box-shadow: var(--glow);
+    }
+    .line-stop.is-current .line-label { font-size: 1.16em; font-weight: 800; }
+    .line-terminus .line-dot { border-radius: 4px; border-color: rgba(0,40,120,0.35); }
+
+    /* ===================================================================
+       Focus view (view: focus)
+       Deliberately quiet: one name, one hourglass, no colour.
+       =================================================================== */
+    #focusContainer {
+      width: 100%;
+      max-width: var(--col-width);
+      margin: 8px auto 0;
+      display: none;
+    }
+    .focus-stage {
+      background: var(--card-bg);
+      border: var(--card-border);
+      border-radius: var(--card-radius);
+      box-shadow: var(--card-shadow);
+      padding: 26px 18px 20px;
+      text-align: center;
+    }
+    .focus-name {
+      font-size: 2.1em;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: #002878;
+      line-height: 1.15;
+      margin-bottom: 18px;
+      overflow-wrap: anywhere;
+    }
+    .focus-glass { width: 108px; height: 162px; display: block; margin: 0 auto; }
+    .focus-frame { fill: #8b93a3; }
+    .focus-outline { fill: none; stroke: #8b93a3; stroke-width: 3; stroke-linejoin: round; }
+    .focus-sand { fill: #c9a227; }
+    .focus-stream {
+      stroke: #c9a227;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      opacity: 0;
+    }
+    /* Only visible while time is actually running out. */
+    .focus-running .focus-stream {
+      opacity: 1;
+      animation: focus-trickle 0.9s linear infinite;
+    }
+    @keyframes focus-trickle {
+      0%   { stroke-dasharray: 2 8; stroke-dashoffset: 0; }
+      100% { stroke-dasharray: 2 8; stroke-dashoffset: -10; }
+    }
+    .focus-over .focus-sand { fill: #b3261e; }
+    .focus-progress {
+      margin-top: 16px;
+      font-size: 0.9em;
+      font-weight: 700;
+      color: rgba(0,40,120,0.55);
+      font-variant-numeric: tabular-nums;
+    }
+    .focus-upnext {
+      margin-top: 4px;
+      font-size: 0.82em;
+      color: rgba(0,40,120,0.42);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     /* --- PWA: update banner --- */
     /* Slides in from the top when the service worker has a new version ready. */
     .update-banner {
@@ -1458,6 +1708,22 @@
     .update-banner-btn:hover { filter: brightness(0.96); }
     .update-banner-btn:active { transform: translateY(1px); }
 
+    /* Error notice: same slide-in as the update banner, but muted and
+       self-dismissing so a hiccup never blocks a running daily. */
+    .error-banner {
+      background: linear-gradient(180deg, #b3261e 0%, #7f1d1a 100%);
+      box-shadow: 0 6px 18px rgba(90,10,10,0.30);
+      z-index: 101;
+    }
+    .error-banner .update-banner-text {
+      font-size: 0.9em;
+      font-weight: 600;
+      max-width: 90vw;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     /* --- PWA: install section inside the settings modal --- */
     .install-section {
       margin-bottom: 8px;
@@ -1484,6 +1750,11 @@
     <button id="updateReloadButton" class="update-banner-btn" data-i18n="btnReload">Neu laden</button>
   </div>
 
+  <!-- Replaces the former alert() on window.onerror: visible, but harmless. -->
+  <div id="errorBanner" class="update-banner error-banner" role="alert" aria-live="assertive">
+    <span id="errorBannerText" class="update-banner-text"></span>
+  </div>
+
   <h1 data-i18n="appTitle">⏱️ Daily Taktgeber 🎲</h1>
   
   <div id="participantSelection">
@@ -1504,7 +1775,7 @@
     <span id="timerIconRight" class="timer-icon"></span>
   </div>
 
-  <div id="slotContainer" style="display: none; position: relative;">
+  <div id="slotContainer" data-view="slot" style="display: none; position: relative;">
     <div id="slotStatus" data-i18n="slotStatusInitial">Drücke Starten für Zufall.</div>
     <div class="slot-machine-row">
       <div id="slotTrackWrapper">
@@ -1527,9 +1798,9 @@
     </div>
   </div>
 
-  <ul id="teamList"></ul>
+  <ul id="teamList" data-view="classic"></ul>
 
-  <div id="wheelContainer">
+  <div id="wheelContainer" data-view="wheel">
     <div id="wheelStatus"></div>
     <div class="wheel-stage">
       <div class="wheel-pointer"></div>
@@ -1548,7 +1819,7 @@
     </div>
   </div>
 
-  <div id="cardContainer">
+  <div id="cardContainer" data-view="card">
     <div id="cardStatus"></div>
     <div id="cardPile" class="card-pile"></div>
     <div class="slot-controls">
@@ -1557,7 +1828,7 @@
     </div>
   </div>
 
-  <div id="evContainer">
+  <div id="evContainer" data-view="ev">
     <div id="evRoadWrap">
       <div id="evRoad"></div>
       <div id="evGoal">🏁</div>
@@ -1623,6 +1894,61 @@
     <div id="evSnow"></div>
   </div>
 
+  <!-- Split-flap departure board: draws one speaker at a time, but keeps the
+       whole running order on screen (unlike the slot machine's single window). -->
+  <div id="flapContainer" data-view="flap">
+    <div class="flap-board">
+      <div class="flap-head">
+        <span class="flap-head-pos" data-i18n="flapColPos">Pos</span>
+        <span class="flap-head-name" data-i18n="flapColName">Sprecher</span>
+        <span class="flap-head-state" data-i18n="flapColState">Status</span>
+      </div>
+      <div id="flapRows"></div>
+    </div>
+    <div class="slot-controls">
+      <button id="flapDrawButton" class="app-button slot-spin-button" data-i18n="btnFlapDraw">Anzeige stellen</button>
+      <button id="flapRestartButton" class="app-button slot-restart-button" style="display: none;" data-i18n="btnRestart">Neu starten</button>
+    </div>
+  </div>
+
+  <!-- Line map: the running order as a route, the train's position between two
+       stops is the remaining time of the current speaker. -->
+  <div id="lineContainer" data-view="line">
+    <div class="line-map">
+      <div class="line-rail"><div id="lineRailDone" class="line-rail-done"></div></div>
+      <div id="lineTrain" class="line-train">🚇</div>
+      <ol id="lineStops"></ol>
+    </div>
+  </div>
+
+  <!-- Focus view: no colour, no drama – one name and an hourglass. -->
+  <div id="focusContainer" data-view="focus">
+    <div class="focus-stage">
+      <div id="focusName" class="focus-name"></div>
+      <svg id="focusGlass" class="focus-glass" viewBox="0 0 120 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <clipPath id="focusClipTop"><path d="M22 14 H98 L64 88 H56 Z"/></clipPath>
+          <clipPath id="focusClipBottom"><path d="M56 92 H64 L98 166 H22 Z"/></clipPath>
+        </defs>
+        <!-- frame -->
+        <rect x="16" y="8" width="88" height="7" rx="3.5" class="focus-frame"/>
+        <rect x="16" y="165" width="88" height="7" rx="3.5" class="focus-frame"/>
+        <!-- sand: the rects are moved/resized from updateFocusView() -->
+        <g clip-path="url(#focusClipTop)">
+          <rect id="focusSandTop" x="20" y="14" width="80" height="74" class="focus-sand"/>
+        </g>
+        <g clip-path="url(#focusClipBottom)">
+          <rect id="focusSandBottom" x="20" y="166" width="80" height="0" class="focus-sand"/>
+        </g>
+        <line id="focusStream" x1="60" y1="88" x2="60" y2="150" class="focus-stream"/>
+        <!-- glass outline on top -->
+        <path d="M22 14 H98 L64 88 L98 166 H22 L56 88 Z" class="focus-outline"/>
+      </svg>
+      <div id="focusProgress" class="focus-progress"></div>
+      <div id="focusUpNext" class="focus-upnext"></div>
+    </div>
+  </div>
+
   <button id="nextParticipantButton" class="app-button" style="display: none;" data-i18n="btnNext">Nächster Teilnehmer ▶</button>
 
   <div id="configModal" class="modal">
@@ -1668,6 +1994,9 @@
             <label><input type="radio" name="viewMode" value="ev"> <span data-i18n="viewEv">Roadtrip-Ansicht (E-Auto)</span></label>
             <label><input type="radio" name="viewMode" value="wheel"> <span data-i18n="viewWheel">Glücksrad-Ansicht</span></label>
             <label><input type="radio" name="viewMode" value="card"> <span data-i18n="viewCard">Kartenspiel-Ansicht</span></label>
+            <label><input type="radio" name="viewMode" value="flap"> <span data-i18n="viewFlap">Abfahrtstafel-Ansicht</span></label>
+            <label><input type="radio" name="viewMode" value="line"> <span data-i18n="viewLine">Linienplan-Ansicht</span></label>
+            <label><input type="radio" name="viewMode" value="focus"> <span data-i18n="viewFocus">Fokus-Ansicht (Sanduhr)</span></label>
           </div>
         </div>
       </div>
@@ -1726,8 +2055,35 @@
      * Prevents silent failures by providing visual feedback to the user on critical exceptions.
      */
     window.onerror = function(message, source, lineno, colno, error) {
-        alert(t('alertError', { msg: message }));
+        // Never interrupt a running daily with a modal dialog: the app is shown
+        // on a shared screen, so an error goes to the console and, at most, to a
+        // discreet inline banner.
+        console.error('Daily Taktgeber:', message, source, lineno, colno, error);
+        showErrorBanner(message);
+        return false; // keep the browser's own reporting intact
     };
+
+    /**
+     * Shows the inline error notice for a few seconds. Deliberately defensive:
+     * it is called from the global error handler, so it must never be able to
+     * throw a second error and start a loop.
+     *
+     * @param {string} message - The raw error message.
+     */
+    let errorBannerTimeout = null;
+    function showErrorBanner(message) {
+      try {
+        const banner = document.getElementById('errorBanner');
+        const text = document.getElementById('errorBannerText');
+        if (!banner || !text) return;
+        text.textContent = t('errorNotice', { msg: String(message) });
+        banner.classList.add('visible');
+        clearTimeout(errorBannerTimeout);
+        errorBannerTimeout = setTimeout(() => banner.classList.remove('visible'), 6000);
+      } catch (e) {
+        /* swallow – reporting an error must never cause one */
+      }
+    }
 
     // --- Configuration & Constants ---
     const STORAGE_KEY = 'dailyTeamNames';
@@ -1738,6 +2094,22 @@
     const VIEW_MODE_EV = 'ev';
     const VIEW_MODE_WHEEL = 'wheel';
     const VIEW_MODE_CARD = 'card';
+    const VIEW_MODE_FLAP = 'flap';
+    const VIEW_MODE_LINE = 'line';
+    const VIEW_MODE_FOCUS = 'focus';
+    // One source of truth for "which views exist". Everything that used to
+    // enumerate the modes by hand (validation, hide-all lists, the settings
+    // radios) reads this instead, so adding a view is a one-line change.
+    const ALL_VIEW_MODES = [
+      VIEW_MODE_CLASSIC, VIEW_MODE_SLOT, VIEW_MODE_EV, VIEW_MODE_WHEEL,
+      VIEW_MODE_CARD, VIEW_MODE_FLAP, VIEW_MODE_LINE, VIEW_MODE_FOCUS
+    ];
+    // Views that are driven by drawing one name at a time, so their primary
+    // button reads "Start" instead of "Roll".
+    const DRAW_ONE_BY_ONE_MODES = [VIEW_MODE_SLOT, VIEW_MODE_WHEEL, VIEW_MODE_CARD, VIEW_MODE_FLAP];
+    // Views whose order is rolled up front and stepped through with Space or the
+    // "next participant" button.
+    const STEP_THROUGH_MODES = [VIEW_MODE_CLASSIC, VIEW_MODE_EV, VIEW_MODE_LINE, VIEW_MODE_FOCUS];
     const EVENT_OVERRIDE_KEY = 'dailyEventOverride';
     const FIRST_LAST_KEY = 'dailyFirstMemberLast';
     // Share of the running order reserved for the "first member goes last"
@@ -1767,6 +2139,21 @@
         btnSlotResetRound: 'Slotmaschine Runde zurücksetzen',
         btnWheelResetRound: 'Glücksrad Runde zurücksetzen',
         btnCardResetRound: 'Kartenspiel Runde zurücksetzen',
+        btnFlapResetRound: 'Tafel-Runde zurücksetzen',
+        btnFlapDraw: 'Anzeige stellen',
+        viewFlap: 'Abfahrtstafel-Ansicht',
+        viewLine: 'Linienplan-Ansicht',
+        viewFocus: 'Fokus-Ansicht (Sanduhr)',
+        flapColPos: 'Pos',
+        flapColName: 'Sprecher',
+        flapColState: 'Status',
+        flapStateNow: 'jetzt',
+        flapStateDone: 'fertig',
+        flapStateWaiting: 'wartet',
+        lineTerminus: 'Ziel',
+        focusProgress: '{n} von {total}',
+        focusUpNext: 'Danach: {name}',
+        focusLastSpeaker: 'Letzter Sprecher',
         btnNextCard: 'Nächste Karte',
         btnPlayAgain: 'Nochmal spielen',
         slotStatusInitial: 'Drücke Starten für Zufall.',
@@ -1817,9 +2204,10 @@
         helpTitle: 'So funktioniert es',
         helpIntro: 'Lege in Sekunden eine faire, zufällige Reihenfolge für die Wortbeiträge in deinem Daily fest – mit einem Timer, der die Zeit gleichmäßig auf alle verteilt.',
         helpUsageTitle: 'Auf einen Blick',
-        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Anwesenheit</b>Hake oben ab, wer heute dabei ist. Abgewählte Personen (Urlaub, krank) werden übersprungen.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Reihenfolge würfeln</b>Tippe auf „Würfeln": Die App erstellt eine zufällige Reihenfolge der aktiven Personen und startet den Timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>Die Gesamtdauer wird gleichmäßig aufgeteilt. Wird die Zeit knapp, färbt sich der Timer – erst gelb, dann rot.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Weiter zur nächsten Person</b>Tippe auf „Nächster Teilnehmer" oder drücke die Leertaste.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Einen Schritt zurück</b>Strg oder Umschalt + Leertaste springt zur vorherigen Person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slotmaschinen-Ansicht</b>Lust auf Show? In den Einstellungen schaltest du auf die animierte Slotmaschine um.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip-Ansicht</b>Ein E-Auto fährt die Daily-Strecke ab, die Batterie zeigt die Redezeit. Ist sie leer, kommt die Schildkröte.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Glücksrad-Ansicht</b>Ein buntes Rad mit allen Namen dreht sich und lost nacheinander aus, wer dran ist.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Kartenspiel-Ansicht</b>Für jeden Sprecher fliegt eine bunte Namenskarte auf den Stapel. Sonderkarten sorgen für Spaß – „Aussetzen" verschiebt jemanden ans Ende, der Rest ist nur Show.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Einstellungen</b>Namen, Dauer, Ansicht und Sprache jederzeit anpassen.</div></li>',
+        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Anwesenheit</b>Hake oben ab, wer heute dabei ist. Abgewählte Personen (Urlaub, krank) werden übersprungen.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Reihenfolge würfeln</b>Tippe auf „Würfeln": Die App erstellt eine zufällige Reihenfolge der aktiven Personen und startet den Timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>Die Gesamtdauer wird gleichmäßig aufgeteilt. Wird die Zeit knapp, färbt sich der Timer – erst gelb, dann rot.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Weiter zur nächsten Person</b>Tippe auf „Nächster Teilnehmer" oder drücke die Leertaste.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Einen Schritt zurück</b>Strg oder Umschalt + Leertaste springt zur vorherigen Person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slotmaschinen-Ansicht</b>Lust auf Show? In den Einstellungen schaltest du auf die animierte Slotmaschine um.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip-Ansicht</b>Ein E-Auto fährt die Daily-Strecke ab, die Batterie zeigt die Redezeit. Ist sie leer, kommt die Schildkröte.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Glücksrad-Ansicht</b>Ein buntes Rad mit allen Namen dreht sich und lost nacheinander aus, wer dran ist.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Kartenspiel-Ansicht</b>Für jeden Sprecher fliegt eine bunte Namenskarte auf den Stapel. Sonderkarten sorgen für Spaß – „Aussetzen" verschiebt jemanden ans Ende, der Rest ist nur Show.</div></li><li><span class="help-ico">🚉</span><div class="help-text"><b>Abfahrtstafel-Ansicht</b>Wie am Bahnhof: Pro Klick klappert eine Zeile durch und rastet auf dem nächsten Sprecher ein – die ganze Reihenfolge bleibt dabei sichtbar.</div></li><li><span class="help-ico">🚇</span><div class="help-text"><b>Linienplan-Ansicht</b>Die Reihenfolge als Strecke: Jede Person ist eine Haltestelle, der Zug fährt während der Redezeit zur nächsten. So sieht man immer, wie weit das Daily ist.</div></li><li><span class="help-ico">⏳</span><div class="help-text"><b>Fokus-Ansicht</b>Bewusst ruhig: ein großer Name und eine Sanduhr, die abläuft. Kein Bunt, keine Animation nebenbei.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Einstellungen</b>Namen, Dauer, Ansicht und Sprache jederzeit anpassen.</div></li>',
         alertPickOne: 'Bitte wähle mindestens einen Teilnehmer aus!',
         alertError: 'Ein Fehler ist aufgetreten: {msg}\nBitte Seite neu laden oder Cache leeren.',
+        errorNotice: 'Es ist ein Fehler aufgetreten ({msg}) – das Daily läuft weiter.',
         alertStartError: 'Kritischer Start-Fehler: {msg}'
       },
       en: {
@@ -1835,6 +2223,21 @@
         btnSlotResetRound: 'Reset slot machine round',
         btnWheelResetRound: 'Reset wheel round',
         btnCardResetRound: 'Reset card round',
+        btnFlapResetRound: 'Reset board round',
+        btnFlapDraw: 'Set the board',
+        viewFlap: 'Departure board view',
+        viewLine: 'Line map view',
+        viewFocus: 'Focus view (hourglass)',
+        flapColPos: 'Pos',
+        flapColName: 'Speaker',
+        flapColState: 'Status',
+        flapStateNow: 'now',
+        flapStateDone: 'done',
+        flapStateWaiting: 'waiting',
+        lineTerminus: 'Destination',
+        focusProgress: '{n} of {total}',
+        focusUpNext: 'Up next: {name}',
+        focusLastSpeaker: 'Last speaker',
         btnNextCard: 'Next card',
         btnPlayAgain: 'Play again',
         slotStatusInitial: 'Press Start for a random pick.',
@@ -1885,9 +2288,10 @@
         helpTitle: 'How it works',
         helpIntro: 'Set a fair, random speaking order for your daily in seconds – with a timer that splits the time evenly across everyone.',
         helpUsageTitle: 'At a glance',
-        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Attendance</b>Tick who is in today. Unticked people (vacation, sick) are skipped.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Roll the order</b>Tap “Roll” and the app builds a random order of the active people and starts the timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>The total time is split evenly. As it runs low the timer changes colour – yellow, then red.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Next person</b>Tap “Next participant” or press the spacebar.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Step back</b>Ctrl or Shift + Space jumps to the previous person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slot machine view</b>Want a bit of show? Switch to the animated slot machine in the settings.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip view</b>An EV drives the daily route while the battery shows the speaking time. When it is empty, the turtle appears.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Wheel of fortune view</b>A colourful wheel with every name spins and draws who is up next, one by one.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Card game view</b>A colourful name card is thrown onto the pile for each speaker. Special cards add fun – “Skip” moves someone to the end, the rest are just for show.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Settings</b>Adjust names, duration, view and language anytime.</div></li>',
+        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Attendance</b>Tick who is in today. Unticked people (vacation, sick) are skipped.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Roll the order</b>Tap “Roll” and the app builds a random order of the active people and starts the timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>The total time is split evenly. As it runs low the timer changes colour – yellow, then red.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Next person</b>Tap “Next participant” or press the spacebar.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Step back</b>Ctrl or Shift + Space jumps to the previous person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slot machine view</b>Want a bit of show? Switch to the animated slot machine in the settings.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip view</b>An EV drives the daily route while the battery shows the speaking time. When it is empty, the turtle appears.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Wheel of fortune view</b>A colourful wheel with every name spins and draws who is up next, one by one.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Card game view</b>A colourful name card is thrown onto the pile for each speaker. Special cards add fun – “Skip” moves someone to the end, the rest are just for show.</div></li><li><span class="help-ico">🚉</span><div class="help-text"><b>Departure board view</b>Like a railway station: each click sends a row clattering until it settles on the next speaker – with the whole running order staying on screen.</div></li><li><span class="help-ico">🚇</span><div class="help-text"><b>Line map view</b>The running order as a route: every person is a stop and the train travels to the next one while they speak, so you can always see how far along the daily is.</div></li><li><span class="help-ico">⏳</span><div class="help-text"><b>Focus view</b>Deliberately quiet: one large name and an hourglass running out. No colour, no side show.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Settings</b>Adjust names, duration, view and language anytime.</div></li>',
         alertPickOne: 'Please select at least one participant!',
         alertError: 'An error occurred: {msg}\nPlease reload the page or clear the cache.',
+        errorNotice: 'Something went wrong ({msg}) – the daily keeps running.',
         alertStartError: 'Critical startup error: {msg}'
       }
     };
@@ -1986,10 +2390,13 @@
 
     // Wheel-of-fortune state (mirrors the slot machine's spin-to-pick flow).
     let currentWheelList = [];
+    // Slot indices into currentWheelList, NOT names: two team members may share
+    // a name, and each still owns exactly one slice of the disc.
     let remainingWheelParticipants = [];
     let previousWheelWinners = [];
-    let usedWheelNames = new Set();
+    let usedWheelSlots = new Set();
     let currentWheelWinner = null;
+    let currentWheelSlot = null;
     let wheelSessionActive = false;
     let wheelAnimating = false;
     let wheelAwaitingFinish = false; // last name drawn, its timer runs; next click ends
@@ -2006,6 +2413,15 @@
     let cardAnimating = false;  // a skip/flair interlude is playing
     let cardTimeouts = [];      // pending interlude timers, cleared on reset
     
+    // Split-flap board state (draws one speaker at a time onto a fixed board).
+    let remainingFlapParticipants = [];
+    let flapDrawn = [];
+    let flapSessionActive = false;
+    let flapAnimating = false;
+    let flapAwaitingFinish = false; // last row is up; next click ends the daily
+    let flapCellCount = 0;
+    let flapRaf = null;             // pending flip animation, cancelled on reset
+
     let individualTimeSeconds = 0; 
     let timeRemainingSeconds = 0; 
     let timerInterval = null; 
@@ -2044,6 +2460,8 @@
     const evGoal = document.getElementById('evGoal');
     const evBatteryFill = document.getElementById('evBatteryFill');
     const evBatteryPct = document.getElementById('evBatteryPct');
+    const flapDrawButton = document.getElementById('flapDrawButton');
+    const flapRestartButton = document.getElementById('flapRestartButton');
     const viewModeInputs = document.querySelectorAll('input[name="viewMode"]');
 
     if (slotSpinButton) {
@@ -2141,6 +2559,8 @@
         }
 
         updateEvView();
+        updateLineView();
+        updateFocusView();
     }
     
     /**
@@ -2296,17 +2716,13 @@
     }
 
     function updateSlotUsedState() {
-      if (!slotTrack || currentShuffledList.length === 0) return;
+      if (!slotTrack) return;
 
-      const usedNames = new Set(
-        currentShuffledList
-          .slice(0, Math.max(0, activeIndex))
-          .map(name => name.trim().toUpperCase())
-      );
-
+      // The reel is rebuilt from remainingSlotParticipants before every spin, so
+      // whatever is on it is still in the round. Marking by name would grey out a
+      // second team member who happens to share a name with someone already drawn.
       slotTrack.querySelectorAll('.slot-item').forEach(item => {
-        const itemName = (item.dataset.name || item.textContent || '').trim().toUpperCase();
-        item.classList.toggle('used-participant', usedNames.has(itemName));
+        item.classList.remove('used-participant');
       });
     }
 
@@ -2316,10 +2732,13 @@
      * * @param {number} newIndex - The targeted index in the participant list.
      */
     function updateActiveParticipant(newIndex) {
-      if (viewMode === VIEW_MODE_EV) {
+      // Views that render their own stage instead of the <li> list.
+      if (viewMode === VIEW_MODE_EV || viewMode === VIEW_MODE_LINE || viewMode === VIEW_MODE_FOCUS) {
         if (currentShuffledList.length === 0) return;
         activeIndex = Math.max(0, Math.min(currentShuffledList.length - 1, newIndex));
-        updateEvQueue();
+        if (viewMode === VIEW_MODE_EV) updateEvQueue();
+        if (viewMode === VIEW_MODE_LINE) updateLineView();
+        if (viewMode === VIEW_MODE_FOCUS) updateFocusView();
         return;
       }
       const listItems = teamList.querySelectorAll('li');
@@ -2352,13 +2771,21 @@
         setEvWarnIcon(null);
         updateEvQueue(true);
       }
+      if (viewMode === VIEW_MODE_LINE) {
+        // Run the train into the terminus and tick off every stop.
+        updateLineView(true);
+      }
+      if (viewMode === VIEW_MODE_FOCUS) {
+        const focusEl = document.getElementById('focusContainer');
+        if (focusEl) focusEl.classList.remove('focus-running', 'focus-over');
+      }
       showConfetti();
     }
 
     /** Same effect as pressing Space – for touch devices without a keyboard. */
     function advanceClassicParticipant() {
       if (configModal.style.display === 'block' || helpModal.style.display === 'block') return;
-      if (viewMode !== VIEW_MODE_CLASSIC && viewMode !== VIEW_MODE_EV) return;
+      if (STEP_THROUGH_MODES.indexOf(viewMode) === -1) return;
       if (viewMode === VIEW_MODE_CLASSIC && teamList.querySelectorAll('li').length === 0) return;
       if (currentShuffledList.length === 0) return;
       if (activeIndex < currentShuffledList.length - 1) {
@@ -2482,9 +2909,7 @@
     function displayEvTeam(list) {
       currentShuffledList = list.filter(name => name.trim() !== '');
 
-      slotContainer.style.display = 'none';
-      teamList.style.display = 'none';
-      evContainer.style.display = 'block';
+      showView(VIEW_MODE_EV);
       evContainer.classList.remove('ev-driving');
       setEvWarnIcon(null);
       applySeason();
@@ -2510,9 +2935,8 @@
     function displayClassicTeam(list) {
       currentShuffledList = list.filter(name => name.trim() !== '');
 
-      slotContainer.style.display = 'none';
+      showView(VIEW_MODE_CLASSIC);
       teamList.style.opacity = '0';
-      teamList.style.display = 'block';
 
       setTimeout(() => {
         teamList.innerHTML = '';
@@ -2662,9 +3086,8 @@
       currentSlotWinner = null;
       slotSessionActive = true;
 
-      teamList.style.display = 'none';
+      showView(VIEW_MODE_SLOT);
       setNextButtonVisible(false);
-      slotContainer.style.display = 'block';
       hideSlotEndOverlay();
       updateSlotHistory();
       const restartBtn = document.getElementById('slotRestartButton');
@@ -2740,6 +3163,7 @@
         circle.setAttribute('r', r);
         circle.setAttribute('fill', WHEEL_COLORS[0]);
         circle.dataset.name = upper;
+        circle.dataset.slot = '0';
         svg.appendChild(circle);
 
         // Largest font that fits the diameter (with a small margin).
@@ -2756,6 +3180,7 @@
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'middle');
         text.dataset.name = upper;
+        text.dataset.slot = '0';
         text.textContent = upper;
         svg.appendChild(text);
         return;
@@ -2788,6 +3213,7 @@
         path.setAttribute('stroke', 'rgba(255,255,255,0.85)');
         path.setAttribute('stroke-width', '2');
         path.dataset.name = upper;
+        path.dataset.slot = String(i);
         svg.appendChild(path);
 
         const mid = start + seg / 2;
@@ -2810,6 +3236,7 @@
         text.setAttribute('dominant-baseline', 'middle');
         text.setAttribute('transform', `rotate(${rot.toFixed(2)} ${tx.toFixed(2)} ${ty.toFixed(2)})`);
         text.dataset.name = upper;
+        text.dataset.slot = String(i);
         text.textContent = upper;
         svg.appendChild(text);
       });
@@ -2833,11 +3260,10 @@
     function updateWheelSegmentStates() {
       const svg = document.getElementById('wheelSvg');
       if (!svg) return;
-      const curr = currentWheelWinner ? currentWheelWinner.trim().toUpperCase() : null;
       svg.querySelectorAll('path, text, circle').forEach(el => {
-        const name = (el.dataset.name || '').trim().toUpperCase();
-        const used = usedWheelNames.has(name);
-        const isCurrent = curr && name === curr;
+        const slot = Number(el.dataset.slot);
+        const used = usedWheelSlots.has(slot);
+        const isCurrent = currentWheelSlot !== null && slot === currentWheelSlot;
         const isText = el.tagName === 'text';
         el.style.opacity = used ? (isText ? '0.4' : '0.25') : '1';
         if (!isText) el.classList.toggle('wheel-current', !!isCurrent);
@@ -2858,11 +3284,12 @@
       const n = currentWheelList.length;
       const seg = 360 / n;
 
-      const pick = remainingWheelParticipants[
-        pickNextParticipantIndex(remainingWheelParticipants, currentWheelList.length)];
-      const pickUpper = pick.trim().toUpperCase();
-      const idx = currentWheelList.findIndex(
-        name => name.trim().toUpperCase() === pickUpper);
+      // Draw a position within the remaining slots; the anchor rule works on
+      // names, so hand it the names behind those slots.
+      const remainingNames = remainingWheelParticipants.map(slot => currentWheelList[slot]);
+      const pickPos = pickNextParticipantIndex(remainingNames, currentWheelList.length);
+      const idx = remainingWheelParticipants[pickPos];
+      const pick = currentWheelList[idx];
 
       // Rotation that brings slice `idx` centre under the top pointer, plus a few
       // full turns so the wheel always spins forward from its current position.
@@ -2883,15 +3310,15 @@
 
         // The previously highlighted speaker now becomes a greyed-out slice;
         // the freshly drawn name takes over as the highlighted current speaker.
-        if (currentWheelWinner) {
-          usedWheelNames.add(currentWheelWinner.trim().toUpperCase());
+        if (currentWheelSlot !== null) {
+          usedWheelSlots.add(currentWheelSlot);
         }
+        currentWheelSlot = idx;
         currentWheelWinner = pick.trim();
         previousWheelWinners.push(pick.trim());
-        remainingWheelParticipants = currentWheelList.filter(name => {
-          const u = name.trim().toUpperCase();
-          return !usedWheelNames.has(u) && u !== pickUpper;
-        });
+        // Drop exactly the slice that was drawn – never every slice that happens
+        // to carry the same name.
+        remainingWheelParticipants = remainingWheelParticipants.filter(slot => slot !== idx);
         updateWheelSegmentStates();
         updateWheelHistory();
 
@@ -2929,20 +3356,18 @@
     function displayWheelTeam(list) {
       currentShuffledList = list.filter(name => name.trim() !== '');
       currentWheelList = currentShuffledList.slice();
-      remainingWheelParticipants = currentWheelList.slice();
+      remainingWheelParticipants = currentWheelList.map((_, i) => i);
       previousWheelWinners = [];
-      usedWheelNames = new Set();
+      usedWheelSlots = new Set();
       currentWheelWinner = null;
+      currentWheelSlot = null;
       wheelSessionActive = true;
       wheelAnimating = false;
       wheelAwaitingFinish = false;
       wheelRotation = 0;
 
-      teamList.style.display = 'none';
-      slotContainer.style.display = 'none';
-      evContainer.style.display = 'none';
+      showView(VIEW_MODE_WHEEL);
       setNextButtonVisible(false);
-      wheelContainer.style.display = 'block';
       applySeason();
       updateWheelHistory();
 
@@ -2987,7 +3412,7 @@
       }
       if (wheelRestartButton) wheelRestartButton.style.display = 'none';
       clearText(wheelStatus);
-      wheelContainer.style.display = 'none';
+      showView(null);
       participantSelection.style.display = 'flex';
       if (shuffleButton) setText(shuffleButton, 'btnStart');
     }
@@ -3198,12 +3623,8 @@
       cardAnimating = false;
       cardSessionActive = true;
 
-      teamList.style.display = 'none';
-      slotContainer.style.display = 'none';
-      wheelContainer.style.display = 'none';
-      evContainer.style.display = 'none';
+      showView(VIEW_MODE_CARD);
       setNextButtonVisible(false);
-      cardContainer.style.display = 'block';
       applySeason();
       if (cardPile) cardPile.innerHTML = '';
       clearText(cardStatus);
@@ -3229,11 +3650,439 @@
     /** Plays another card round with the same participants (no detour back). */
     function playCardAgain() {
       const names = (currentShuffledList || []).slice();
-      if (names.length === 0) { participantSelection.style.display = 'flex'; cardContainer.style.display = 'none'; return; }
+      if (names.length === 0) { participantSelection.style.display = 'flex'; showView(null); return; }
       participantSelection.style.display = 'none';
       shuffleButton.style.display = 'inline-block';
       setText(shuffleButton, 'btnCardResetRound');
       displayCardTeam(names);
+    }
+
+    // --- Line Map View Module ---
+
+    /**
+     * Renders the running order as a route: one stop per speaker plus a
+     * terminus, so the train always has a next stop to head for.
+     */
+    function buildLineMap() {
+      const stops = document.getElementById('lineStops');
+      if (!stops) return;
+      stops.innerHTML = '';
+
+      const entries = currentShuffledList.concat([t('lineTerminus')]);
+      // Keep the whole route on screen: the more stops, the tighter the gaps.
+      const gap = Math.max(30, Math.min(52, Math.round(340 / entries.length)));
+
+      entries.forEach((name, i) => {
+        const li = document.createElement('li');
+        li.className = 'line-stop';
+        if (i === entries.length - 1) li.classList.add('line-terminus');
+        li.style.setProperty('--line-gap', gap + 'px');
+
+        const dot = document.createElement('span');
+        dot.className = 'line-dot';
+
+        const label = document.createElement('span');
+        label.className = 'line-label';
+        label.textContent = i === entries.length - 1 ? '🏁 ' + name : name;
+
+        li.appendChild(dot);
+        li.appendChild(label);
+        stops.appendChild(li);
+      });
+    }
+
+    /** Centre of a stop's dot, relative to the map container. */
+    function lineDotCentre(index) {
+      const stops = document.getElementById('lineStops');
+      const map = stops && stops.closest('.line-map');
+      const li = stops && stops.children[index];
+      if (!li || !map) return 0;
+      const dot = li.querySelector('.line-dot');
+      const dotBox = (dot || li).getBoundingClientRect();
+      const mapBox = map.getBoundingClientRect();
+      return dotBox.top - mapBox.top + dotBox.height / 2;
+    }
+
+    /**
+     * Moves the train between the current stop and the next one. The fraction of
+     * the leg already travelled is the fraction of the speaker's time used up,
+     * so the route doubles as a progress bar for the whole daily.
+     *
+     * @param {boolean} [atTerminus] - Park the train at the final stop.
+     */
+    function updateLineView(atTerminus) {
+      if (viewMode !== VIEW_MODE_LINE) return;
+      const stops = document.getElementById('lineStops');
+      const train = document.getElementById('lineTrain');
+      const railDone = document.getElementById('lineRailDone');
+      const rail = railDone && railDone.parentElement;
+      if (!stops || !train || stops.children.length === 0) return;
+
+      const last = stops.children.length - 1;
+      const first = lineDotCentre(0);
+      const span = lineDotCentre(last) - first;
+      if (rail) {
+        rail.style.setProperty('--line-top', first + 'px');
+        rail.style.setProperty('--line-span', Math.max(0, span) + 'px');
+      }
+
+      let pos;
+      if (atTerminus) {
+        pos = lineDotCentre(last);
+      } else {
+        const i = Math.max(0, Math.min(last - 1, activeIndex));
+        const used = individualTimeSeconds > 0
+          ? Math.max(0, Math.min(1, 1 - timeRemainingSeconds / individualTimeSeconds))
+          : 0;
+        pos = lineDotCentre(i) + used * (lineDotCentre(i + 1) - lineDotCentre(i));
+      }
+
+      train.style.top = pos + 'px';
+      if (railDone) railDone.style.height = Math.max(0, pos - first) + 'px';
+
+      Array.from(stops.children).forEach((li, i) => {
+        li.classList.toggle('is-done', atTerminus ? i < last : i < activeIndex);
+        li.classList.toggle('is-current', !atTerminus && i === activeIndex);
+      });
+    }
+
+    /** Renders the line map and puts the train at the first stop. */
+    function displayLineTeam(list) {
+      currentShuffledList = list.filter(name => name.trim() !== '');
+
+      showView(VIEW_MODE_LINE);
+      applySeason();
+
+      if (currentShuffledList.length === 0) {
+        activeIndex = -1;
+        const stops = document.getElementById('lineStops');
+        if (stops) stops.innerHTML = '<li class="line-stop"><span class="line-label">'
+          + t('noActiveParticipants') + '</span></li>';
+        setNextButtonVisible(false);
+        return;
+      }
+
+      activeIndex = 0;
+      buildLineMap();
+      setNextButtonVisible(true);
+      // The shuffle handler starts the timer; updateLineView() runs on each tick.
+      updateLineView();
+    }
+
+    // --- Focus View Module ---
+
+    // Hourglass geometry, matching the clip paths in the SVG markup.
+    const FOCUS_TOP_Y = 14;
+    const FOCUS_TOP_H = 74;
+    const FOCUS_BOTTOM_END = 166;
+
+    /**
+     * Draws the quiet view: the current name, sand running out of the upper
+     * bulb into the lower one, and a discreet "n of m" plus who is up next.
+     */
+    function updateFocusView() {
+      if (viewMode !== VIEW_MODE_FOCUS) return;
+      const container = document.getElementById('focusContainer');
+      const nameEl = document.getElementById('focusName');
+      const top = document.getElementById('focusSandTop');
+      const bottom = document.getElementById('focusSandBottom');
+      if (!container || currentShuffledList.length === 0) return;
+
+      const total = currentShuffledList.length;
+      const i = Math.max(0, Math.min(total - 1, activeIndex));
+      if (nameEl) nameEl.textContent = currentShuffledList[i];
+
+      const left = individualTimeSeconds > 0
+        ? Math.max(0, Math.min(1, timeRemainingSeconds / individualTimeSeconds)) : 0;
+
+      // Upper bulb drains from the top down; the lower one fills from the base up.
+      if (top) {
+        top.setAttribute('y', (FOCUS_TOP_Y + FOCUS_TOP_H * (1 - left)).toFixed(2));
+        top.setAttribute('height', (FOCUS_TOP_H * left).toFixed(2));
+      }
+      if (bottom) {
+        const h = FOCUS_TOP_H * (1 - left);
+        bottom.setAttribute('y', (FOCUS_BOTTOM_END - h).toFixed(2));
+        bottom.setAttribute('height', h.toFixed(2));
+      }
+
+      container.classList.toggle('focus-running', timeRemainingSeconds > 0);
+      container.classList.toggle('focus-over', timeRemainingSeconds < 0);
+
+      const progress = document.getElementById('focusProgress');
+      if (progress) progress.textContent = t('focusProgress', { n: i + 1, total: total });
+
+      const upNext = document.getElementById('focusUpNext');
+      if (upNext) {
+        upNext.textContent = (i + 1 < total)
+          ? t('focusUpNext', { name: currentShuffledList[i + 1] })
+          : t('focusLastSpeaker');
+      }
+    }
+
+    /** Renders the focus view for the first speaker. */
+    function displayFocusTeam(list) {
+      currentShuffledList = list.filter(name => name.trim() !== '');
+
+      showView(VIEW_MODE_FOCUS);
+      applySeason();
+
+      const container = document.getElementById('focusContainer');
+      if (container) container.classList.remove('focus-running', 'focus-over');
+
+      if (currentShuffledList.length === 0) {
+        activeIndex = -1;
+        const nameEl = document.getElementById('focusName');
+        if (nameEl) nameEl.textContent = t('noActiveParticipants');
+        setNextButtonVisible(false);
+        return;
+      }
+
+      activeIndex = 0;
+      setNextButtonVisible(true);
+      updateFocusView();
+    }
+
+    // --- Split-Flap Departure Board View Module ---
+
+    // Characters the flaps cycle through while a row is still settling.
+    const FLAP_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ0123456789 -.';
+    const FLAP_SETTLE_MS = 850;   // until the leftmost cell locks in
+    const FLAP_STAGGER_MS = 95;   // extra delay for each cell to its right
+    const FLAP_TICK_MS = 55;      // how fast the flaps change while running
+    const FLAP_MAX_CELLS = 13;    // keeps the board inside the column width
+
+    /**
+     * Builds an empty board: one row per participant, numbered, with as many
+     * flap cells as the longest name needs.
+     *
+     * @param {Array<string>} list - Participants of this round.
+     */
+    function buildFlapBoard(list) {
+      const rows = document.getElementById('flapRows');
+      if (!rows) return;
+      rows.innerHTML = '';
+
+      const longest = list.reduce((max, name) => Math.max(max, name.trim().length), 1);
+      flapCellCount = Math.min(FLAP_MAX_CELLS, Math.max(3, longest));
+      // Shrink the type instead of overflowing once names get long.
+      const fontSize = flapCellCount > 9 ? (9 / flapCellCount) : 1;
+
+      list.forEach((_, i) => {
+        const row = document.createElement('div');
+        row.className = 'flap-row';
+
+        const pos = document.createElement('span');
+        pos.className = 'flap-pos';
+        pos.textContent = (i + 1) + '.';
+
+        const name = document.createElement('span');
+        name.className = 'flap-name';
+        name.style.fontSize = fontSize.toFixed(3) + 'em';
+        for (let c = 0; c < flapCellCount; c++) {
+          const cell = document.createElement('span');
+          cell.className = 'flap-cell blank';
+          cell.textContent = ' ';
+          name.appendChild(cell);
+        }
+
+        const state = document.createElement('span');
+        state.className = 'flap-state';
+        state.textContent = '–';
+
+        row.appendChild(pos);
+        row.appendChild(name);
+        row.appendChild(state);
+        rows.appendChild(row);
+      });
+    }
+
+    /**
+     * Clatters one row through random characters and settles it on `name`,
+     * left to right. Time-based (not frame-based) so the effect lasts the same
+     * on every refresh rate.
+     *
+     * @param {HTMLElement} row - The row to fill.
+     * @param {string} name - The name to settle on.
+     * @param {Function} onDone - Called once the last cell has locked in.
+     */
+    function flipRowTo(row, name, onDone) {
+      const cells = Array.from(row.querySelectorAll('.flap-cell'));
+      const target = name.trim().toUpperCase().slice(0, cells.length);
+      const start = performance.now();
+      const ticks = new Array(cells.length).fill(-1);
+
+      cells.forEach(cell => {
+        cell.classList.remove('blank');
+        cell.classList.add('flipping');
+      });
+
+      function frame(now) {
+        const elapsed = now - start;
+        let settled = true;
+
+        cells.forEach((cell, i) => {
+          const settleAt = FLAP_SETTLE_MS + i * FLAP_STAGGER_MS;
+          const finalChar = target[i] || ' ';
+          if (elapsed >= settleAt) {
+            cell.textContent = finalChar;
+            cell.classList.remove('flipping');
+            cell.classList.toggle('blank', finalChar === ' ');
+            return;
+          }
+          settled = false;
+          const tick = Math.floor(elapsed / FLAP_TICK_MS);
+          if (tick !== ticks[i]) {
+            ticks[i] = tick;
+            cell.textContent = FLAP_ALPHABET.charAt(
+              Math.floor(Math.random() * FLAP_ALPHABET.length));
+          }
+        });
+
+        if (settled) {
+          flapRaf = null;
+          onDone();
+          return;
+        }
+        flapRaf = requestAnimationFrame(frame);
+      }
+
+      flapRaf = requestAnimationFrame(frame);
+    }
+
+    /** Marks every row: drawn ones done, the newest one current, rest waiting. */
+    function updateFlapRowStates() {
+      const rows = document.getElementById('flapRows');
+      if (!rows) return;
+      Array.from(rows.children).forEach((row, i) => {
+        const isCurrent = i === flapDrawn.length - 1;
+        const isDone = i < flapDrawn.length - 1;
+        row.classList.toggle('is-current', isCurrent);
+        row.classList.toggle('is-done', isDone);
+        const state = row.querySelector('.flap-state');
+        if (state) {
+          state.textContent = isCurrent ? t('flapStateNow')
+            : isDone ? t('flapStateDone')
+            : (i < flapDrawn.length ? '' : t('flapStateWaiting'));
+        }
+      });
+    }
+
+    /**
+     * Draws the next speaker onto the board. After the last one the button ends
+     * the daily, mirroring the wheel and card views.
+     */
+    function advanceFlap() {
+      if (!flapSessionActive || flapAnimating) return;
+
+      if (flapAwaitingFinish) {
+        flapAwaitingFinish = false;
+        finishDaily();
+        return;
+      }
+      if (remainingFlapParticipants.length === 0) return;
+
+      const rows = document.getElementById('flapRows');
+      const row = rows && rows.children[flapDrawn.length];
+      if (!row) return;
+
+      flapAnimating = true;
+      if (flapDrawButton) flapDrawButton.disabled = true;
+
+      const pickIndex = pickNextParticipantIndex(
+        remainingFlapParticipants, currentShuffledList.length);
+      const [pick] = remainingFlapParticipants.splice(pickIndex, 1);
+      flapDrawn.push(pick);
+
+      flipRowTo(row, pick, () => {
+        flapAnimating = false;
+        activeIndex = flapDrawn.length - 1;
+        updateFlapRowStates();
+        // The freshly revealed speaker's time starts now – including the last.
+        startTimer();
+        if (remainingFlapParticipants.length === 0) {
+          flapAwaitingFinish = true;
+          if (flapDrawButton) {
+            flapDrawButton.disabled = false;
+            setText(flapDrawButton, 'btnEndDaily');
+          }
+        } else if (flapDrawButton) {
+          flapDrawButton.disabled = false;
+        }
+      });
+    }
+
+    /** Renders the departure board and arms the first draw. */
+    function displayFlapTeam(list) {
+      currentShuffledList = list.filter(name => name.trim() !== '');
+      remainingFlapParticipants = currentShuffledList.slice();
+      flapDrawn = [];
+      flapSessionActive = true;
+      flapAnimating = false;
+      flapAwaitingFinish = false;
+      if (flapRaf !== null) { cancelAnimationFrame(flapRaf); flapRaf = null; }
+
+      showView(VIEW_MODE_FLAP);
+      setNextButtonVisible(false);
+      applySeason();
+
+      if (flapRestartButton) flapRestartButton.style.display = 'none';
+      if (flapDrawButton) flapDrawButton.style.display = '';
+
+      if (currentShuffledList.length === 0) {
+        const rows = document.getElementById('flapRows');
+        if (rows) rows.innerHTML = '';
+        activeIndex = -1;
+        if (flapDrawButton) flapDrawButton.disabled = true;
+        return;
+      }
+
+      buildFlapBoard(currentShuffledList);
+      updateFlapRowStates();
+
+      // Preview the per-speaker budget; the clock starts with the first draw.
+      timerDisplay.style.display = 'inline-flex';
+      individualTimeSeconds = Math.floor((totalDailyTimeMinutes * 60) / currentShuffledList.length);
+      timeRemainingSeconds = individualTimeSeconds;
+      updateTimerDisplay();
+
+      if (flapDrawButton) {
+        flapDrawButton.disabled = false;
+        setText(flapDrawButton, 'btnFlapDraw');
+      }
+    }
+
+    /** Restarts the board round: back to the participant selection. */
+    function resetFlap() {
+      flapSessionActive = false;
+      flapAwaitingFinish = false;
+      flapAnimating = false;
+      if (flapRaf !== null) { cancelAnimationFrame(flapRaf); flapRaf = null; }
+      if (flapDrawButton) {
+        flapDrawButton.disabled = true;
+        flapDrawButton.style.display = '';
+        setText(flapDrawButton, 'btnFlapDraw');
+      }
+      if (flapRestartButton) flapRestartButton.style.display = 'none';
+      showView(null);
+      participantSelection.style.display = 'flex';
+      if (shuffleButton) setText(shuffleButton, 'btnStart');
+    }
+
+    /**
+     * Shows exactly one stage and hides every other one. Previously six separate
+     * functions each hid a different, hand-maintained subset of the containers –
+     * which only worked because a mode change always funnelled through
+     * hideResults(). Driving it off [data-view] keeps every view honest.
+     *
+     * @param {string|null} mode - The view to reveal, or null to hide them all.
+     */
+    function showView(mode) {
+      // Every stage defaults to display:none in CSS, so the visible one needs an
+      // explicit value rather than a reset to ''.
+      document.querySelectorAll('[data-view]').forEach(el => {
+        el.style.display = (el.dataset.view === mode) ? 'block' : 'none';
+      });
     }
 
     function displayTeam(list) {
@@ -3245,40 +4094,39 @@
         displayWheelTeam(list);
       } else if (viewMode === VIEW_MODE_CARD) {
         displayCardTeam(list);
+      } else if (viewMode === VIEW_MODE_FLAP) {
+        displayFlapTeam(list);
+      } else if (viewMode === VIEW_MODE_LINE) {
+        displayLineTeam(list);
+      } else if (viewMode === VIEW_MODE_FOCUS) {
+        displayFocusTeam(list);
       } else {
         displayClassicTeam(list);
       }
     }
 
     function setViewMode(mode) {
-      viewMode = (mode === VIEW_MODE_SLOT || mode === VIEW_MODE_EV || mode === VIEW_MODE_WHEEL || mode === VIEW_MODE_CARD)
-        ? mode : VIEW_MODE_CLASSIC;
+      viewMode = ALL_VIEW_MODES.indexOf(mode) !== -1 ? mode : VIEW_MODE_CLASSIC;
       localStorage.setItem(VIEW_MODE_KEY, viewMode);
-      teamList.style.display = 'none';
+      showView(null);
       setNextButtonVisible(false);
-      slotContainer.style.display = 'none';
-      evContainer.style.display = 'none';
-      wheelContainer.style.display = 'none';
-      cardContainer.style.display = 'none';
       participantSelection.style.display = 'flex';
       shuffleButton.style.display = 'inline-block';
-      // Slot, wheel and card all act after starting, so they share "Start".
-      const spinFirst = viewMode === VIEW_MODE_SLOT || viewMode === VIEW_MODE_WHEEL || viewMode === VIEW_MODE_CARD;
+      // The draw-one-at-a-time views all act after starting, so they share "Start".
+      const spinFirst = DRAW_ONE_BY_ONE_MODES.indexOf(viewMode) !== -1;
       setText(shuffleButton, spinFirst ? 'btnStart' : 'btnRoll');
       if (slotSpinButton) slotSpinButton.disabled = true;
       if (wheelSpinButton) wheelSpinButton.disabled = true;
       if (cardThrowButton) cardThrowButton.disabled = true;
+      if (flapDrawButton) flapDrawButton.disabled = true;
       wheelSessionActive = false;
       cardSessionActive = false;
+      flapSessionActive = false;
     }
 
     function hideResults() {
-      teamList.style.display = 'none';
+      showView(null);
       setNextButtonVisible(false);
-      slotContainer.style.display = 'none';
-      evContainer.style.display = 'none';
-      wheelContainer.style.display = 'none';
-      cardContainer.style.display = 'none';
       if (slotTrack) {
         slotTrack.style.transition = 'none';
       }
@@ -3291,10 +4139,16 @@
       if (cardThrowButton) {
         cardThrowButton.disabled = true;
       }
+      if (flapDrawButton) {
+        flapDrawButton.disabled = true;
+      }
       clearCardTimeouts();
+      if (flapRaf !== null) { cancelAnimationFrame(flapRaf); flapRaf = null; }
       cardAnimating = false;
+      flapAnimating = false;
       wheelSessionActive = false;
       cardSessionActive = false;
+      flapSessionActive = false;
     }
 
     function finishDaily() {
@@ -3337,6 +4191,16 @@
         return;
       }
 
+      if (viewMode === VIEW_MODE_FLAP) {
+        // Board view: leave the finished board on screen, offer one restart CTA.
+        flapSessionActive = false;
+        flapAwaitingFinish = false;
+        flapAnimating = false;
+        if (flapDrawButton) flapDrawButton.style.display = 'none';
+        if (flapRestartButton) flapRestartButton.style.display = 'inline-block';
+        return;
+      }
+
       // Slot view (default spin-to-pick finisher).
       clearText(slotStatus);
       slotSessionActive = false;
@@ -3366,7 +4230,7 @@
       }
       hideSlotEndOverlay();
       setText(slotStatus, 'slotStatusRestart');
-      slotContainer.style.display = 'none';
+      showView(null);
       participantSelection.style.display = 'flex';
       if (shuffleButton) {
         setText(shuffleButton, 'btnStart');
@@ -3522,9 +4386,11 @@
      * Persists modal inputs to local storage and updates the application state.
      */
     function saveConfig() {
+      // Split on commas, semicolons and line breaks only – NOT on plain spaces,
+      // so multi-part names ("Anna Maria", "van Dijk") survive intact.
       const newNames = teamNamesInput.value
-        .split(/[,\s]+/)
-        .map(name => name.trim())
+        .split(/[,;\n\r]+/)
+        .map(name => name.replace(/\s+/g, ' ').trim())
         .filter(name => name.length > 0);
         
       currentTeamMembers = newNames.length > 0 ? newNames : [...initialTeamMembers]; 
@@ -3542,7 +4408,7 @@
       }
 
       const selectedViewMode = document.querySelector('input[name="viewMode"]:checked');
-      if (selectedViewMode && [VIEW_MODE_SLOT, VIEW_MODE_CLASSIC, VIEW_MODE_EV, VIEW_MODE_WHEEL, VIEW_MODE_CARD].indexOf(selectedViewMode.value) !== -1) {
+      if (selectedViewMode && ALL_VIEW_MODES.indexOf(selectedViewMode.value) !== -1) {
           viewMode = selectedViewMode.value;
           localStorage.setItem(VIEW_MODE_KEY, viewMode);
       }
@@ -3559,7 +4425,7 @@
       hideResults();
 
       shuffleButton.style.display = 'inline-block';
-      if (viewMode === VIEW_MODE_SLOT || viewMode === VIEW_MODE_WHEEL || viewMode === VIEW_MODE_CARD) {
+      if (DRAW_ONE_BY_ONE_MODES.indexOf(viewMode) !== -1) {
           setText(shuffleButton, 'btnStart');
           if (slotSpinButton) slotSpinButton.disabled = true;
           if (wheelSpinButton) wheelSpinButton.disabled = true;
@@ -3631,7 +4497,7 @@
       }
 
       const storedViewMode = localStorage.getItem(VIEW_MODE_KEY);
-      if ([VIEW_MODE_SLOT, VIEW_MODE_CLASSIC, VIEW_MODE_EV, VIEW_MODE_WHEEL, VIEW_MODE_CARD].indexOf(storedViewMode) !== -1) {
+      if (ALL_VIEW_MODES.indexOf(storedViewMode) !== -1) {
         viewMode = storedViewMode;
       } else {
         viewMode = VIEW_MODE_CLASSIC;
@@ -3648,7 +4514,7 @@
      * Modifier + Space: Previous participant
      */
     document.addEventListener('keydown', (event) => {
-        if (configModal.style.display === 'block' || helpModal.style.display === 'block' || currentShuffledList.length === 0 || slotAnimating || wheelAnimating || cardAnimating) {
+        if (configModal.style.display === 'block' || helpModal.style.display === 'block' || currentShuffledList.length === 0 || slotAnimating || wheelAnimating || cardAnimating || flapAnimating) {
             return;
         }
 
@@ -3670,6 +4536,12 @@
             // Card view: Space throws the next card (and ends after the last).
             if (viewMode === VIEW_MODE_CARD) {
                 advanceCard();
+                return;
+            }
+
+            // Board view: Space sets the next row (and ends after the last).
+            if (viewMode === VIEW_MODE_FLAP) {
+                advanceFlap();
                 return;
             }
 
@@ -3745,6 +4617,9 @@
       } else if (viewMode === VIEW_MODE_CARD) {
         // displayCardTeam throws the first card and starts the timer itself.
         setText(shuffleButton, 'btnCardResetRound');
+      } else if (viewMode === VIEW_MODE_FLAP) {
+        // The timer starts once the first row has settled, not on roll.
+        setText(shuffleButton, 'btnFlapResetRound');
       } else {
         setText(shuffleButton, 'btnRollAgain');
         startTimer();
@@ -3783,6 +4658,13 @@
     }
     if (cardRestartButton) {
       cardRestartButton.addEventListener('click', playCardAgain);
+    }
+    if (flapDrawButton) {
+      // advanceFlap() handles the "end daily" step after the last row itself.
+      flapDrawButton.addEventListener('click', advanceFlap);
+    }
+    if (flapRestartButton) {
+      flapRestartButton.addEventListener('click', resetFlap);
     }
     const nextParticipantButton = document.getElementById('nextParticipantButton');
     if (nextParticipantButton) {
