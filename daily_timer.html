@@ -23,22 +23,40 @@
     /* --- Design tokens: one source of truth so every view shares the same
        surfaces, accent, depth and column width ("aus einem Guss"). --- */
     :root {
-      --accent: #1366ff;
-      --accent-deep: #002878;
+      /* --- Theme: the whole interface is derived from ONE hue plus a
+         saturation factor. Everything else in this stylesheet states its own
+         saturation and lightness and only borrows the hue, so switching the
+         theme re-tints every surface, border, shadow and glow consistently
+         instead of needing a second palette per colour.
+
+         --brand-h   0-360, the base hue (220 = the classic blue)
+         --brand-sat multiplier on every saturation (1 = as designed)
+
+         Deliberately NOT themed: the wheel slices, the playing cards, the
+         seasonal decorations and the EV warning symbols. Those are meant to be
+         many-coloured or carry a fixed meaning (red = out of time). --- */
+      --brand-h: 220;
+      --brand-sat: 1;
+
+      --accent: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 54%);
+      --accent-deep: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 24%);
       --col-width: 340px;
-      --card-bg: linear-gradient(180deg, #ffffff 0%, #f4f8ff 100%);
-      --card-border: 1px solid rgba(0,40,120,0.10);
+      --card-bg: linear-gradient(180deg, #ffffff 0%, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 98%) 100%);
+      --card-border: 1px solid hsla(var(--brand-h), calc(100% * var(--brand-sat)), 24%, 0.10);
       --card-radius: 16px;
-      --card-shadow: 0 10px 24px rgba(3,21,60,0.10);
-      --cta-bg: linear-gradient(180deg, #1366ff 0%, #002878 100%);
-      --cta-shadow: 0 12px 24px rgba(0,40,120,0.28);
-      --glow: 0 0 0 2px rgba(0,122,255,0.55), 0 6px 16px rgba(0,122,255,0.18);
-      --glow-bg: linear-gradient(180deg, rgba(0,122,255,0.10), rgba(0,122,255,0.03));
+      --card-shadow: 0 10px 24px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.10);
+      --cta-bg: linear-gradient(180deg, var(--accent) 0%, var(--accent-deep) 100%);
+      --cta-shadow: 0 12px 24px hsla(var(--brand-h), calc(100% * var(--brand-sat)), 24%, 0.28);
+      --glow: 0 0 0 2px hsla(var(--brand-h), calc(100% * var(--brand-sat)), 50%, 0.55),
+              0 6px 16px hsla(var(--brand-h), calc(100% * var(--brand-sat)), 50%, 0.18);
+      --glow-bg: linear-gradient(180deg,
+              hsla(var(--brand-h), calc(100% * var(--brand-sat)), 50%, 0.10),
+              hsla(var(--brand-h), calc(100% * var(--brand-sat)), 50%, 0.03));
     }
 
     body {
       font-family: 'Helvetica', 'Arial', sans-serif;
-      background: linear-gradient(180deg, #f3f6fc 0%, #eef2f9 100%);
+      background: linear-gradient(180deg, hsl(var(--brand-h), calc(60% * var(--brand-sat)), 97%) 0%, hsl(var(--brand-h), calc(48% * var(--brand-sat)), 95%) 100%);
       background-attachment: fixed;
       display: flex;
       flex-direction: column;
@@ -47,7 +65,7 @@
       min-height: 100vh;
       margin: 0;
       padding: 20px;
-      color: #002878;
+      color: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 24%);
     }
 
     h1 {
@@ -71,18 +89,57 @@
       margin: 10px 0;
       box-shadow: var(--cta-shadow);
       transition: filter 0.15s ease, transform 0.1s ease, background 0.2s ease;
-      width: 90%;
+      /* Same width as every stage and card, so the column has one clean edge. */
+      width: 100%;
       max-width: var(--col-width);
+      box-sizing: border-box;
     }
 
     .app-button:hover { filter: brightness(1.07); }
     .app-button:active { transform: translateY(1px); }
+    .app-button:disabled {
+      opacity: 0.45;
+      cursor: default;
+      filter: none;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Quiet variant. Used for the secondary controls and for the primary button
+       once a round is running – there the view's own action (spin, deal, set the
+       board) is the real primary, and two competing CTAs read as a choice the
+       user does not have. */
+    .app-button.is-quiet {
+      background: #ffffff;
+      color: var(--accent-deep);
+      border: 1px solid hsl(var(--brand-h), calc(52% * var(--brand-sat)), 89%);
+      box-shadow: 0 4px 12px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.06);
+      font-weight: 700;
+      font-size: 1em;
+      padding: 12px 15px;
+    }
+    .app-button.is-quiet:hover {
+      background: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 97%);
+      filter: none;
+    }
+
+    /* Keyboard focus must be visible; a mouse click must not leave a ring
+       behind (which is what the browser default did on the roll button). */
+    .app-button:focus { outline: none; }
+    .app-button:focus-visible,
+    .theme-dot:focus-visible,
+    .theme-custom:focus-visible,
+    .participant-checkbox:focus-visible,
+    .close:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
+    }
 
     /* Secondary Action Buttons Container */
     .control-buttons-container {
         display: flex;
         flex-direction: column;
-        width: 90%;
+        width: 100%;
         max-width: var(--col-width);
         margin-top: 10px;
         margin-bottom: 20px;
@@ -96,24 +153,9 @@
         }
     }
 
-    /* Secondary actions – quiet, tinted cards so the primary CTA stands out. */
-    #editButton, #helpButton {
-        background: #ffffff;
-        color: var(--accent-deep);
-        border: 1px solid #d3dcf1;
-        box-shadow: 0 4px 12px rgba(3,21,60,0.06);
-        font-weight: 700;
-        padding: 12px 15px;
-        font-size: 1em;
-        margin: 0;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    #editButton:hover, #helpButton:hover {
-        background: #eef3ff;
-        filter: none;
-    }
+    /* Secondary actions – they share .is-quiet with the primary button's calm
+       state, so there is one definition of "quiet button" instead of two. */
+    #editButton, #helpButton { margin: 0; }
     
     @media (min-width: 480px) {
         #editButton, #helpButton {
@@ -127,7 +169,8 @@
         flex-direction: column;
         align-items: center;
         gap: 10px;
-        width: 90%;
+        width: 100%;
+        box-sizing: border-box;
         max-width: var(--col-width);
         margin-bottom: 20px;
         background: var(--card-bg);
@@ -142,7 +185,8 @@
     .participant-label {
         display: flex;
         align-items: center;
-        justify-content: flex-start;
+        /* The pair inside is centred as a fixed-width block – see below. */
+        justify-content: center;
         background: #ffffff;
         padding: 13px 16px;
         border-radius: 12px;
@@ -151,30 +195,51 @@
         font-weight: 600;
         color: var(--accent-deep);
         transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
-        border: 1px solid #dde4f3;
+        border: 1px solid hsl(var(--brand-h), calc(48% * var(--brand-sat)), 91%);
         user-select: none;
         width: 100%;
         box-sizing: border-box;
     }
 
     .participant-label:hover {
-        background: #eef3ff;
-        box-shadow: 0 4px 12px rgba(3,21,60,0.07);
+        background: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 97%);
+        box-shadow: 0 4px 12px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.07);
     }
 
     .participant-label input[type="checkbox"] {
         margin-right: 14px;
         width: 20px;
         height: 20px;
+        flex: 0 0 auto;
         accent-color: var(--accent);
         cursor: pointer;
+    }
+
+    /* First names are short, so left-aligned rows left a lot of empty space to
+       the right and the names looked stranded. Centring each name on its own
+       would make the text edge jump from row to row; instead the checkbox and
+       the name share a block of ONE fixed width – wide enough for a typical
+       first name – and that block is centred. The text edge is therefore
+       identical in every row, and only unusually long names extend past it,
+       into the space that is free anyway. */
+    .participant-inner {
+        display: flex;
+        align-items: center;
+        /* checkbox (20px) + gap (14px) + room for a ~9-character first name */
+        width: calc(34px + 9ch);
+        max-width: 100%;
+    }
+
+    .participant-name {
+        flex: 0 0 auto;
+        white-space: nowrap;
     }
 
     /* State: Participant unselected */
     .participant-label.unchecked {
         opacity: 0.55;
-        background: #f1f2f5;
-        border-color: #e2e5ec;
+        background: hsl(var(--brand-h), calc(17% * var(--brand-sat)), 95%);
+        border-color: hsl(var(--brand-h), calc(21% * var(--brand-sat)), 91%);
         text-decoration: line-through;
         color: #888;
     }
@@ -183,7 +248,10 @@
     #timerContainer {
         display: flex;
         align-items: center;
+        justify-content: center;
         margin: 20px 0;
+        width: 100%;
+        max-width: var(--col-width);
     }
 
     .timer-icon {
@@ -195,7 +263,11 @@
     }
     
     #timerDisplay {
-        font-size: 3.3em;
+        /* Scales with the viewport but never past the ceiling, so even the
+           six-character overtime reading ("+01:32") stays inside the pill. */
+        font-size: clamp(2.1rem, 11vw, 3.2rem);
+        max-width: 100%;
+        box-sizing: border-box;
         font-weight: 800;
         color: var(--accent-deep);
         display: none;
@@ -268,7 +340,7 @@
     /* The whole slot view lives in one centred column. */
     #slotContainer {
       width: 100%;
-      max-width: 340px;
+      max-width: var(--col-width);
       margin: 8px auto 0;
       position: relative;
       display: none;
@@ -283,19 +355,19 @@
     #slotTrackWrapper {
       position: relative;
       width: 100%;
-      max-width: 300px;
+      max-width: var(--col-width);
       height: 200px;
       margin: 0 auto;
       overflow: hidden;
       border-radius: 16px;
-      border: 1px solid rgba(0,40,120,0.10);
-      background: linear-gradient(180deg,#ffffff 0%, #f4f8ff 100%);
+      border: 1px solid hsla(var(--brand-h), calc(100% * var(--brand-sat)), 24%, 0.10);
+      background: linear-gradient(180deg,#ffffff 0%, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 98%) 100%);
       /* outer lift + top/bottom inner vignette so names roll into the cabinet */
       box-shadow:
-        0 14px 30px rgba(3,21,60,0.14),
+        0 14px 30px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.14),
         0 2px 0 rgba(255,255,255,0.9) inset,
-        0 22px 22px -16px rgba(3,21,60,0.30) inset,
-        0 -22px 22px -16px rgba(3,21,60,0.30) inset;
+        0 22px 22px -16px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.30) inset,
+        0 -22px 22px -16px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.30) inset;
     }
     #slotTrack {
       position: absolute;
@@ -313,13 +385,13 @@
       box-sizing: border-box;
       font-size: 1.3em;
       font-weight: 700;
-      color: #042a5f;
+      color: hsl(var(--brand-h), calc(92% * var(--brand-sat)), 19%);
       text-transform: uppercase;
       text-align: center;
       letter-spacing: 0.06em;
     }
     .slot-item.used-participant {
-      color: rgba(4,42,95,0.35);
+      color: hsla(var(--brand-h), calc(92% * var(--brand-sat)), 19%, 0.35);
       opacity: 0.6;
     }
     #slotStatus {
@@ -327,7 +399,7 @@
       margin-bottom: 14px;
       font-size: 1em;
       font-weight: 700;
-      color: #003c88;
+      color: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 27%);
       text-align: center;
     }
     /* Highlight band marking the winning row. */
@@ -339,10 +411,10 @@
       height: 58px;
       transform: translateY(-50%);
       border-radius: 10px;
-      background: linear-gradient(180deg, rgba(0,122,255,0.10), rgba(0,122,255,0.03));
+      background: linear-gradient(180deg, hsla(var(--brand-h), calc(100% * var(--brand-sat)), 50%, 0.10), hsla(var(--brand-h), calc(100% * var(--brand-sat)), 50%, 0.03));
       box-shadow:
-        0 0 0 2px rgba(0,122,255,0.55),
-        0 6px 16px rgba(0,122,255,0.18);
+        0 0 0 2px hsla(var(--brand-h), calc(100% * var(--brand-sat)), 50%, 0.55),
+        0 6px 16px hsla(var(--brand-h), calc(100% * var(--brand-sat)), 50%, 0.18);
       pointer-events: none;
     }
     /* Lever, mounted on the right of the cabinet. Absolutely positioned so it
@@ -364,13 +436,13 @@
     .slot-handle {
       width: 36px;
       height: 120px;
-      background: linear-gradient(180deg,#e6eefc 0%, #cfe3ff 100%);
+      background: linear-gradient(180deg,hsl(var(--brand-h), calc(79% * var(--brand-sat)), 95%) 0%, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 91%) 100%);
       border-radius: 10px;
       display: flex;
       align-items: flex-start;
       justify-content: center;
       padding-top: 10px;
-      box-shadow: 0 6px 12px rgba(3,21,60,0.06);
+      box-shadow: 0 6px 12px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.06);
       transform-origin: bottom center;
       transform: rotate(-14deg);
       transition: transform 0.35s cubic-bezier(0.22,1,0.36,1);
@@ -378,54 +450,19 @@
     .slot-handle-knob {
       width: 20px;
       height: 20px;
-      background: radial-gradient(circle at 30% 30%, #fff 0%, #d0e7ff 30%, #6aa2ff 100%);
+      background: radial-gradient(circle at 30% 30%, #fff 0%, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 91%) 30%, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 71%) 100%);
       border-radius: 50%;
-      box-shadow: 0 2px 6px rgba(3,21,60,0.15);
+      box-shadow: 0 2px 6px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.15);
     }
     .slot-handle.pulled { transform: rotate(24deg); }
-    .slot-end-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(255,255,255,0.88);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      text-align: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.35s ease;
-      z-index: 15;
-    }
-    .slot-end-overlay.active {
-      opacity: 1;
-    }
-    .slot-end-message {
-      background: rgba(255,255,255,0.96);
-      border: 1px solid rgba(0,40,120,0.15);
-      border-radius: 18px;
-      padding: 18px 24px;
-      box-shadow: 0 18px 45px rgba(0,0,0,0.12);
-      color: #002878;
-      font-size: 1.35em;
-      font-weight: 800;
-      letter-spacing: 0.02em;
-      max-width: 90%;
-    }
-    #slotStatus {
-      margin-top: 12px;
-      font-size: 0.95em;
-      color: #556;
-      text-align: center;
-    }
     .slot-history {
       width: 100%;
-      max-width: 300px;
+      max-width: var(--col-width);
       margin: 20px auto 0;
-      background: #f4f7ff;
+      background: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 98%);
       padding: 14px 16px;
       border-radius: 14px;
-      border: 1px solid #d3dcf1;
+      border: 1px solid hsl(var(--brand-h), calc(52% * var(--brand-sat)), 89%);
       box-sizing: border-box;
     }
     .slot-history-title {
@@ -434,12 +471,12 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: #1c317e;
+      color: hsl(var(--brand-h), calc(64% * var(--brand-sat)), 30%);
     }
     .slot-history ol {
       padding-left: 1.1em;
       margin: 0;
-      color: #243b6a;
+      color: hsl(var(--brand-h), calc(49% * var(--brand-sat)), 28%);
       font-size: 0.95em;
     }
     .slot-history li {
@@ -458,7 +495,7 @@
     .slot-spin-button {
       flex: 1 1 auto;
       width: 100%;
-      max-width: 300px;
+      max-width: var(--col-width);
       margin: 0;
       font-size: 1.2em;
       font-weight: 800;
@@ -467,13 +504,13 @@
       padding: 16px 24px;
       border-radius: 16px;
       height: 60px;
-      background: linear-gradient(180deg, #1366ff 0%, #002878 100%);
-      box-shadow: 0 12px 24px rgba(0,40,120,0.28);
+      background: linear-gradient(180deg, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 54%) 0%, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 24%) 100%);
+      box-shadow: 0 12px 24px hsla(var(--brand-h), calc(100% * var(--brand-sat)), 24%, 0.28);
     }
     .slot-spin-button:hover { filter: brightness(1.07); }
     .slot-spin-button:active { transform: translateY(1px); }
     .slot-spin-button:disabled {
-      background: #b9c4dd;
+      background: hsl(var(--brand-h), calc(35% * var(--brand-sat)), 80%);
       box-shadow: none;
       cursor: default;
       filter: none;
@@ -483,7 +520,7 @@
        differs so it reads as a fresh-start action. */
     .slot-restart-button {
       display: none;
-      background: linear-gradient(180deg, #4d6de0 0%, #29327e 100%);
+      background: linear-gradient(180deg, hsl(var(--brand-h), calc(70% * var(--brand-sat)), 59%) 0%, hsl(var(--brand-h), calc(51% * var(--brand-sat)), 33%) 100%);
     }
     .slot-empty {
       display: flex;
@@ -523,14 +560,14 @@
       bottom: 12px;
       height: 26px;
       border-radius: 8px;
-      background: linear-gradient(180deg, #5a6377 0%, #434b5e 100%);
+      background: linear-gradient(180deg, #5a6377 0%, hsl(var(--brand-h), calc(17% * var(--brand-sat)), 32%) 100%);
       /* dashed centre line */
       background-image: repeating-linear-gradient(90deg,
         transparent 0 18px, rgba(255,255,255,0.85) 18px 30px, transparent 30px 48px);
       background-size: 48px 3px;
       background-repeat: repeat-x;
       background-position: 0 50%;
-      background-color: #4a5266;
+      background-color: hsl(var(--brand-h), calc(16% * var(--brand-sat)), 35%);
     }
     /* Finish flag at 75% of the road, so there is visible tarmac behind it. */
     #evGoal {
@@ -653,12 +690,12 @@
     /* Upcoming speakers, like the classic list, so people can prepare. */
     #evQueueCard {
       width: 100%;
-      max-width: 300px;
+      max-width: var(--col-width);
       margin: 18px auto 0;
-      background: #f4f7ff;
+      background: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 98%);
       padding: 12px 16px;
       border-radius: 14px;
-      border: 1px solid #d3dcf1;
+      border: 1px solid hsl(var(--brand-h), calc(52% * var(--brand-sat)), 89%);
       box-sizing: border-box;
     }
     #evQueue {
@@ -741,7 +778,7 @@
     .season-winter #teamList {
       position: relative;
       border: 2px solid #ffffff;
-      background: linear-gradient(180deg, #eef5ff 0%, #dcebfb 100%);
+      background: linear-gradient(180deg, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 97%) 0%, hsl(var(--brand-h), calc(79% * var(--brand-sat)), 92%) 100%);
       overflow: hidden;
     }
     .season-winter #teamList li.active-participant::before { content: '⛄ '; }
@@ -760,7 +797,7 @@
     .season-halloween .slot-history-title::before { content: '🎃 '; }
     .season-winter #slotTrackWrapper {
       border: 2px solid #ffffff;
-      background: linear-gradient(180deg, #eef5ff 0%, #dcebfb 100%);
+      background: linear-gradient(180deg, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 97%) 0%, hsl(var(--brand-h), calc(79% * var(--brand-sat)), 92%) 100%);
     }
     .season-winter .slot-history-title::before { content: '❄️ '; }
 
@@ -787,14 +824,14 @@
     /* --- Developer options (collapsed details in the settings modal) --- */
     .dev-options {
       margin-top: 18px;
-      border-top: 1px solid #e3e9f6;
+      border-top: 1px solid hsl(var(--brand-h), calc(51% * var(--brand-sat)), 93%);
       padding-top: 10px;
     }
     .dev-options summary {
       cursor: pointer;
       font-size: 0.85em;
       font-weight: 700;
-      color: #6a7ba3;
+      color: hsl(var(--brand-h), calc(24% * var(--brand-sat)), 53%);
       text-transform: uppercase;
       letter-spacing: 0.06em;
       user-select: none;
@@ -813,23 +850,23 @@
     #seasonOverrideSelect {
       width: 100%;
       padding: 10px 12px;
-      border: 1px solid #d3dcf1;
+      border: 1px solid hsl(var(--brand-h), calc(52% * var(--brand-sat)), 89%);
       border-radius: 12px;
-      background: #f6f9ff;
+      background: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 98%);
       font-size: 0.95em;
       color: var(--accent-deep);
     }
     #turtleTestButton {
-      background: #eef3ff;
+      background: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 97%);
       color: var(--accent-deep);
-      border: 1px solid #d3dcf1;
+      border: 1px solid hsl(var(--brand-h), calc(52% * var(--brand-sat)), 89%);
       box-shadow: none;
       font-size: 0.95em;
       padding: 10px 14px;
       width: 100%;
       margin: 0;
     }
-    #turtleTestButton:hover { background: #e0e8ff; filter: none; }
+    #turtleTestButton:hover { background: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 94%); filter: none; }
 
     .view-mode-options {
       display: flex;
@@ -841,15 +878,15 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      background: #f5f7fb;
-      border: 1px solid #d0d7e5;
+      background: hsl(var(--brand-h), calc(43% * var(--brand-sat)), 97%);
+      border: 1px solid hsl(var(--brand-h), calc(29% * var(--brand-sat)), 86%);
       border-radius: 8px;
       padding: 10px 12px;
       cursor: pointer;
       font-size: 1em;
     }
     .view-mode-options input[type="radio"] {
-      accent-color: #002878;
+      accent-color: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 24%);
       width: 18px;
       height: 18px;
     }
@@ -858,8 +895,8 @@
       gap: 4px;
       padding: 4px;
       margin-bottom: 18px;
-      background: #f5f7fb;
-      border: 1px solid #d0d7e5;
+      background: hsl(var(--brand-h), calc(43% * var(--brand-sat)), 97%);
+      border: 1px solid hsl(var(--brand-h), calc(29% * var(--brand-sat)), 86%);
       border-radius: 999px;
     }
     .lang-switch .lang-option {
@@ -874,11 +911,13 @@
       transition: background 0.2s ease, color 0.2s ease;
     }
     .lang-switch .lang-option.active {
-      background: #002878;
+      background: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 24%);
       color: #fff;
     }
     @media (max-width: 520px) {
-      #slotContainer { max-width: 100%; }
+      /* Narrow screens: let the column use the full width, but keep every
+         element measuring against the same variable so they stay flush. */
+      :root { --col-width: 100%; }
       .slot-item { font-size: 1em; padding: 14px 8px; }
     }
 
@@ -897,7 +936,7 @@
       margin-bottom: 14px;
       font-size: 1em;
       font-weight: 700;
-      color: #003c88;
+      color: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 27%);
       text-align: center;
     }
     .wheel-stage {
@@ -921,9 +960,9 @@
       display: block;
       border-radius: 50%;
       box-shadow:
-        0 14px 30px rgba(3,21,60,0.18),
+        0 14px 30px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.18),
         0 0 0 6px #ffffff,
-        0 0 0 8px rgba(0,40,120,0.12);
+        0 0 0 8px hsla(var(--brand-h), calc(100% * var(--brand-sat)), 24%, 0.12);
     }
     /* The current speaker's slice: bright white rim + soft glow, full colour. */
     #wheelSvg path.wheel-current,
@@ -942,8 +981,8 @@
       width: 30px;
       height: 30px;
       border-radius: 50%;
-      background: radial-gradient(circle at 35% 30%, #ffffff 0%, #eaf1ff 55%, #cfe0ff 100%);
-      box-shadow: 0 3px 8px rgba(3,21,60,0.25), 0 0 0 3px rgba(0,40,120,0.10) inset;
+      background: radial-gradient(circle at 35% 30%, #ffffff 0%, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 96%) 55%, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 91%) 100%);
+      box-shadow: 0 3px 8px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.25), 0 0 0 3px hsla(var(--brand-h), calc(100% * var(--brand-sat)), 24%, 0.10) inset;
       z-index: 5;
       pointer-events: none;
     }
@@ -958,11 +997,10 @@
       border-left: 15px solid transparent;
       border-right: 15px solid transparent;
       border-top: 26px solid var(--accent-deep);
-      filter: drop-shadow(0 3px 3px rgba(3,21,60,0.35));
+      filter: drop-shadow(0 3px 3px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.35));
       z-index: 7;
     }
     @media (max-width: 520px) {
-      #wheelContainer { max-width: 100%; }
       .wheel-stage { width: 100%; max-width: 360px; }
     }
 
@@ -1004,7 +1042,7 @@
       margin-bottom: 10px;
       font-size: 1em;
       font-weight: 700;
-      color: #003c88;
+      color: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 27%);
       text-align: center;
     }
     /* The discard pile – cards are thrown on top of each other here. */
@@ -1042,7 +1080,7 @@
       border-radius: 16px;
       padding: 8px;
       box-sizing: border-box;
-      box-shadow: 0 10px 22px rgba(3,21,60,0.28), 0 0 0 1px rgba(0,0,0,0.06);
+      box-shadow: 0 10px 22px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.28), 0 0 0 1px rgba(0,0,0,0.06);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1122,16 +1160,15 @@
     /* Special cards. */
     .pc-wende { background: #6a3fb5; } .pc-wende .pc-center, .pc-wende .pc-corner { color: #6a3fb5; }
     .pc-plus2 { background: #ff7a00; } .pc-plus2 .pc-center, .pc-plus2 .pc-corner { color: #ff7a00; }
-    .pc-plus4 { background: #222b3a; } .pc-plus4 .pc-center, .pc-plus4 .pc-corner { color: #222b3a; }
+    .pc-plus4 { background: hsl(var(--brand-h), calc(26% * var(--brand-sat)), 18%); } .pc-plus4 .pc-center, .pc-plus4 .pc-corner { color: hsl(var(--brand-h), calc(26% * var(--brand-sat)), 18%); }
     .pc-skip  { background: #c20030; } .pc-skip .pc-center, .pc-skip .pc-corner { color: #c20030; }
     /* +4 gets a four-colour hint instead of a brand mark. */
     .pc-plus4 .pc-inner::before {
       background:
-        linear-gradient(135deg, rgba(228,0,44,0.16) 0 25%, rgba(19,102,255,0.16) 25% 50%,
+        linear-gradient(135deg, rgba(228,0,44,0.16) 0 25%, hsla(var(--brand-h), calc(100% * var(--brand-sat)), 54%, 0.16) 25% 50%,
           rgba(6,179,74,0.16) 50% 75%, rgba(245,184,0,0.18) 75% 100%), rgba(255,255,255,0.92);
     }
     @media (max-width: 520px) {
-      #cardContainer { max-width: 100%; }
     }
     /* Seasonal accents for the card pile. */
     .season-halloween .play-card .pc-inner { box-shadow: 0 10px 22px rgba(255,140,0,0.28), 0 0 0 1px rgba(0,0,0,0.06); }
@@ -1167,7 +1204,7 @@
       z-index: 50;
       background-image:
         radial-gradient(3px 3px at 18% 26%, #e0249a 50%, transparent 51%),
-        radial-gradient(3px 3px at 68% 12%, #1366ff 50%, transparent 51%),
+        radial-gradient(3px 3px at 68% 12%, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 54%) 50%, transparent 51%),
         radial-gradient(2.5px 2.5px at 44% 58%, #06b34a 50%, transparent 51%),
         radial-gradient(3px 3px at 86% 42%, #f5b800 50%, transparent 51%),
         radial-gradient(2.5px 2.5px at 9% 74%, #ff7a00 50%, transparent 51%);
@@ -1194,7 +1231,7 @@
         radial-gradient(3.5px 3.5px at 70% 14%, #a8e6cf 50%, transparent 51%),
         radial-gradient(3px 3px at 45% 60%, #fff3a0 50%, transparent 51%),
         radial-gradient(3.5px 3.5px at 85% 46%, #c5b3ff 50%, transparent 51%),
-        radial-gradient(3px 3px at 10% 76%, #b3d9ff 50%, transparent 51%);
+        radial-gradient(3px 3px at 10% 76%, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 85%) 50%, transparent 51%);
       background-size: 240px 240px;
       animation: ev-snowfall 9s linear infinite;
       opacity: 0.85;
@@ -1214,7 +1251,7 @@
     }
 
     .modal-content {
-      background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+      background: linear-gradient(180deg, #ffffff 0%, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 98%) 100%);
       margin: 5vh auto;
       padding: 26px;
       border: var(--card-border);
@@ -1226,7 +1263,7 @@
       box-sizing: border-box;
       position: relative; /* anchor for the absolutely placed close button */
       border-radius: 20px;
-      box-shadow: 0 24px 60px rgba(3,21,60,0.35);
+      box-shadow: 0 24px 60px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.35);
     }
     .modal-content h2 {
       color: var(--accent-deep);
@@ -1260,15 +1297,15 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      background: #f5f7fb;
-      border: 1px solid #d0d7e5;
+      background: hsl(var(--brand-h), calc(43% * var(--brand-sat)), 97%);
+      border: 1px solid hsl(var(--brand-h), calc(29% * var(--brand-sat)), 86%);
       border-radius: 8px;
       padding: 10px 12px;
       cursor: pointer;
       font-size: 1em;
     }
     .config-check input[type="checkbox"] {
-      accent-color: #002878;
+      accent-color: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 24%);
       width: 18px;
       height: 18px;
       flex: 0 0 auto;
@@ -1277,17 +1314,29 @@
       margin: 8px 0 16px;
       font-size: 0.88em;
       line-height: 1.4;
-      color: #46556f;
+      color: hsl(var(--brand-h), calc(23% * var(--brand-sat)), 35%);
     }
 
+    /* A real <button> now (it used to be a <span>, so it could neither be
+       reached by Tab nor triggered by Enter/Space). */
     .close {
       position: absolute;
-      top: 16px;
-      right: 20px;
-      color: #aaa;
+      top: 12px;
+      right: 14px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: none;
+      border-radius: 10px;
+      background: none;
+      color: #888;
       font-size: 28px;
       font-weight: bold;
       line-height: 1;
+      cursor: pointer;
     }
 
     .close:hover,
@@ -1300,20 +1349,24 @@
     /* Forms within Modals */
     textarea {
       width: 100%;
-      min-height: 60px;
+      /* Room for roughly eight lines: a whole team should be readable without
+         scrolling inside a 60px-tall box. */
+      min-height: 150px;
+      resize: vertical;
+      line-height: 1.5;
       padding: 12px;
       margin: 10px 0 20px 0;
-      border: 1px solid #d3dcf1;
+      border: 1px solid hsl(var(--brand-h), calc(52% * var(--brand-sat)), 89%);
       box-sizing: border-box;
       border-radius: 12px;
       font-size: 1em;
-      background-color: #f6f9ff;
+      background-color: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 98%);
       transition: border-color 0.2s, box-shadow 0.2s;
     }
     textarea:focus, #totalTimeInput:focus {
       outline: none;
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(19,102,255,0.15);
+      box-shadow: 0 0 0 3px hsla(var(--brand-h), calc(100% * var(--brand-sat)), 54%, 0.15);
     }
     
     .modal-button-container {
@@ -1332,16 +1385,16 @@
     }
     
     #resetNamesButton {
-      background: #eef3ff;
+      background: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 97%);
       color: var(--accent-deep);
-      border: 1px solid #d3dcf1;
+      border: 1px solid hsl(var(--brand-h), calc(52% * var(--brand-sat)), 89%);
       box-shadow: none;
       width: auto;
       flex-grow: 0;
     }
 
     #resetNamesButton:hover {
-      background: #e0e8ff;
+      background: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 94%);
       filter: none;
     }
 
@@ -1354,7 +1407,7 @@
     
     /* Help Content Formatting – scannable feature rows with an icon + label. */
     #helpModalContent > p {
-        color: #46556f;
+        color: hsl(var(--brand-h), calc(23% * var(--brand-sat)), 35%);
         line-height: 1.5;
         margin: 4px 0 4px;
     }
@@ -1363,7 +1416,7 @@
         font-size: 0.8em;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: #6a7ba3;
+        color: hsl(var(--brand-h), calc(24% * var(--brand-sat)), 53%);
     }
     #helpModalContent ul {
         list-style: none;
@@ -1378,13 +1431,13 @@
         display: flex;
         align-items: flex-start;
         gap: 12px;
-        background: #f6f9ff;
-        border: 1px solid #e3e9f6;
+        background: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 98%);
+        border: 1px solid hsl(var(--brand-h), calc(51% * var(--brand-sat)), 93%);
         border-radius: 12px;
         padding: 12px 14px;
         font-size: 0.95em;
         line-height: 1.4;
-        color: #46556f;
+        color: hsl(var(--brand-h), calc(23% * var(--brand-sat)), 35%);
     }
     .help-ico {
         flex: 0 0 auto;
@@ -1403,19 +1456,14 @@
       padding: 12px;
       margin-bottom: 20px;
       box-sizing: border-box;
-      border: 1px solid #d3dcf1;
+      border: 1px solid hsl(var(--brand-h), calc(52% * var(--brand-sat)), 89%);
       border-radius: 12px;
       font-size: 1em;
       text-align: center;
-      background-color: #f6f9ff;
+      background-color: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 98%);
       transition: border-color 0.2s, box-shadow 0.2s;
     }
 
-  </style>
-
-<style>
-/* OVERRIDE: compact, content-sized primary button (fits the long slot label). */
-#shuffleButton { max-width: 300px !important; width: auto !important; padding: 12px 22px !important; font-size: 1.05em !important; }
 
     /* ===================================================================
        Split-flap departure board (view: flap)
@@ -1428,8 +1476,14 @@
       margin: 8px auto 0;
       display: none;
     }
+    /* The board speaks one language: the same mechanical face for the flaps,
+       the position numbers, the status column and the header. */
+    #flapContainer {
+      --flap-font: 'Courier New', 'Cutive Mono', monospace;
+      --flap-accent: #f5c518;
+    }
     .flap-board {
-      background: linear-gradient(180deg, #1c2430 0%, #131a24 100%);
+      background: linear-gradient(180deg, hsl(var(--brand-h), calc(26% * var(--brand-sat)), 15%) 0%, hsl(var(--brand-h), calc(31% * var(--brand-sat)), 11%) 100%);
       border: 1px solid rgba(0,0,0,0.5);
       border-radius: var(--card-radius);
       box-shadow: var(--card-shadow), inset 0 1px 0 rgba(255,255,255,0.06);
@@ -1438,46 +1492,55 @@
     }
     .flap-head {
       display: grid;
-      grid-template-columns: 2.2em 1fr 4.6em;
-      gap: 8px;
-      padding: 0 4px 8px;
-      border-bottom: 1px solid rgba(255,255,255,0.14);
-      margin-bottom: 8px;
-      font-size: 0.68em;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.45);
-    }
-    .flap-head-state { text-align: right; }
-    .flap-row {
-      display: grid;
-      grid-template-columns: 2.2em 1fr 4.6em;
+      grid-template-columns: auto 1fr auto;
       gap: 8px;
       align-items: center;
-      padding: 3px 4px;
+      padding: 0 4px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.14);
+      margin-bottom: 8px;
     }
-    .flap-pos {
-      font-variant-numeric: tabular-nums;
-      font-weight: 800;
-      font-size: 0.85em;
-      color: rgba(255,255,255,0.4);
+    .flap-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 4px 4px;
+    }
+    /* Position and status are strips of flaps, exactly like the name column. */
+    .flap-pos,
+    .flap-state {
+      display: flex;
+      gap: 2px;
+      flex: 0 0 auto;
     }
     .flap-name { display: flex; gap: 2px; overflow: hidden; }
     /* One cell per character – the split flap itself. */
     .flap-cell {
       position: relative;
       flex: 0 0 auto;
-      min-width: 0.72em;
-      padding: 3px 1px;
-      background: #2b3543;
+      min-width: 0.82em;
+      /* Everything about a flap is expressed in em, so its width scales exactly
+         with the type. With padding in pixels it did not, and the arithmetic
+         that shrinks a row to fit a long name (which assumes proportional
+         scaling) came out slightly wrong and overflowed. */
+      padding: 0.14em 0.05em;
+      /* An explicit box, not a text-driven one: a blank flap must be exactly as
+         tall as a lettered one, otherwise the board grows a little with every
+         name that is revealed. */
+      height: 1.5em;
+      box-sizing: content-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      white-space: pre;
+      background: hsl(var(--brand-h), calc(22% * var(--brand-sat)), 22%);
       border-radius: 2px;
-      font-family: 'Courier New', monospace;
+      font-family: var(--flap-font);
       font-weight: 700;
-      font-size: 1.05em;
-      line-height: 1.05;
+      font-size: 1.35em;
+      line-height: 1;
       text-align: center;
-      color: #f2f6fb;
+      color: hsl(var(--brand-h), calc(30% * var(--brand-sat)), 98%);
       box-shadow: inset 0 -1px 0 rgba(0,0,0,0.5);
     }
     /* The hinge line that makes it read as a flap rather than a tile. */
@@ -1488,25 +1551,46 @@
       height: 1px;
       background: rgba(0,0,0,0.55);
     }
-    .flap-cell.flipping { color: #cfd8e4; }
-    .flap-cell.blank { background: #222b37; color: transparent; }
-    .flap-state {
-      text-align: right;
-      font-size: 0.66em;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.35);
+    /* Flipping looks exactly like a resting flap – white on dark. The only
+       colour change on the whole board is the yellow that lands with the final
+       flap and means "this person is up now". */
+    .flap-cell.flipping { color: hsl(var(--brand-h), calc(30% * var(--brand-sat)), 98%); }
+    .flap-cell.blank { background: hsl(var(--brand-h), calc(24% * var(--brand-sat)), 17%); color: transparent; }
+    /* Headings sit on the board as well, just quieter than live data. */
+    /* Headings sit on a slightly recessed flap, but carry the same white
+       lettering at the same size – a board has one kind of flap, not three. */
+    .flap-cell.is-label {
+      background: hsl(var(--brand-h), calc(24% * var(--brand-sat)), 18%);
     }
-    .flap-row.is-current .flap-cell { background: #f5c518; color: #1b2029; }
+    .flap-cell.is-label.blank {
+      background: hsl(var(--brand-h), calc(26% * var(--brand-sat)), 14%);
+    }
+    .flap-row.is-current .flap-cell { background: var(--flap-accent); color: hsl(var(--brand-h), calc(21% * var(--brand-sat)), 13%); }
+    /* While the row is still clattering it stays grey; the yellow lands with
+       the last flap, so the colour change *is* the "settled" signal. */
+    .flap-row.is-current .flap-cell.flipping {
+      background: hsl(var(--brand-h), calc(22% * var(--brand-sat)), 22%);
+      color: hsl(var(--brand-h), calc(30% * var(--brand-sat)), 98%);
+    }
     /* ...but the padding cells after a short name stay dark, so the row reads as
        the name it shows rather than as a full-width yellow bar. */
-    .flap-row.is-current .flap-cell.blank { background: #2f3a49; }
-    .flap-row.is-done .flap-cell.blank { background: #222b37; }
-    .flap-row.is-current .flap-pos,
-    .flap-row.is-current .flap-state { color: #f5c518; }
-    .flap-row.is-done .flap-cell { background: #262f3c; color: rgba(242,246,251,0.42); }
-    .flap-row.is-done .flap-pos { color: rgba(255,255,255,0.25); }
+    .flap-row.is-current .flap-cell.blank { background: hsl(var(--brand-h), calc(22% * var(--brand-sat)), 24%); }
+    .flap-row.is-done .flap-cell.blank { background: hsl(var(--brand-h), calc(24% * var(--brand-sat)), 17%); }
+    .flap-row.is-done .flap-cell { background: hsl(var(--brand-h), calc(22% * var(--brand-sat)), 19%); }
+    /* Done rows recede; the current row's position and status wear the accent. */
+    .flap-row.is-done .flap-pos .flap-cell,
+    .flap-row.is-done .flap-state .flap-cell {
+      background: hsl(var(--brand-h), calc(24% * var(--brand-sat)), 17%);
+    }
+    .flap-row.is-current .flap-pos .flap-cell,
+    .flap-row.is-current .flap-state .flap-cell {
+      background: var(--flap-accent);
+      color: hsl(var(--brand-h), calc(21% * var(--brand-sat)), 13%);
+    }
+    .flap-row.is-current .flap-pos .flap-cell.blank,
+    .flap-row.is-current .flap-state .flap-cell.blank {
+      background: hsl(var(--brand-h), calc(22% * var(--brand-sat)), 24%);
+    }
 
     /* ===================================================================
        Line map (view: line)
@@ -1537,7 +1621,7 @@
       height: var(--line-span, 0px);
       width: 6px;
       border-radius: 3px;
-      background: rgba(0,40,120,0.14);
+      background: hsla(var(--brand-h), calc(100% * var(--brand-sat)), 24%, 0.14);
     }
     .line-rail-done {
       width: 100%;
@@ -1554,7 +1638,7 @@
       line-height: 1;
       transform: translate(-50%, -50%);
       transition: top 0.9s linear;
-      filter: drop-shadow(0 3px 6px rgba(3,21,60,0.30));
+      filter: drop-shadow(0 3px 6px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.30));
       z-index: 2;
     }
     #lineStops {
@@ -1578,14 +1662,14 @@
       margin-left: 15px;
       border-radius: 50%;
       background: #ffffff;
-      border: 4px solid rgba(0,40,120,0.22);
+      border: 4px solid hsla(var(--brand-h), calc(100% * var(--brand-sat)), 24%, 0.22);
       box-sizing: border-box;
       transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
     }
     .line-label {
       font-weight: 700;
       font-size: 1.02em;
-      color: #002878;
+      color: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 24%);
       transition: opacity 0.25s ease;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -1600,7 +1684,7 @@
       box-shadow: var(--glow);
     }
     .line-stop.is-current .line-label { font-size: 1.16em; font-weight: 800; }
-    .line-terminus .line-dot { border-radius: 4px; border-color: rgba(0,40,120,0.35); }
+    .line-terminus .line-dot { border-radius: 4px; border-color: hsla(var(--brand-h), calc(100% * var(--brand-sat)), 24%, 0.35); }
 
     /* ===================================================================
        Focus view (view: focus)
@@ -1624,7 +1708,7 @@
       font-size: 2.1em;
       font-weight: 800;
       letter-spacing: -0.01em;
-      color: #002878;
+      color: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 24%);
       line-height: 1.15;
       margin-bottom: 18px;
       overflow-wrap: anywhere;
@@ -1653,16 +1737,127 @@
       margin-top: 16px;
       font-size: 0.9em;
       font-weight: 700;
-      color: rgba(0,40,120,0.55);
+      color: hsla(var(--brand-h), calc(100% * var(--brand-sat)), 24%, 0.55);
       font-variant-numeric: tabular-nums;
     }
     .focus-upnext {
       margin-top: 4px;
       font-size: 0.82em;
-      color: rgba(0,40,120,0.42);
+      color: hsla(var(--brand-h), calc(100% * var(--brand-sat)), 24%, 0.42);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+
+    /* --- Settings: theme picker --- */
+    .theme-picker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    /* Each dot previews its own theme by setting the very same variables the
+       rest of the app reads – so the swatch cannot drift from the result. */
+    .theme-dot,
+    .theme-custom {
+      width: 38px;
+      height: 38px;
+      /* Without this the <label> adds its border on top of the width while the
+         <button> does not, so the colour well rendered larger than the presets. */
+      box-sizing: border-box;
+      padding: 0;
+      border: 2px solid transparent;
+      border-radius: 50%;
+      background: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.12s ease, border-color 0.15s ease;
+    }
+    .theme-dot > span {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(180deg,
+        hsl(var(--dot-h), calc(100% * var(--dot-sat)), 54%) 0%,
+        hsl(var(--dot-h), calc(100% * var(--dot-sat)), 24%) 100%);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);
+    }
+    .theme-dot:hover, .theme-custom:hover { transform: scale(1.08); }
+    .theme-dot.is-active { border-color: var(--accent); }
+    .theme-custom {
+      overflow: hidden;
+      border: 2px dashed hsla(var(--brand-h), calc(50% * var(--brand-sat)), 40%, 0.45);
+    }
+    .theme-custom.is-active { border-style: solid; border-color: var(--accent); }
+    /* The native swatch fills the circle exactly. Oversizing it to hide the
+       browser's own chrome made the colour bleed past the rounded edge. */
+    .theme-custom input[type="color"] {
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      background: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .theme-custom input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    .theme-custom input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
+    .theme-custom input[type="color"]::-moz-color-swatch { border: none; border-radius: 50%; }
+
+    /* ===================================================================
+       Large screens
+       The app's main use is a shared meeting display, but every layout rule
+       stopped at 520px – so a 27" screen showed the same 340px column. One step
+       up scales the column and the type instead of stretching it.
+       =================================================================== */
+    @media (min-width: 1100px) {
+      :root { --col-width: 420px; }
+      body { padding: 28px 20px; }
+      h1 { font-size: 2em; }
+      .focus-name { font-size: 2.3em; }
+      .focus-glass { width: 120px; height: 180px; }
+    }
+    @media (min-width: 1600px) {
+      :root { --col-width: 480px; }
+      h1 { font-size: 2.2em; }
+    }
+
+    /* ===================================================================
+       Reduced motion
+       Spins, thrown cards, confetti and the drifting car are exactly the kind
+       of movement that makes some people ill – and in some organisations an
+       accessibility blocker. Honour the OS setting: keep every state change,
+       drop the travel. The JS shortens its animation timings to match (see
+       prefersReducedMotion()).
+       =================================================================== */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+      /* Decorative loops carry no information at all – stop them outright. */
+      #evSnow, .ev-wheel, .focus-stream { animation: none !important; }
+    }
+
+    /* Visible to assistive tech only. */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+      border: 0;
     }
 
     /* --- PWA: update banner --- */
@@ -1681,7 +1876,7 @@
       padding: 12px 18px;
       background: var(--cta-bg);
       color: #ffffff;
-      box-shadow: 0 6px 18px rgba(3,21,60,0.28);
+      box-shadow: 0 6px 18px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.28);
       transform: translateY(-100%);
       transition: transform 0.28s ease;
     }
@@ -1728,11 +1923,11 @@
     .install-section {
       margin-bottom: 8px;
       padding-bottom: 18px;
-      border-bottom: 1px solid #e3e9f6;
+      border-bottom: 1px solid hsl(var(--brand-h), calc(51% * var(--brand-sat)), 93%);
     }
     .install-section h2 { margin-top: 0; }
     .install-section p {
-      color: #46556f;
+      color: hsl(var(--brand-h), calc(23% * var(--brand-sat)), 35%);
       line-height: 1.5;
       margin: 4px 0 12px;
     }
@@ -1750,6 +1945,11 @@
     <button id="updateReloadButton" class="update-banner-btn" data-i18n="btnReload">Neu laden</button>
   </div>
 
+  <!-- Screen readers never learned whose turn it was: the timer updates every
+       second (too noisy to announce) and each view draws its speaker in its own
+       way. This one region announces the change, in every view. -->
+  <p id="speakerAnnouncer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
+
   <!-- Replaces the former alert() on window.onerror: visible, but harmless. -->
   <div id="errorBanner" class="update-banner error-banner" role="alert" aria-live="assertive">
     <span id="errorBannerText" class="update-banner-text"></span>
@@ -1763,14 +1963,14 @@
   <button id="shuffleButton" class="app-button" data-i18n="btnRoll">Würfeln</button>
   
   <div class="control-buttons-container">
-    <button id="editButton" class="app-button" data-i18n="btnSettings">Einstellungen</button>
-    <button id="helpButton" class="app-button" data-i18n="btnHelp">Anleitung</button>
+    <button id="editButton" class="app-button is-quiet" data-i18n="btnSettings">Einstellungen</button>
+    <button id="helpButton" class="app-button is-quiet" data-i18n="btnHelp">Anleitung</button>
   </div>
   
   <div id="timerContainer">
     <span id="timerIconLeft" class="timer-icon"></span>
     
-    <div id="timerDisplay">00:00</div>
+    <div id="timerDisplay" role="timer" aria-live="off" aria-atomic="true">00:00</div>
 
     <span id="timerIconRight" class="timer-icon"></span>
   </div>
@@ -1790,7 +1990,7 @@
     </div>
     <div class="slot-controls">
       <button id="slotSpinButton" class="app-button slot-spin-button" data-i18n="btnSpin">Drehen</button>
-      <button id="slotRestartButton" class="app-button slot-spin-button slot-restart-button" data-i18n="btnRestart">Neu starten</button>
+      <button id="slotRestartButton" class="app-button is-quiet slot-spin-button slot-restart-button" data-i18n="btnNewRound">Neue Runde</button>
     </div>
     <div id="slotHistory" class="slot-history">
       <div class="slot-history-title" data-i18n="slotHistoryTitle">Letzte Gewinner</div>
@@ -1811,7 +2011,7 @@
     </div>
     <div class="slot-controls">
       <button id="wheelSpinButton" class="app-button slot-spin-button" data-i18n="btnSpin">Drehen</button>
-      <button id="wheelRestartButton" class="app-button slot-spin-button slot-restart-button" data-i18n="btnRestart">Neu starten</button>
+      <button id="wheelRestartButton" class="app-button is-quiet slot-spin-button slot-restart-button" data-i18n="btnNewRound">Neue Runde</button>
     </div>
     <div id="wheelHistory" class="slot-history">
       <div class="slot-history-title" data-i18n="slotHistoryTitle">Letzte Gewinner</div>
@@ -1824,7 +2024,7 @@
     <div id="cardPile" class="card-pile"></div>
     <div class="slot-controls">
       <button id="cardThrowButton" class="app-button slot-spin-button" data-i18n="btnNextCard">Nächste Karte</button>
-      <button id="cardRestartButton" class="app-button slot-spin-button slot-restart-button" data-i18n="btnRestart">Neu starten</button>
+      <button id="cardRestartButton" class="app-button is-quiet slot-spin-button slot-restart-button" data-i18n="btnNewRound">Neue Runde</button>
     </div>
   </div>
 
@@ -1898,16 +2098,14 @@
        whole running order on screen (unlike the slot machine's single window). -->
   <div id="flapContainer" data-view="flap">
     <div class="flap-board">
-      <div class="flap-head">
-        <span class="flap-head-pos" data-i18n="flapColPos">Pos</span>
-        <span class="flap-head-name" data-i18n="flapColName">Sprecher</span>
-        <span class="flap-head-state" data-i18n="flapColState">Status</span>
-      </div>
+      <!-- Filled with flaps by buildFlapBoard(): on a real departure board the
+           column headings are on the board too, not printed beside it. -->
+      <div class="flap-head" id="flapHead"></div>
       <div id="flapRows"></div>
     </div>
     <div class="slot-controls">
       <button id="flapDrawButton" class="app-button slot-spin-button" data-i18n="btnFlapDraw">Anzeige stellen</button>
-      <button id="flapRestartButton" class="app-button slot-restart-button" style="display: none;" data-i18n="btnRestart">Neu starten</button>
+      <button id="flapRestartButton" class="app-button is-quiet slot-restart-button" style="display: none;" data-i18n="btnNewRound">Neue Runde</button>
     </div>
   </div>
 
@@ -1951,9 +2149,10 @@
 
   <button id="nextParticipantButton" class="app-button" style="display: none;" data-i18n="btnNext">Nächster Teilnehmer ▶</button>
 
-  <div id="configModal" class="modal">
+  <div id="configModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="configModalTitle">
     <div class="modal-content">
-      <span class="close config-close">&times;</span>
+      <h2 id="configModalTitle" class="sr-only" data-i18n="btnSettings">Einstellungen</h2>
+      <button type="button" class="close config-close" data-i18n-title="btnClose" title="Schließen" aria-label="Schließen">&times;</button>
 
       <!-- Revealed only once the browser reports the app is installable. -->
       <div id="installSection" class="install-section" style="display: none;">
@@ -1972,7 +2171,7 @@
           </div>
 
           <h2 data-i18n="cfgMembersTitle">Team-Mitglieder bearbeiten</h2>
-          <p data-i18n="cfgMembersDesc">Gib die Namen der Teammitglieder ein, getrennt durch Kommas (oder Zeilenumbrüche). Leerzeichen werden automatisch entfernt.</p>
+          <p data-i18n="cfgMembersDesc">Gib die Namen der Teammitglieder ein, getrennt durch Kommas oder Zeilenumbrüche. Mehrteilige Namen wie „Anna Maria“ bleiben zusammen.</p>
           <textarea id="teamNamesInput"></textarea>
           <label class="config-check" for="firstMemberLastInput">
             <input type="checkbox" id="firstMemberLastInput">
@@ -1997,6 +2196,19 @@
             <label><input type="radio" name="viewMode" value="flap"> <span data-i18n="viewFlap">Abfahrtstafel-Ansicht</span></label>
             <label><input type="radio" name="viewMode" value="line"> <span data-i18n="viewLine">Linienplan-Ansicht</span></label>
             <label><input type="radio" name="viewMode" value="focus"> <span data-i18n="viewFocus">Fokus-Ansicht (Sanduhr)</span></label>
+          </div>
+
+          <h2 data-i18n="cfgThemeTitle">Farbthema</h2>
+          <p class="config-hint" data-i18n="cfgThemeHint">Wähle einen Grundton – alle Flächen, Schatten und Verläufe werden daraus berechnet.</p>
+          <div class="theme-picker" id="themePicker">
+            <button type="button" class="theme-dot" data-hue="220" data-sat="1" data-i18n-title="themeClassic" title="Klassisch"><span></span></button>
+            <button type="button" class="theme-dot" data-hue="158" data-sat="0.62" data-i18n-title="themeForest" title="Waldgrün"><span></span></button>
+            <button type="button" class="theme-dot" data-hue="14" data-sat="0.72" data-i18n-title="themeTerracotta" title="Terrakotta"><span></span></button>
+            <button type="button" class="theme-dot" data-hue="273" data-sat="0.55" data-i18n-title="themePlum" title="Pflaume"><span></span></button>
+            <button type="button" class="theme-dot" data-hue="192" data-sat="0.80" data-i18n-title="themeTeal" title="Petrol"><span></span></button>
+            <label class="theme-custom" data-i18n-title="themeCustom" title="Eigene Farbe">
+              <input type="color" id="themeColorInput" value="#1366ff" aria-label="Eigene Farbe">
+            </label>
           </div>
         </div>
       </div>
@@ -2025,10 +2237,10 @@
     </div>
   </div>
   
-  <div id="helpModal" class="modal">
+  <div id="helpModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitleHeading">
     <div class="modal-content">
-      <span class="close help-close">&times;</span>
-      <h2 data-i18n="helpTitle">Anleitung: Daily-Reihenfolge</h2>
+      <button type="button" class="close help-close" data-i18n-title="btnClose" title="Schließen" aria-label="Schließen">&times;</button>
+      <h2 id="helpTitleHeading" data-i18n="helpTitle">Anleitung: Daily-Reihenfolge</h2>
       <div id="helpModalContent">
           <p data-i18n="helpIntro">Diese App hilft dir, eine faire und zufällige Reihenfolge für die Team-Updates in deinem Daily Meeting festzulegen.</p>
 
@@ -2116,8 +2328,161 @@
     // option: the anchored name may only appear inside this trailing slice.
     const ANCHOR_TAIL_SHARE = 0.2;
     const LANG_KEY = 'dailyLang';
+    const THEME_KEY = 'dailyTheme';
+    // The classic blue, and the bounds a freely picked colour is pulled into so
+    // every choice still yields readable text and visible surfaces.
+    const THEME_DEFAULT = { h: 220, sat: 1 };
+    const THEME_SAT_MIN = 0.25;
+    const THEME_SAT_MAX = 1.15;
     const SUPPORTED_LANGS = ['de', 'en'];
     let currentLang = 'de';
+
+    // --- Theme Module ---
+    // The whole interface derives from one hue plus a saturation factor (see the
+    // :root block). Switching the theme therefore only writes two custom
+    // properties – every surface, border, shadow and glow follows on its own.
+
+    let currentTheme = Object.assign({}, THEME_DEFAULT);
+
+    /**
+     * Converts a #rrggbb colour to the hue/saturation pair the theme uses.
+     * Lightness is deliberately dropped: the palette supplies its own lightness
+     * ladder, so a picked colour only decides *which* colour, not how dark the
+     * interface gets.
+     *
+     * @param {string} hex - Colour in #rrggbb form.
+     * @returns {{h: number, sat: number}|null} Theme pair, or null if unparsable.
+     */
+    function hexToTheme(hex) {
+      const m = /^#?([0-9a-f]{6})$/i.exec(String(hex).trim());
+      if (!m) return null;
+      const r = parseInt(m[1].slice(0, 2), 16) / 255;
+      const g = parseInt(m[1].slice(2, 4), 16) / 255;
+      const b = parseInt(m[1].slice(4, 6), 16) / 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      const l = (max + min) / 2;
+      let h = 0, sat = 0;
+      if (max !== min) {
+        const d = max - min;
+        sat = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        if (max === r) h = ((g - b) / d + (g < b ? 6 : 0));
+        else if (max === g) h = (b - r) / d + 2;
+        else h = (r - g) / d + 4;
+        h *= 60;
+      }
+      return { h: Math.round(h), sat: sat };
+    }
+
+    /** The theme's representative colour, used for the swatch and PWA chrome. */
+    function themeToHex(theme) {
+      const h = ((theme.h % 360) + 360) % 360;
+      const sat = Math.max(0, Math.min(1, theme.sat));
+      // Mirrors --accent: hsl(h, 100% * sat, 54%)
+      const l = 0.54, c = (1 - Math.abs(2 * l - 1)) * sat;
+      const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+      const m = l - c / 2;
+      const seg = Math.floor(h / 60) % 6;
+      const rgb = [[c,x,0],[x,c,0],[0,c,x],[0,x,c],[x,0,c],[c,0,x]][seg];
+      return '#' + rgb.map(v => Math.round((v + m) * 255).toString(16).padStart(2, '0')).join('');
+    }
+
+    /**
+     * Applies a theme and (optionally) remembers it.
+     *
+     * @param {{h: number, sat: number}} theme - Hue plus saturation factor.
+     * @param {boolean} [persist] - Write the choice to local storage.
+     */
+    function applyTheme(theme, persist) {
+      const h = ((Math.round(theme.h) % 360) + 360) % 360;
+      const sat = Math.max(THEME_SAT_MIN, Math.min(THEME_SAT_MAX, theme.sat));
+      currentTheme = { h: h, sat: sat };
+
+      const root = document.documentElement;
+      root.style.setProperty('--brand-h', String(h));
+      root.style.setProperty('--brand-sat', sat.toFixed(3));
+
+      // Keep the installed app's title bar in step with the interface.
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute('content', themeToHex(currentTheme));
+
+      if (persist) {
+        try { localStorage.setItem(THEME_KEY, JSON.stringify(currentTheme)); } catch (e) {}
+      }
+      syncThemePicker();
+    }
+
+    /** Highlights whichever swatch matches the active theme. */
+    function syncThemePicker() {
+      const picker = document.getElementById('themePicker');
+      if (!picker) return;
+      let matched = false;
+      picker.querySelectorAll('.theme-dot').forEach(dot => {
+        const h = Number(dot.dataset.hue);
+        const sat = Number(dot.dataset.sat);
+        // Preview each dot with its own theme, so swatch and result cannot drift.
+        dot.style.setProperty('--dot-h', String(h));
+        dot.style.setProperty('--dot-sat', String(sat));
+        const active = h === currentTheme.h && Math.abs(sat - currentTheme.sat) < 0.02;
+        if (active) matched = true;
+        dot.classList.toggle('is-active', active);
+      });
+      const custom = picker.querySelector('.theme-custom');
+      if (custom) custom.classList.toggle('is-active', !matched);
+      const input = document.getElementById('themeColorInput');
+      if (input) input.value = themeToHex(currentTheme);
+    }
+
+    /** Restores the stored theme, falling back to the classic blue. */
+    function loadTheme() {
+      let stored = null;
+      try { stored = JSON.parse(localStorage.getItem(THEME_KEY) || 'null'); } catch (e) {}
+      const valid = stored && typeof stored.h === 'number' && typeof stored.sat === 'number'
+        && isFinite(stored.h) && isFinite(stored.sat);
+      applyTheme(valid ? stored : THEME_DEFAULT, false);
+    }
+
+    // --- Accessibility & Motion Helpers ---
+
+    /** True when the OS asks for reduced motion; drives the JS-side timings. */
+    function prefersReducedMotion() {
+      return typeof window.matchMedia === 'function'
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+
+    /**
+     * Announces the current speaker to assistive technology. Every view calls
+     * this, so the information does not depend on how a view happens to draw.
+     *
+     * @param {string} name - The speaker's name.
+     * @param {number} index - Zero-based position in the running order.
+     * @param {number} total - Number of participants this round.
+     */
+    function announceSpeaker(name, index, total) {
+      const el = document.getElementById('speakerAnnouncer');
+      if (!el || !name) return;
+      el.textContent = t('announceSpeaker', { name: name, n: index + 1, total: total });
+    }
+
+    /**
+     * Re-letters the flap board's headings and status flaps after a language
+     * change. Defined here (not in the board module) so applyLanguage can call
+     * it during start-up, before a board has ever been built – it simply does
+     * nothing while there is none.
+     */
+    function relabelFlapBoard() {
+      if (!document.getElementById('flapHead')) return;
+      if (typeof buildFlapHeader !== 'function' || !flapCellCount) return;
+      const first = document.querySelector('#flapRows .flap-row');
+      const scale = first ? (parseFloat(first.style.fontSize) || 1) : 1;
+      buildFlapHeader(scale);
+      updateFlapRowStates();
+    }
+
+    /** Clears the announcement (end of the daily, or back to the selection). */
+    function clearAnnouncement() {
+      const el = document.getElementById('speakerAnnouncer');
+      if (el) el.textContent = '';
+    }
 
     // --- Internationalization (i18n) ---
     // To make any UI string bilingual: add it once per language below, then
@@ -2132,15 +2497,20 @@
         btnSettings: 'Einstellungen',
         btnHelp: 'Anleitung',
         btnRoll: 'Würfeln',
-        btnStart: 'Starten',
-        btnRollAgain: 'Erneut würfeln',
-        btnRestart: 'Neu starten',
+        btnNewRound: 'Neue Runde',
+        btnClose: 'Schließen',
+        announceSpeaker: '{name} ist dran, Nummer {n} von {total}.',
+        announceFinished: 'Das Daily ist beendet.',
         btnNext: 'Nächster Teilnehmer ▶',
-        btnSlotResetRound: 'Slotmaschine Runde zurücksetzen',
-        btnWheelResetRound: 'Glücksrad Runde zurücksetzen',
-        btnCardResetRound: 'Kartenspiel Runde zurücksetzen',
-        btnFlapResetRound: 'Tafel-Runde zurücksetzen',
         btnFlapDraw: 'Anzeige stellen',
+        cfgThemeTitle: 'Farbthema',
+        cfgThemeHint: 'Wähle einen Grundton – alle Flächen, Schatten und Verläufe werden daraus berechnet.',
+        themeClassic: 'Klassisch (Blau)',
+        themeForest: 'Waldgrün',
+        themeTerracotta: 'Terrakotta',
+        themePlum: 'Pflaume',
+        themeTeal: 'Petrol',
+        themeCustom: 'Eigene Farbe wählen',
         viewFlap: 'Abfahrtstafel-Ansicht',
         viewLine: 'Linienplan-Ansicht',
         viewFocus: 'Fokus-Ansicht (Sanduhr)',
@@ -2170,7 +2540,7 @@
         cfgDurationTitle: 'Daily-Dauer einstellen',
         cfgDurationDesc: 'Gesamtdauer in Minuten, die auf alle Teilnehmer aufgeteilt wird (Standard: 15 Min.).',
         cfgMembersTitle: 'Team-Mitglieder bearbeiten',
-        cfgMembersDesc: 'Gib die Namen der Teammitglieder ein, getrennt durch Kommas (oder Zeilenumbrüche). Leerzeichen werden automatisch entfernt.',
+        cfgMembersDesc: 'Gib die Namen der Teammitglieder ein, getrennt durch Kommas oder Zeilenumbrüche. Mehrteilige Namen wie „Anna Maria“ bleiben zusammen.',
         cfgFirstLastLabel: 'Erstes Mitglied der Liste kommt zum Schluss',
         cfgFirstLastDesc: 'Ist die Option aktiv, wird der zuerst eingetragene Name erst in den letzten 20 % der Reihenfolge gezogen – praktisch für alle, die das Daily abschließen.',
         cfgViewTitle: 'Anzeigemodus',
@@ -2204,7 +2574,7 @@
         helpTitle: 'So funktioniert es',
         helpIntro: 'Lege in Sekunden eine faire, zufällige Reihenfolge für die Wortbeiträge in deinem Daily fest – mit einem Timer, der die Zeit gleichmäßig auf alle verteilt.',
         helpUsageTitle: 'Auf einen Blick',
-        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Anwesenheit</b>Hake oben ab, wer heute dabei ist. Abgewählte Personen (Urlaub, krank) werden übersprungen.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Reihenfolge würfeln</b>Tippe auf „Würfeln": Die App erstellt eine zufällige Reihenfolge der aktiven Personen und startet den Timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>Die Gesamtdauer wird gleichmäßig aufgeteilt. Wird die Zeit knapp, färbt sich der Timer – erst gelb, dann rot.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Weiter zur nächsten Person</b>Tippe auf „Nächster Teilnehmer" oder drücke die Leertaste.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Einen Schritt zurück</b>Strg oder Umschalt + Leertaste springt zur vorherigen Person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slotmaschinen-Ansicht</b>Lust auf Show? In den Einstellungen schaltest du auf die animierte Slotmaschine um.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip-Ansicht</b>Ein E-Auto fährt die Daily-Strecke ab, die Batterie zeigt die Redezeit. Ist sie leer, kommt die Schildkröte.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Glücksrad-Ansicht</b>Ein buntes Rad mit allen Namen dreht sich und lost nacheinander aus, wer dran ist.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Kartenspiel-Ansicht</b>Für jeden Sprecher fliegt eine bunte Namenskarte auf den Stapel. Sonderkarten sorgen für Spaß – „Aussetzen" verschiebt jemanden ans Ende, der Rest ist nur Show.</div></li><li><span class="help-ico">🚉</span><div class="help-text"><b>Abfahrtstafel-Ansicht</b>Wie am Bahnhof: Pro Klick klappert eine Zeile durch und rastet auf dem nächsten Sprecher ein – die ganze Reihenfolge bleibt dabei sichtbar.</div></li><li><span class="help-ico">🚇</span><div class="help-text"><b>Linienplan-Ansicht</b>Die Reihenfolge als Strecke: Jede Person ist eine Haltestelle, der Zug fährt während der Redezeit zur nächsten. So sieht man immer, wie weit das Daily ist.</div></li><li><span class="help-ico">⏳</span><div class="help-text"><b>Fokus-Ansicht</b>Bewusst ruhig: ein großer Name und eine Sanduhr, die abläuft. Kein Bunt, keine Animation nebenbei.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Einstellungen</b>Namen, Dauer, Ansicht und Sprache jederzeit anpassen.</div></li>',
+        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Anwesenheit</b>Hake oben ab, wer heute dabei ist. Abgewählte Personen (Urlaub, krank) werden übersprungen.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Reihenfolge würfeln</b>Tippe auf „Würfeln": Die App erstellt eine zufällige Reihenfolge der aktiven Personen und startet den Timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>Die Gesamtdauer wird gleichmäßig aufgeteilt. Wird die Zeit knapp, färbt sich der Timer – erst gelb, dann rot.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Weiter zur nächsten Person</b>Tippe auf „Nächster Teilnehmer" oder drücke die Leertaste.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Einen Schritt zurück</b>Strg oder Umschalt + Leertaste springt zur vorherigen Person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slotmaschinen-Ansicht</b>Lust auf Show? In den Einstellungen schaltest du auf die animierte Slotmaschine um.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip-Ansicht</b>Ein E-Auto fährt die Daily-Strecke ab, die Batterie zeigt die Redezeit. Ist sie leer, kommt die Schildkröte.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Glücksrad-Ansicht</b>Ein buntes Rad mit allen Namen dreht sich und lost nacheinander aus, wer dran ist.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Kartenspiel-Ansicht</b>Für jeden Sprecher fliegt eine bunte Namenskarte auf den Stapel. Sonderkarten sorgen für Spaß – „Aussetzen" verschiebt jemanden ans Ende, der Rest ist nur Show.</div></li><li><span class="help-ico">🚉</span><div class="help-text"><b>Abfahrtstafel-Ansicht</b>Wie am Bahnhof: Pro Klick klappert eine Zeile durch und rastet auf dem nächsten Sprecher ein – die ganze Reihenfolge bleibt dabei sichtbar.</div></li><li><span class="help-ico">🚇</span><div class="help-text"><b>Linienplan-Ansicht</b>Die Reihenfolge als Strecke: Jede Person ist eine Haltestelle, der Zug fährt während der Redezeit zur nächsten. So sieht man immer, wie weit das Daily ist.</div></li><li><span class="help-ico">⏳</span><div class="help-text"><b>Fokus-Ansicht</b>Bewusst ruhig: ein großer Name und eine Sanduhr, die abläuft. Kein Bunt, keine Animation nebenbei.</div></li><li><span class="help-ico">🎨</span><div class="help-text"><b>Farbthema</b>In den Einstellungen wählst du einen Grundton – klassisch Blau, eine der Voreinstellungen oder eine eigene Farbe. Alle Flächen, Verläufe und Schatten werden daraus berechnet.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Einstellungen</b>Namen, Dauer, Ansicht, Farbe und Sprache jederzeit anpassen. Mit <b>Esc</b> schließt du die Dialoge.</div></li>',
         alertPickOne: 'Bitte wähle mindestens einen Teilnehmer aus!',
         alertError: 'Ein Fehler ist aufgetreten: {msg}\nBitte Seite neu laden oder Cache leeren.',
         errorNotice: 'Es ist ein Fehler aufgetreten ({msg}) – das Daily läuft weiter.',
@@ -2216,15 +2586,20 @@
         btnSettings: 'Settings',
         btnHelp: 'Guide',
         btnRoll: 'Roll',
-        btnStart: 'Start',
-        btnRollAgain: 'Roll again',
-        btnRestart: 'Restart',
+        btnNewRound: 'New round',
+        btnClose: 'Close',
+        announceSpeaker: '{name} is up, number {n} of {total}.',
+        announceFinished: 'The daily has finished.',
         btnNext: 'Next participant ▶',
-        btnSlotResetRound: 'Reset slot machine round',
-        btnWheelResetRound: 'Reset wheel round',
-        btnCardResetRound: 'Reset card round',
-        btnFlapResetRound: 'Reset board round',
         btnFlapDraw: 'Set the board',
+        cfgThemeTitle: 'Colour theme',
+        cfgThemeHint: 'Pick a base colour – every surface, shadow and gradient is derived from it.',
+        themeClassic: 'Classic (blue)',
+        themeForest: 'Forest green',
+        themeTerracotta: 'Terracotta',
+        themePlum: 'Plum',
+        themeTeal: 'Teal',
+        themeCustom: 'Pick your own colour',
         viewFlap: 'Departure board view',
         viewLine: 'Line map view',
         viewFocus: 'Focus view (hourglass)',
@@ -2254,7 +2629,7 @@
         cfgDurationTitle: 'Set daily duration',
         cfgDurationDesc: 'Total time in minutes, divided among all participants (default: 15 min).',
         cfgMembersTitle: 'Edit team members',
-        cfgMembersDesc: 'Enter the team member names, separated by commas (or line breaks). Spaces are removed automatically.',
+        cfgMembersDesc: 'Enter the team member names, separated by commas or line breaks. Multi-part names like \u201cAnna Maria\u201d stay together.',
         cfgFirstLastLabel: 'First member on the list goes last',
         cfgFirstLastDesc: 'With this on, the name entered first is only drawn within the final 20 % of the order – handy for whoever wraps up the daily.',
         cfgViewTitle: 'Display mode',
@@ -2288,7 +2663,7 @@
         helpTitle: 'How it works',
         helpIntro: 'Set a fair, random speaking order for your daily in seconds – with a timer that splits the time evenly across everyone.',
         helpUsageTitle: 'At a glance',
-        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Attendance</b>Tick who is in today. Unticked people (vacation, sick) are skipped.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Roll the order</b>Tap “Roll” and the app builds a random order of the active people and starts the timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>The total time is split evenly. As it runs low the timer changes colour – yellow, then red.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Next person</b>Tap “Next participant” or press the spacebar.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Step back</b>Ctrl or Shift + Space jumps to the previous person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slot machine view</b>Want a bit of show? Switch to the animated slot machine in the settings.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip view</b>An EV drives the daily route while the battery shows the speaking time. When it is empty, the turtle appears.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Wheel of fortune view</b>A colourful wheel with every name spins and draws who is up next, one by one.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Card game view</b>A colourful name card is thrown onto the pile for each speaker. Special cards add fun – “Skip” moves someone to the end, the rest are just for show.</div></li><li><span class="help-ico">🚉</span><div class="help-text"><b>Departure board view</b>Like a railway station: each click sends a row clattering until it settles on the next speaker – with the whole running order staying on screen.</div></li><li><span class="help-ico">🚇</span><div class="help-text"><b>Line map view</b>The running order as a route: every person is a stop and the train travels to the next one while they speak, so you can always see how far along the daily is.</div></li><li><span class="help-ico">⏳</span><div class="help-text"><b>Focus view</b>Deliberately quiet: one large name and an hourglass running out. No colour, no side show.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Settings</b>Adjust names, duration, view and language anytime.</div></li>',
+        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Attendance</b>Tick who is in today. Unticked people (vacation, sick) are skipped.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Roll the order</b>Tap “Roll” and the app builds a random order of the active people and starts the timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>The total time is split evenly. As it runs low the timer changes colour – yellow, then red.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Next person</b>Tap “Next participant” or press the spacebar.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Step back</b>Ctrl or Shift + Space jumps to the previous person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slot machine view</b>Want a bit of show? Switch to the animated slot machine in the settings.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip view</b>An EV drives the daily route while the battery shows the speaking time. When it is empty, the turtle appears.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Wheel of fortune view</b>A colourful wheel with every name spins and draws who is up next, one by one.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Card game view</b>A colourful name card is thrown onto the pile for each speaker. Special cards add fun – “Skip” moves someone to the end, the rest are just for show.</div></li><li><span class="help-ico">🚉</span><div class="help-text"><b>Departure board view</b>Like a railway station: each click sends a row clattering until it settles on the next speaker – with the whole running order staying on screen.</div></li><li><span class="help-ico">🚇</span><div class="help-text"><b>Line map view</b>The running order as a route: every person is a stop and the train travels to the next one while they speak, so you can always see how far along the daily is.</div></li><li><span class="help-ico">⏳</span><div class="help-text"><b>Focus view</b>Deliberately quiet: one large name and an hourglass running out. No colour, no side show.</div></li><li><span class="help-ico">🎨</span><div class="help-text"><b>Colour theme</b>Pick a base colour in the settings – classic blue, one of the presets, or your own. Every surface, gradient and shadow is derived from it.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Settings</b>Adjust names, duration, view, colour and language anytime. Press <b>Esc</b> to close the dialogs.</div></li>',
         alertPickOne: 'Please select at least one participant!',
         alertError: 'An error occurred: {msg}\nPlease reload the page or clear the cache.',
         errorNotice: 'Something went wrong ({msg}) – the daily keeps running.',
@@ -2351,6 +2726,11 @@
         el.placeholder = t(el.dataset.i18nPlaceholder);
       });
 
+      // The departure board's headings and status column are built from flaps in
+      // JS, so data-i18n cannot reach them. Re-letter them in place – rebuilding
+      // the board would throw away the running round.
+      relabelFlapBoard();
+
       document.querySelectorAll('#langSwitch .lang-option').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.lang === lang);
       });
@@ -2385,7 +2765,6 @@
     let currentShuffledList = [];
     let remainingSlotParticipants = [];
     let previousSlotWinners = [];
-    let currentSlotWinner = null;
     let slotSessionActive = false;
 
     // Wheel-of-fortune state (mirrors the slot machine's spin-to-pick flow).
@@ -2406,7 +2785,6 @@
     // interludes thrown onto the pile).
     let cardQueue = [];         // upcoming speakers (names), excluding the current one
     let cardCurrent = null;     // current speaker (the top name card)
-    let cardSpoken = [];        // already-spoken names, in order
     let cardThrowCount = 0;     // stacking counter -> z-index
     let cardSessionActive = false;
     let cardAwaitingFinish = false; // last speaker is up; next click ends the daily
@@ -2420,6 +2798,7 @@
     let flapAnimating = false;
     let flapAwaitingFinish = false; // last row is up; next click ends the daily
     let flapCellCount = 0;
+    let flapPosTotal = 0;       // team size, so the position column can be sized
     let flapRaf = null;             // pending flip animation, cancelled on reset
 
     let individualTimeSeconds = 0; 
@@ -2739,6 +3118,7 @@
         if (viewMode === VIEW_MODE_EV) updateEvQueue();
         if (viewMode === VIEW_MODE_LINE) updateLineView();
         if (viewMode === VIEW_MODE_FOCUS) updateFocusView();
+        announceSpeaker(currentShuffledList[activeIndex], activeIndex, currentShuffledList.length);
         return;
       }
       const listItems = teamList.querySelectorAll('li');
@@ -2747,6 +3127,7 @@
       activeIndex = Math.max(0, Math.min(listItems.length - 1, newIndex));
       updateHighlights();
       updateSlotUsedState();
+      announceSpeaker(currentShuffledList[activeIndex], activeIndex, currentShuffledList.length);
     }
 
     /** Shows/hides the mobile "next participant" button (classic view only). */
@@ -2761,6 +3142,8 @@
       if (activeIndex >= 0) updateActiveParticipant(activeIndex);
       setText(timerDisplay, 'dailyFinished');
       timerDisplay.style.display = 'inline-flex';
+      const announcer = document.getElementById('speakerAnnouncer');
+      if (announcer) announcer.textContent = t('announceFinished');
       clearColorClasses();
       toggleOvertimeIcons(false);
       setNextButtonVisible(false);
@@ -2924,6 +3307,7 @@
 
       activeIndex = 0;
       updateEvQueue();
+      announceSpeaker(currentShuffledList[0], 0, currentShuffledList.length);
       setNextButtonVisible(true);
       // The shuffle handler starts the timer; updateEvView() runs on each tick.
     }
@@ -2953,10 +3337,12 @@
           
           activeIndex = 0;
           updateHighlights();
+          announceSpeaker(currentShuffledList[0], 0, currentShuffledList.length);
         }
 
         setNextButtonVisible(currentShuffledList.length > 0);
         teamList.style.opacity = '1';
+        focusViewAction();
       }, 300);
     }
 
@@ -3041,8 +3427,8 @@
         const winnerName = remainingSlotParticipants[index];
         // Append winner at the end so history reads oldest→newest top→bottom
         previousSlotWinners.push(winnerName);
+        announceSpeaker(winnerName, previousSlotWinners.length - 1, currentShuffledList.length);
         remainingSlotParticipants.splice(index, 1);
-        currentSlotWinner = winnerName;
         updateSlotHistory();
 
         // release the handle
@@ -3083,12 +3469,10 @@
       currentShuffledList = list.filter(name => name.trim() !== '');
       remainingSlotParticipants = currentShuffledList.map(name => name.trim());
       previousSlotWinners = [];
-      currentSlotWinner = null;
       slotSessionActive = true;
 
       showView(VIEW_MODE_SLOT);
       setNextButtonVisible(false);
-      hideSlotEndOverlay();
       updateSlotHistory();
       const restartBtn = document.getElementById('slotRestartButton');
       if (restartBtn) {
@@ -3300,7 +3684,9 @@
       target += (((base - (target % 360)) % 360) + 360) % 360;
       wheelRotation = target;
 
-      const dur = WHEEL_SPIN_DURATION_MS / 1000;
+      // With reduced motion the wheel still turns to the right slice, but it
+      // gets there at once instead of over three seconds.
+      const dur = (prefersReducedMotion() ? 1 : WHEEL_SPIN_DURATION_MS) / 1000;
 
       const finalize = (event) => {
         if (event && event.propertyName && event.propertyName !== 'transform') return;
@@ -3316,6 +3702,7 @@
         currentWheelSlot = idx;
         currentWheelWinner = pick.trim();
         previousWheelWinners.push(pick.trim());
+        announceSpeaker(pick.trim(), previousWheelWinners.length - 1, currentWheelList.length);
         // Drop exactly the slice that was drawn – never every slice that happens
         // to carry the same name.
         remainingWheelParticipants = remainingWheelParticipants.filter(slot => slot !== idx);
@@ -3413,8 +3800,9 @@
       if (wheelRestartButton) wheelRestartButton.style.display = 'none';
       clearText(wheelStatus);
       showView(null);
+      clearAnnouncement();
       participantSelection.style.display = 'flex';
-      if (shuffleButton) setText(shuffleButton, 'btnStart');
+      setPrimaryButtonState(false);
     }
 
     // --- Card Game View Module ---
@@ -3540,7 +3928,6 @@
 
     /** Reveals the next person from the queue as the current speaker. */
     function playNextSpeaker() {
-      if (cardCurrent) cardSpoken.push(cardCurrent);
       cardCurrent = cardQueue.shift();
       throwNameCard(cardCurrent);
       clearText(cardStatus);
@@ -3616,7 +4003,6 @@
     function displayCardTeam(list) {
       currentShuffledList = list.filter(name => name.trim() !== '');
       clearCardTimeouts();
-      cardSpoken = [];
       cardCurrent = null;
       cardThrowCount = 0;
       cardAwaitingFinish = false;
@@ -3653,7 +4039,7 @@
       if (names.length === 0) { participantSelection.style.display = 'flex'; showView(null); return; }
       participantSelection.style.display = 'none';
       shuffleButton.style.display = 'inline-block';
-      setText(shuffleButton, 'btnCardResetRound');
+      setPrimaryButtonState(true);
       displayCardTeam(names);
     }
 
@@ -3764,6 +4150,7 @@
 
       activeIndex = 0;
       buildLineMap();
+      announceSpeaker(currentShuffledList[0], 0, currentShuffledList.length);
       setNextButtonVisible(true);
       // The shuffle handler starts the timer; updateLineView() runs on each tick.
       updateLineView();
@@ -3839,6 +4226,7 @@
       }
 
       activeIndex = 0;
+      announceSpeaker(currentShuffledList[0], 0, currentShuffledList.length);
       setNextButtonVisible(true);
       updateFocusView();
     }
@@ -3850,11 +4238,124 @@
     const FLAP_SETTLE_MS = 850;   // until the leftmost cell locks in
     const FLAP_STAGGER_MS = 95;   // extra delay for each cell to its right
     const FLAP_TICK_MS = 55;      // how fast the flaps change while running
-    const FLAP_MAX_CELLS = 13;    // keeps the board inside the column width
+    // Upper bound only – the real count comes from measuring the row. Generous
+    // on purpose: once a long name has shrunk the type, many more flaps fit,
+    // and the row should still end flush rather than stop at an arbitrary cap.
+    const FLAP_MAX_CELLS = 30;
+    // A blank flap. Deliberately a no-break space: a plain space collapses, and
+    // a cell without a text line is shorter than one with a letter – which made
+    // the whole board grow a few pixels with every name revealed.
+    const FLAP_BLANK = '\u00A0';
+
+    // Every column on the board is flaps – position, name and status. Their
+    // widths are derived, not fixed: the status column has to hold the longest
+    // of its own words plus its heading, and those differ per language
+    // ("WARTET" is six, "WAITING" seven), while the position column grows with
+    // the size of the team.
+
+    /** Flaps needed by the status column in the current language. */
+    function flapStateCells() {
+      return Math.max(
+        t('flapColState').length,
+        t('flapStateNow').length,
+        t('flapStateDone').length,
+        t('flapStateWaiting').length
+      );
+    }
+
+    /** Flaps needed by the position column, e.g. 3 for "10." – plus "POS". */
+    function flapPosCells(total) {
+      return Math.max(t('flapColPos').length, String(Math.max(1, total)).length + 1);
+    }
 
     /**
-     * Builds an empty board: one row per participant, numbered, with as many
-     * flap cells as the longest name needs.
+     * Renders a string as a row of flaps, one per character.
+     *
+     * @param {HTMLElement} container - Element to fill (is emptied first).
+     * @param {string} text - The text to show.
+     * @param {number} [width] - Pad/trim to exactly this many flaps.
+     * @param {string} [extraClass] - Extra class for every flap.
+     */
+    function renderFlaps(container, text, width, extraClass) {
+      if (!container) return;
+      container.innerHTML = '';
+      let chars = String(text).toUpperCase();
+      if (width) {
+        chars = chars.length > width ? chars.slice(0, width)
+          : chars.padStart(width, ' ');   // right-aligned, like a real board
+      }
+      for (let i = 0; i < chars.length; i++) {
+        const ch = chars.charAt(i);
+        const cell = document.createElement('span');
+        cell.className = 'flap-cell' + (extraClass ? ' ' + extraClass : '');
+        const blank = ch === ' ';
+        if (blank) cell.classList.add('blank');
+        cell.textContent = blank ? FLAP_BLANK : ch;
+        container.appendChild(cell);
+      }
+    }
+
+    /**
+     * Measures how many flaps fit across one row at full size, by rendering a
+     * throwaway row and reading the real geometry. Done live rather than
+     * calculated, because cell width depends on the font the browser actually
+     * resolved and on the current column width.
+     *
+     * @param {HTMLElement} rows - The container the rows are built into.
+     * @returns {{fit: number, cellW: number, gap: number, avail: number}} Row geometry.
+     */
+    function measureFlapCapacity(rows) {
+      const probeRow = document.createElement('div');
+      probeRow.className = 'flap-row';
+      probeRow.style.visibility = 'hidden';
+      const pos = document.createElement('span');
+      pos.className = 'flap-pos';
+      renderFlaps(pos, '00.', flapPosCells(flapPosTotal));
+      const nameCol = document.createElement('span');
+      nameCol.className = 'flap-name';
+      const cell = document.createElement('span');
+      cell.className = 'flap-cell blank';
+      cell.textContent = FLAP_BLANK;
+      nameCol.appendChild(cell);
+      const state = document.createElement('span');
+      state.className = 'flap-state';
+      renderFlaps(state, t('flapStateWaiting'), flapStateCells());
+      probeRow.appendChild(pos);
+      probeRow.appendChild(nameCol);
+      probeRow.appendChild(state);
+      rows.appendChild(probeRow);
+
+      const avail = nameCol.getBoundingClientRect().width;
+      const cellW = cell.getBoundingClientRect().width;
+      const gap = parseFloat(getComputedStyle(nameCol).columnGap) || 0;
+      // Every flap is the same size, so shrinking for a long name shrinks the
+      // position and status columns too – which frees up width in turn. Capture
+      // what those side columns cost at full size so the scale can account for it.
+      const rowW = probeRow.getBoundingClientRect().width;
+      const sideW = pos.getBoundingClientRect().width + state.getBoundingClientRect().width;
+      const colGap = parseFloat(getComputedStyle(probeRow).columnGap) || 0;
+      rows.removeChild(probeRow);
+
+      if (!(avail > 0) || !(cellW > 0)) {
+        return { fit: Math.max(3, FLAP_MAX_CELLS), cellW: 0, gap: gap,
+                 avail: 0, rowW: 0, sideW: 0, colGap: colGap };
+      }
+      // n cells need n*cellW + (n-1)*gap
+      const n = Math.floor((avail + gap) / (cellW + gap));
+      return {
+        fit: Math.max(3, Math.min(FLAP_MAX_CELLS, n)),
+        cellW: cellW,
+        gap: gap,
+        avail: avail,
+        rowW: rowW,
+        sideW: sideW,
+        colGap: colGap
+      };
+    }
+
+    /**
+     * Builds an empty board: one row per participant, numbered, with flaps
+     * across the full width of the name column.
      *
      * @param {Array<string>} list - Participants of this round.
      */
@@ -3863,10 +4364,36 @@
       if (!rows) return;
       rows.innerHTML = '';
 
-      const longest = list.reduce((max, name) => Math.max(max, name.trim().length), 1);
-      flapCellCount = Math.min(FLAP_MAX_CELLS, Math.max(3, longest));
-      // Shrink the type instead of overflowing once names get long.
-      const fontSize = flapCellCount > 9 ? (9 / flapCellCount) : 1;
+      flapPosTotal = list.length;
+      // The name column must hold its own heading as well as the names – with a
+      // team of "Jan", "Lea", "Ugur" it would otherwise be four flaps wide and
+      // print "SPRE". Both languages count, so switching language later cannot
+      // truncate it either.
+      const headingCells = SUPPORTED_LANGS.reduce((max, lang) => {
+        const label = (translations[lang] && translations[lang].flapColName) || '';
+        return Math.max(max, label.length);
+      }, 1);
+      const longest = list.reduce(
+        (max, name) => Math.max(max, name.trim().length), headingCells);
+
+      // How many flaps actually fit across the name column? A real departure
+      // board is flaps edge to edge, not a short strip sized to the longest
+      // name with dead board next to it – so measure the row and fill it.
+      const geom = measureFlapCapacity(rows);
+
+      let fontSize = 1;
+      if (longest <= geom.fit) {
+        // Room to spare: fill the whole width with (mostly blank) flaps.
+        flapCellCount = geom.fit;
+      } else {
+        // The longest name needs more flaps than fit at full size, so the whole
+        // row shrinks – position and status included, since all flaps are one
+        // size. A first estimate; fitFlapScale() corrects it by measurement
+        // below, because the exact width of a flap depends on details (minimum
+        // width, the font the browser resolved) that arithmetic keeps missing.
+        flapCellCount = Math.min(FLAP_MAX_CELLS, longest);
+        fontSize = Math.max(0.4, geom.fit / flapCellCount);
+      }
 
       list.forEach((_, i) => {
         const row = document.createElement('div');
@@ -3874,27 +4401,131 @@
 
         const pos = document.createElement('span');
         pos.className = 'flap-pos';
-        pos.textContent = (i + 1) + '.';
+        renderFlaps(pos, (i + 1) + '.', flapPosCells(list.length));
+
+        row.style.fontSize = fontSize.toFixed(3) + 'em';
 
         const name = document.createElement('span');
         name.className = 'flap-name';
-        name.style.fontSize = fontSize.toFixed(3) + 'em';
         for (let c = 0; c < flapCellCount; c++) {
           const cell = document.createElement('span');
           cell.className = 'flap-cell blank';
-          cell.textContent = ' ';
+          cell.textContent = FLAP_BLANK;
           name.appendChild(cell);
         }
 
         const state = document.createElement('span');
         state.className = 'flap-state';
-        state.textContent = '–';
+        renderFlaps(state, '', flapStateCells());
 
         row.appendChild(pos);
         row.appendChild(name);
         row.appendChild(state);
         rows.appendChild(row);
       });
+
+      buildFlapHeader(fontSize);
+      fontSize = fitFlapScale(rows, fontSize);
+      topUpFlaps(rows, fontSize);
+    }
+
+    /**
+     * Adds flaps until the row is full again. Shrinking the type to fit a long
+     * name frees up width, and a board with a stretch of bare panel at the end
+     * of every row is exactly what we set out to avoid.
+     *
+     * @param {HTMLElement} rows - The row container.
+     * @param {number} scale - The scale the rows ended up at.
+     */
+    function topUpFlaps(rows, scale) {
+      const first = rows.querySelector('.flap-row .flap-name');
+      const sample = first && first.querySelector('.flap-cell');
+      if (!first || !sample) return;
+
+      const cellW = sample.getBoundingClientRect().width;
+      const gap = parseFloat(getComputedStyle(first).columnGap) || 0;
+      const avail = first.clientWidth;
+      if (!(cellW > 0) || !(avail > 0)) return;
+
+      const canFit = Math.min(FLAP_MAX_CELLS, Math.floor((avail + gap) / (cellW + gap)));
+      if (canFit <= flapCellCount) return;
+
+      const extra = canFit - flapCellCount;
+      rows.querySelectorAll('.flap-row .flap-name').forEach(col => {
+        for (let i = 0; i < extra; i++) {
+          const cell = document.createElement('span');
+          cell.className = 'flap-cell blank';
+          cell.textContent = FLAP_BLANK;
+          col.appendChild(cell);
+        }
+      });
+      flapCellCount = canFit;
+      // The heading is padded to the flap count, so it has to follow.
+      buildFlapHeader(scale);
+    }
+
+    /** Applies one type scale to every row and to the header. */
+    function applyFlapScale(rows, scale) {
+      const value = scale.toFixed(4) + 'em';
+      Array.from(rows.children).forEach(row => { row.style.fontSize = value; });
+      const head = document.getElementById('flapHead');
+      if (head) head.style.fontSize = value;
+    }
+
+    /**
+     * Shrinks the board until the widest row actually fits, measuring instead
+     * of calculating. Each pass reads how much the name column overflows and
+     * scales by exactly that ratio; because the position and status columns
+     * shrink too, the name column gains a little room each time, so this
+     * converges in a pass or two.
+     *
+     * @param {HTMLElement} rows - The row container.
+     * @param {number} startScale - Estimated scale to begin from.
+     * @returns {number} The scale that fits.
+     */
+    function fitFlapScale(rows, startScale) {
+      let scale = startScale;
+      for (let pass = 0; pass < 8; pass++) {
+        const nameCol = rows.querySelector('.flap-row .flap-name');
+        if (!nameCol || nameCol.clientWidth <= 0) return scale;
+        const over = nameCol.scrollWidth / nameCol.clientWidth;
+        if (over <= 1.005) return scale;
+        scale = Math.max(0.3, scale / over * 0.997);
+        applyFlapScale(rows, scale);
+      }
+      return scale;
+    }
+
+    /**
+     * The column headings, also as flaps. "SPRECHER" is padded to the same
+     * flap count as the names below it, so the whole board is one grid.
+     *
+     * @param {number} fontSize - Same scale factor the name flaps use.
+     */
+    function buildFlapHeader(fontSize) {
+      const head = document.getElementById('flapHead');
+      if (!head) return;
+      head.innerHTML = '';
+
+      const pos = document.createElement('span');
+      pos.className = 'flap-pos';
+      renderFlaps(pos, t('flapColPos'), flapPosCells(flapPosTotal), 'is-label');
+
+      head.style.fontSize = fontSize.toFixed(3) + 'em';
+
+      const name = document.createElement('span');
+      name.className = 'flap-name';
+      // Left-aligned heading, padded on the right to the full row width.
+      const label = String(t('flapColName')).toUpperCase().slice(0, flapCellCount);
+      renderFlaps(name, label.padEnd(flapCellCount, ' '), flapCellCount, 'is-label');
+
+      const state = document.createElement('span');
+      state.className = 'flap-state';
+      renderFlaps(state, t('flapColState'), flapStateCells(), 'is-label');
+
+      head.appendChild(pos);
+      head.appendChild(name);
+      head.appendChild(state);
     }
 
     /**
@@ -3907,9 +4538,15 @@
      * @param {Function} onDone - Called once the last cell has locked in.
      */
     function flipRowTo(row, name, onDone) {
-      const cells = Array.from(row.querySelectorAll('.flap-cell'));
+      // Only the name column: the row also holds the position and status flaps
+      // now, and a row-wide query would spell the name across all of them.
+      const nameCol = row.querySelector('.flap-name');
+      const cells = Array.from(nameCol ? nameCol.querySelectorAll('.flap-cell') : []);
       const target = name.trim().toUpperCase().slice(0, cells.length);
       const start = performance.now();
+      // Reduced motion: show the result, skip the clatter.
+      const settleMs = prefersReducedMotion() ? 0 : FLAP_SETTLE_MS;
+      const staggerMs = prefersReducedMotion() ? 0 : FLAP_STAGGER_MS;
       const ticks = new Array(cells.length).fill(-1);
 
       cells.forEach(cell => {
@@ -3922,12 +4559,13 @@
         let settled = true;
 
         cells.forEach((cell, i) => {
-          const settleAt = FLAP_SETTLE_MS + i * FLAP_STAGGER_MS;
-          const finalChar = target[i] || ' ';
+          const settleAt = settleMs + i * staggerMs;
+          const finalChar = target[i] || FLAP_BLANK;
+          const isBlank = finalChar === FLAP_BLANK || finalChar === ' ';
           if (elapsed >= settleAt) {
-            cell.textContent = finalChar;
+            cell.textContent = isBlank ? FLAP_BLANK : finalChar;
             cell.classList.remove('flipping');
-            cell.classList.toggle('blank', finalChar === ' ');
+            cell.classList.toggle('blank', isBlank);
             return;
           }
           settled = false;
@@ -3961,9 +4599,10 @@
         row.classList.toggle('is-done', isDone);
         const state = row.querySelector('.flap-state');
         if (state) {
-          state.textContent = isCurrent ? t('flapStateNow')
+          const text = isCurrent ? t('flapStateNow')
             : isDone ? t('flapStateDone')
-            : (i < flapDrawn.length ? '' : t('flapStateWaiting'));
+            : t('flapStateWaiting');
+          renderFlaps(state, text, flapStateCells());
         }
       });
     }
@@ -3998,6 +4637,7 @@
         flapAnimating = false;
         activeIndex = flapDrawn.length - 1;
         updateFlapRowStates();
+        announceSpeaker(pick, activeIndex, currentShuffledList.length);
         // The freshly revealed speaker's time starts now – including the last.
         startTimer();
         if (remainingFlapParticipants.length === 0) {
@@ -4065,8 +4705,9 @@
       }
       if (flapRestartButton) flapRestartButton.style.display = 'none';
       showView(null);
+      clearAnnouncement();
       participantSelection.style.display = 'flex';
-      if (shuffleButton) setText(shuffleButton, 'btnStart');
+      setPrimaryButtonState(false);
     }
 
     /**
@@ -4083,6 +4724,39 @@
       document.querySelectorAll('[data-view]').forEach(el => {
         el.style.display = (el.dataset.view === mode) ? 'block' : 'none';
       });
+    }
+
+    /**
+     * Sets the primary button to one of exactly two states. Before this the same
+     * button carried seven different labels set from seven different places
+     * ("Würfeln", "Starten", "Erneut würfeln", "Neu starten" and one "reset the
+     * X round" per view), which made the same control look like a different one
+     * in every view.
+     *
+     * While a round runs the button also steps back to the quiet style: the
+     * view's own action (spin, deal, set the board) is the primary one then.
+     *
+     * @param {boolean} running - True once a round is under way.
+     */
+    function setPrimaryButtonState(running) {
+      if (!shuffleButton) return;
+      setText(shuffleButton, running ? 'btnNewRound' : 'btnRoll');
+      shuffleButton.classList.toggle('is-quiet', !!running);
+    }
+
+    /**
+     * Hands keyboard focus to the control that continues the daily in the
+     * current view, so Space acts on "next" rather than on the roll button that
+     * was just clicked.
+     */
+    function focusViewAction() {
+      const target = {
+        slot: slotSpinButton,
+        wheel: wheelSpinButton,
+        card: cardThrowButton,
+        flap: flapDrawButton
+      }[viewMode] || document.getElementById('nextParticipantButton');
+      if (target && target.offsetParent !== null && !target.disabled) target.focus();
     }
 
     function displayTeam(list) {
@@ -4114,7 +4788,7 @@
       shuffleButton.style.display = 'inline-block';
       // The draw-one-at-a-time views all act after starting, so they share "Start".
       const spinFirst = DRAW_ONE_BY_ONE_MODES.indexOf(viewMode) !== -1;
-      setText(shuffleButton, spinFirst ? 'btnStart' : 'btnRoll');
+      setPrimaryButtonState(false);
       if (slotSpinButton) slotSpinButton.disabled = true;
       if (wheelSpinButton) wheelSpinButton.disabled = true;
       if (cardThrowButton) cardThrowButton.disabled = true;
@@ -4157,11 +4831,13 @@
       toggleOvertimeIcons(false);
       // Big celebration in the timer pill (consistent with the classic view).
       setText(timerDisplay, 'dailyFinished');
+      const announcer = document.getElementById('speakerAnnouncer');
+      if (announcer) announcer.textContent = t('announceFinished');
       showConfetti();
 
       if (shuffleButton) {
         shuffleButton.style.display = 'inline-block';
-        setText(shuffleButton, 'btnRestart');
+        setPrimaryButtonState(true);
       }
 
       if (viewMode === VIEW_MODE_WHEEL) {
@@ -4213,10 +4889,6 @@
       }
     }
 
-    function hideSlotEndOverlay() {
-      return;
-    }
-
     function resetSlotMachine() {
       slotSessionActive = false;
       if (slotSpinButton) {
@@ -4228,13 +4900,11 @@
       if (restartBtn) {
         restartBtn.style.display = 'none';
       }
-      hideSlotEndOverlay();
       setText(slotStatus, 'slotStatusRestart');
       showView(null);
+      clearAnnouncement();
       participantSelection.style.display = 'flex';
-      if (shuffleButton) {
-        setText(shuffleButton, 'btnStart');
-      }
+      setPrimaryButtonState(false);
     }
 
     function showConfetti(duration = 3000) {
@@ -4330,9 +5000,18 @@
                 }
             });
 
-            label.appendChild(checkbox);
-            label.appendChild(document.createTextNode(name));
-            
+            // Checkbox and name travel as one block so the row can place them
+            // together instead of pinning them to the left edge (see
+            // .participant-inner).
+            const inner = document.createElement('span');
+            inner.className = 'participant-inner';
+            const nameEl = document.createElement('span');
+            nameEl.className = 'participant-name';
+            nameEl.textContent = name;
+            inner.appendChild(checkbox);
+            inner.appendChild(nameEl);
+            label.appendChild(inner);
+
             participantSelection.appendChild(label);
         });
     }
@@ -4342,6 +5021,80 @@
     /**
      * Opens the configuration modal and populates it with current state data.
      */
+    // Focus handling shared by both dialogs. Before this the dialogs could be
+    // opened but not closed from the keyboard: the close control was a <span>,
+    // Escape did nothing, and Tab wandered off into the page behind.
+    let lastFocusedBeforeModal = null;
+
+    /**
+     * All focusable controls inside a container, in document order.
+     * Visibility is measured with getClientRects() rather than offsetParent:
+     * inside a position:fixed dialog offsetParent is null for every child, which
+     * would leave the focus trap with nothing to hold on to.
+     */
+    function focusablesIn(container) {
+      return Array.from(container.querySelectorAll(
+        'button, [href], input, select, textarea, summary, [tabindex]:not([tabindex="-1"])'
+      )).filter(el => !el.disabled && el.getClientRects().length > 0);
+    }
+
+    /** Opens a dialog: show it, park focus inside, remember where we came from. */
+    function openModal(modal) {
+      lastFocusedBeforeModal = document.activeElement;
+      modal.style.display = 'block';
+      const first = focusablesIn(modal)[0];
+      if (first) first.focus();
+    }
+
+    /** Closes a dialog and hands focus back to whatever opened it. */
+    function closeModal(modal) {
+      modal.style.display = 'none';
+      if (lastFocusedBeforeModal && typeof lastFocusedBeforeModal.focus === 'function') {
+        lastFocusedBeforeModal.focus();
+      }
+      lastFocusedBeforeModal = null;
+    }
+
+    /**
+     * Keeps focus inside the open dialog.
+     *
+     * Deliberately reactive rather than predictive: comparing against the
+     * "last focusable element" does not work here, because a radio group is one
+     * tab stop for all eight of its buttons and a collapsed <details> hides its
+     * contents from the tab order entirely. So instead of guessing where the
+     * boundary is, we let focus move and pull it back if it left.
+     */
+    let lastTabWasBackwards = false;
+    let lastKeyWasTab = false;
+
+    /**
+     * Pulls focus back into the dialog when Tab carried it out.
+     *
+     * This listens to focusout, not focusin: tabbing off the last control moves
+     * focus out of the document altogether (relatedTarget is null and no
+     * focusin ever fires), which is exactly the case that has to be caught.
+     * Only Tab triggers it, so clicking the page behind still behaves normally.
+     */
+    function guardModalFocus(event) {
+      const modal = openDialogElement();
+      if (!modal || !lastKeyWasTab) return;
+      if (event.relatedTarget && modal.contains(event.relatedTarget)) return;
+      const items = focusablesIn(modal);
+      if (items.length === 0) return;
+      const target = lastTabWasBackwards ? items[items.length - 1] : items[0];
+      // focusout runs before focus settles, so re-focus on the next tick.
+      setTimeout(() => {
+        if (openDialogElement() === modal) target.focus();
+      }, 0);
+    }
+
+    /** The dialog currently on screen, or null. */
+    function openDialogElement() {
+      if (configModal && configModal.style.display === 'block') return configModal;
+      if (helpModal && helpModal.style.display === 'block') return helpModal;
+      return null;
+    }
+
     function openConfig() {
       if(Array.isArray(currentTeamMembers)) {
           teamNamesInput.value = currentTeamMembers.join(', ');
@@ -4358,28 +5111,29 @@
         seasonSel.value = (ov === 'carnival' || ov === 'easter' || ov === 'halloween' ||
           ov === 'winter' || ov === 'off') ? ov : 'auto';
       }
-      configModal.style.display = 'block';
+      openModal(configModal);
+      syncThemePicker();
     }
     
     /**
      * Closes the configuration modal.
      */
     function closeConfig() {
-      configModal.style.display = 'none';
+      closeModal(configModal);
     }
     
     /**
      * Opens the help modal.
      */
     function openHelp() {
-        helpModal.style.display = 'block';
+        openModal(helpModal);
     }
     
     /**
      * Closes the help modal.
      */
     function closeHelp() {
-        helpModal.style.display = 'none';
+        closeModal(helpModal);
     }
 
     /**
@@ -4425,13 +5179,12 @@
       hideResults();
 
       shuffleButton.style.display = 'inline-block';
+      setPrimaryButtonState(false);
       if (DRAW_ONE_BY_ONE_MODES.indexOf(viewMode) !== -1) {
-          setText(shuffleButton, 'btnStart');
           if (slotSpinButton) slotSpinButton.disabled = true;
           if (wheelSpinButton) wheelSpinButton.disabled = true;
           if (cardThrowButton) cardThrowButton.disabled = true;
-      } else {
-          setText(shuffleButton, 'btnRoll');
+          if (flapDrawButton) flapDrawButton.disabled = true;
       }
 
       // Provide visual feedback for successful save operation
@@ -4513,8 +5266,33 @@
      * Space: Next participant
      * Modifier + Space: Previous participant
      */
+    // Dialog keys run before the Space handler, which deliberately ignores keys
+    // while a dialog is open.
+    document.addEventListener('keydown', (event) => {
+      lastKeyWasTab = event.key === 'Tab';
+      if (lastKeyWasTab) lastTabWasBackwards = event.shiftKey;
+      const openDialog = openDialogElement();
+      if (!openDialog) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeModal(openDialog);
+      }
+    });
+    document.addEventListener('focusout', guardModalFocus);
+
     document.addEventListener('keydown', (event) => {
         if (configModal.style.display === 'block' || helpModal.style.display === 'block' || currentShuffledList.length === 0 || slotAnimating || wheelAnimating || cardAnimating || flapAnimating) {
+            return;
+        }
+
+        // A focused control keeps its own plain Space, so keyboard users can
+        // operate the button they just tabbed to instead of having the shortcut
+        // swallow the key. Modifier combinations (step back) have no button of
+        // their own and always reach this handler.
+        const focused = document.activeElement;
+        const plainSpace = !event.ctrlKey && !event.shiftKey && !event.metaKey;
+        if (plainSpace && focused && focused !== document.body &&
+            /^(BUTTON|INPUT|SELECT|TEXTAREA|SUMMARY|A)$/.test(focused.tagName)) {
             return;
         }
 
@@ -4609,21 +5387,14 @@
       
       const shuffled = buildRunningOrder(activeNames);
       displayTeam(shuffled);
-      if (viewMode === VIEW_MODE_SLOT) {
-        setText(shuffleButton, 'btnSlotResetRound');
-      } else if (viewMode === VIEW_MODE_WHEEL) {
-        // The timer starts after the first spin, not on roll.
-        setText(shuffleButton, 'btnWheelResetRound');
-      } else if (viewMode === VIEW_MODE_CARD) {
-        // displayCardTeam throws the first card and starts the timer itself.
-        setText(shuffleButton, 'btnCardResetRound');
-      } else if (viewMode === VIEW_MODE_FLAP) {
-        // The timer starts once the first row has settled, not on roll.
-        setText(shuffleButton, 'btnFlapResetRound');
-      } else {
-        setText(shuffleButton, 'btnRollAgain');
+      setPrimaryButtonState(true);
+      // The draw-one-at-a-time views start their clock when the first name is
+      // revealed; the step-through views start it right away.
+      if (DRAW_ONE_BY_ONE_MODES.indexOf(viewMode) === -1) {
         startTimer();
       }
+      if (shuffleButton) shuffleButton.blur();
+      focusViewAction();
     });
 
     // Modal Triggers
@@ -4680,6 +5451,29 @@
     saveConfigButton.addEventListener('click', saveConfig);
     resetNamesButton.addEventListener('click', resetToInitialNames);
 
+    // Theme picker – preset dots and the free colour well. Both apply live, so
+    // the choice is visible behind the open settings dialog straight away.
+    const themePicker = document.getElementById('themePicker');
+    if (themePicker) {
+      themePicker.querySelectorAll('.theme-dot').forEach(dot => {
+        dot.addEventListener('click', () => {
+          applyTheme({ h: Number(dot.dataset.hue), sat: Number(dot.dataset.sat) }, true);
+        });
+      });
+    }
+    const themeColorInput = document.getElementById('themeColorInput');
+    if (themeColorInput) {
+      // 'input' fires while dragging in the picker (live preview), 'change' on commit.
+      themeColorInput.addEventListener('input', () => {
+        const theme = hexToTheme(themeColorInput.value);
+        if (theme) applyTheme(theme, false);
+      });
+      themeColorInput.addEventListener('change', () => {
+        const theme = hexToTheme(themeColorInput.value);
+        if (theme) applyTheme(theme, true);
+      });
+    }
+
     // Language switch – applies the chosen language live across the whole UI.
     document.querySelectorAll('#langSwitch .lang-option').forEach(btn => {
       btn.addEventListener('click', () => applyLanguage(btn.dataset.lang));
@@ -4714,12 +5508,15 @@
     // --- Application Entry Point ---
     
     try {
+        loadTheme();
         loadLanguage();
         loadInitialConfig();
         applyLanguage(currentLang);
         applySeason();
     } catch (e) {
-        alert(t('alertStartError', { msg: e.message }));
+        // Same reasoning as window.onerror: never block the app with a dialog.
+        console.error('Daily Taktgeber – Start:', e);
+        showErrorBanner(e && e.message ? e.message : String(e));
     }
   })();
 
