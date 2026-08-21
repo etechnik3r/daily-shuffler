@@ -16,7 +16,9 @@
   <meta name="apple-mobile-web-app-title" content="Taktgeber">
   <style>
     /* --- Base Styles & Typography --- */
-    @import url('https://fonts.googleapis.com/css2?family=Helvetica&display=swap');
+    /* No web font on purpose: the stack below is resolved locally on every
+       target platform, which keeps the app fully offline-capable and stops any
+       request leaving the device. */
 
     /* --- Design tokens: one source of truth so every view shares the same
        surfaces, accent, depth and column width ("aus einem Guss"). --- */
@@ -1458,6 +1460,22 @@
     .update-banner-btn:hover { filter: brightness(0.96); }
     .update-banner-btn:active { transform: translateY(1px); }
 
+    /* Error notice: same slide-in as the update banner, but muted and
+       self-dismissing so a hiccup never blocks a running daily. */
+    .error-banner {
+      background: linear-gradient(180deg, #b3261e 0%, #7f1d1a 100%);
+      box-shadow: 0 6px 18px rgba(90,10,10,0.30);
+      z-index: 101;
+    }
+    .error-banner .update-banner-text {
+      font-size: 0.9em;
+      font-weight: 600;
+      max-width: 90vw;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     /* --- PWA: install section inside the settings modal --- */
     .install-section {
       margin-bottom: 8px;
@@ -1484,6 +1502,11 @@
     <button id="updateReloadButton" class="update-banner-btn" data-i18n="btnReload">Neu laden</button>
   </div>
 
+  <!-- Replaces the former alert() on window.onerror: visible, but harmless. -->
+  <div id="errorBanner" class="update-banner error-banner" role="alert" aria-live="assertive">
+    <span id="errorBannerText" class="update-banner-text"></span>
+  </div>
+
   <h1 data-i18n="appTitle">⏱️ Daily Taktgeber 🎲</h1>
   
   <div id="participantSelection">
@@ -1504,7 +1527,7 @@
     <span id="timerIconRight" class="timer-icon"></span>
   </div>
 
-  <div id="slotContainer" style="display: none; position: relative;">
+  <div id="slotContainer" data-view="slot" style="display: none; position: relative;">
     <div id="slotStatus" data-i18n="slotStatusInitial">Drücke Starten für Zufall.</div>
     <div class="slot-machine-row">
       <div id="slotTrackWrapper">
@@ -1527,9 +1550,9 @@
     </div>
   </div>
 
-  <ul id="teamList"></ul>
+  <ul id="teamList" data-view="classic"></ul>
 
-  <div id="wheelContainer">
+  <div id="wheelContainer" data-view="wheel">
     <div id="wheelStatus"></div>
     <div class="wheel-stage">
       <div class="wheel-pointer"></div>
@@ -1548,7 +1571,7 @@
     </div>
   </div>
 
-  <div id="cardContainer">
+  <div id="cardContainer" data-view="card">
     <div id="cardStatus"></div>
     <div id="cardPile" class="card-pile"></div>
     <div class="slot-controls">
@@ -1557,7 +1580,7 @@
     </div>
   </div>
 
-  <div id="evContainer">
+  <div id="evContainer" data-view="ev">
     <div id="evRoadWrap">
       <div id="evRoad"></div>
       <div id="evGoal">🏁</div>
@@ -1726,8 +1749,35 @@
      * Prevents silent failures by providing visual feedback to the user on critical exceptions.
      */
     window.onerror = function(message, source, lineno, colno, error) {
-        alert(t('alertError', { msg: message }));
+        // Never interrupt a running daily with a modal dialog: the app is shown
+        // on a shared screen, so an error goes to the console and, at most, to a
+        // discreet inline banner.
+        console.error('Daily Taktgeber:', message, source, lineno, colno, error);
+        showErrorBanner(message);
+        return false; // keep the browser's own reporting intact
     };
+
+    /**
+     * Shows the inline error notice for a few seconds. Deliberately defensive:
+     * it is called from the global error handler, so it must never be able to
+     * throw a second error and start a loop.
+     *
+     * @param {string} message - The raw error message.
+     */
+    let errorBannerTimeout = null;
+    function showErrorBanner(message) {
+      try {
+        const banner = document.getElementById('errorBanner');
+        const text = document.getElementById('errorBannerText');
+        if (!banner || !text) return;
+        text.textContent = t('errorNotice', { msg: String(message) });
+        banner.classList.add('visible');
+        clearTimeout(errorBannerTimeout);
+        errorBannerTimeout = setTimeout(() => banner.classList.remove('visible'), 6000);
+      } catch (e) {
+        /* swallow – reporting an error must never cause one */
+      }
+    }
 
     // --- Configuration & Constants ---
     const STORAGE_KEY = 'dailyTeamNames';
@@ -1738,6 +1788,19 @@
     const VIEW_MODE_EV = 'ev';
     const VIEW_MODE_WHEEL = 'wheel';
     const VIEW_MODE_CARD = 'card';
+    const VIEW_MODE_FLAP = 'flap';
+    const VIEW_MODE_LINE = 'line';
+    const VIEW_MODE_FOCUS = 'focus';
+    // One source of truth for "which views exist". Everything that used to
+    // enumerate the modes by hand (validation, hide-all lists, the settings
+    // radios) reads this instead, so adding a view is a one-line change.
+    const ALL_VIEW_MODES = [
+      VIEW_MODE_CLASSIC, VIEW_MODE_SLOT, VIEW_MODE_EV, VIEW_MODE_WHEEL,
+      VIEW_MODE_CARD, VIEW_MODE_FLAP, VIEW_MODE_LINE, VIEW_MODE_FOCUS
+    ];
+    // Views that are driven by drawing one name at a time, so their primary
+    // button reads "Start" instead of "Roll".
+    const DRAW_ONE_BY_ONE_MODES = [VIEW_MODE_SLOT, VIEW_MODE_WHEEL, VIEW_MODE_CARD, VIEW_MODE_FLAP];
     const EVENT_OVERRIDE_KEY = 'dailyEventOverride';
     const FIRST_LAST_KEY = 'dailyFirstMemberLast';
     // Share of the running order reserved for the "first member goes last"
@@ -1820,6 +1883,7 @@
         helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Anwesenheit</b>Hake oben ab, wer heute dabei ist. Abgewählte Personen (Urlaub, krank) werden übersprungen.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Reihenfolge würfeln</b>Tippe auf „Würfeln": Die App erstellt eine zufällige Reihenfolge der aktiven Personen und startet den Timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>Die Gesamtdauer wird gleichmäßig aufgeteilt. Wird die Zeit knapp, färbt sich der Timer – erst gelb, dann rot.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Weiter zur nächsten Person</b>Tippe auf „Nächster Teilnehmer" oder drücke die Leertaste.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Einen Schritt zurück</b>Strg oder Umschalt + Leertaste springt zur vorherigen Person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slotmaschinen-Ansicht</b>Lust auf Show? In den Einstellungen schaltest du auf die animierte Slotmaschine um.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip-Ansicht</b>Ein E-Auto fährt die Daily-Strecke ab, die Batterie zeigt die Redezeit. Ist sie leer, kommt die Schildkröte.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Glücksrad-Ansicht</b>Ein buntes Rad mit allen Namen dreht sich und lost nacheinander aus, wer dran ist.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Kartenspiel-Ansicht</b>Für jeden Sprecher fliegt eine bunte Namenskarte auf den Stapel. Sonderkarten sorgen für Spaß – „Aussetzen" verschiebt jemanden ans Ende, der Rest ist nur Show.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Einstellungen</b>Namen, Dauer, Ansicht und Sprache jederzeit anpassen.</div></li>',
         alertPickOne: 'Bitte wähle mindestens einen Teilnehmer aus!',
         alertError: 'Ein Fehler ist aufgetreten: {msg}\nBitte Seite neu laden oder Cache leeren.',
+        errorNotice: 'Es ist ein Fehler aufgetreten ({msg}) – das Daily läuft weiter.',
         alertStartError: 'Kritischer Start-Fehler: {msg}'
       },
       en: {
@@ -1888,6 +1952,7 @@
         helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Attendance</b>Tick who is in today. Unticked people (vacation, sick) are skipped.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Roll the order</b>Tap “Roll” and the app builds a random order of the active people and starts the timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>The total time is split evenly. As it runs low the timer changes colour – yellow, then red.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Next person</b>Tap “Next participant” or press the spacebar.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Step back</b>Ctrl or Shift + Space jumps to the previous person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slot machine view</b>Want a bit of show? Switch to the animated slot machine in the settings.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip view</b>An EV drives the daily route while the battery shows the speaking time. When it is empty, the turtle appears.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Wheel of fortune view</b>A colourful wheel with every name spins and draws who is up next, one by one.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Card game view</b>A colourful name card is thrown onto the pile for each speaker. Special cards add fun – “Skip” moves someone to the end, the rest are just for show.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Settings</b>Adjust names, duration, view and language anytime.</div></li>',
         alertPickOne: 'Please select at least one participant!',
         alertError: 'An error occurred: {msg}\nPlease reload the page or clear the cache.',
+        errorNotice: 'Something went wrong ({msg}) – the daily keeps running.',
         alertStartError: 'Critical startup error: {msg}'
       }
     };
@@ -1986,10 +2051,13 @@
 
     // Wheel-of-fortune state (mirrors the slot machine's spin-to-pick flow).
     let currentWheelList = [];
+    // Slot indices into currentWheelList, NOT names: two team members may share
+    // a name, and each still owns exactly one slice of the disc.
     let remainingWheelParticipants = [];
     let previousWheelWinners = [];
-    let usedWheelNames = new Set();
+    let usedWheelSlots = new Set();
     let currentWheelWinner = null;
+    let currentWheelSlot = null;
     let wheelSessionActive = false;
     let wheelAnimating = false;
     let wheelAwaitingFinish = false; // last name drawn, its timer runs; next click ends
@@ -2296,17 +2364,13 @@
     }
 
     function updateSlotUsedState() {
-      if (!slotTrack || currentShuffledList.length === 0) return;
+      if (!slotTrack) return;
 
-      const usedNames = new Set(
-        currentShuffledList
-          .slice(0, Math.max(0, activeIndex))
-          .map(name => name.trim().toUpperCase())
-      );
-
+      // The reel is rebuilt from remainingSlotParticipants before every spin, so
+      // whatever is on it is still in the round. Marking by name would grey out a
+      // second team member who happens to share a name with someone already drawn.
       slotTrack.querySelectorAll('.slot-item').forEach(item => {
-        const itemName = (item.dataset.name || item.textContent || '').trim().toUpperCase();
-        item.classList.toggle('used-participant', usedNames.has(itemName));
+        item.classList.remove('used-participant');
       });
     }
 
@@ -2482,9 +2546,7 @@
     function displayEvTeam(list) {
       currentShuffledList = list.filter(name => name.trim() !== '');
 
-      slotContainer.style.display = 'none';
-      teamList.style.display = 'none';
-      evContainer.style.display = 'block';
+      showView(VIEW_MODE_EV);
       evContainer.classList.remove('ev-driving');
       setEvWarnIcon(null);
       applySeason();
@@ -2510,9 +2572,8 @@
     function displayClassicTeam(list) {
       currentShuffledList = list.filter(name => name.trim() !== '');
 
-      slotContainer.style.display = 'none';
+      showView(VIEW_MODE_CLASSIC);
       teamList.style.opacity = '0';
-      teamList.style.display = 'block';
 
       setTimeout(() => {
         teamList.innerHTML = '';
@@ -2662,9 +2723,8 @@
       currentSlotWinner = null;
       slotSessionActive = true;
 
-      teamList.style.display = 'none';
+      showView(VIEW_MODE_SLOT);
       setNextButtonVisible(false);
-      slotContainer.style.display = 'block';
       hideSlotEndOverlay();
       updateSlotHistory();
       const restartBtn = document.getElementById('slotRestartButton');
@@ -2740,6 +2800,7 @@
         circle.setAttribute('r', r);
         circle.setAttribute('fill', WHEEL_COLORS[0]);
         circle.dataset.name = upper;
+        circle.dataset.slot = '0';
         svg.appendChild(circle);
 
         // Largest font that fits the diameter (with a small margin).
@@ -2756,6 +2817,7 @@
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'middle');
         text.dataset.name = upper;
+        text.dataset.slot = '0';
         text.textContent = upper;
         svg.appendChild(text);
         return;
@@ -2788,6 +2850,7 @@
         path.setAttribute('stroke', 'rgba(255,255,255,0.85)');
         path.setAttribute('stroke-width', '2');
         path.dataset.name = upper;
+        path.dataset.slot = String(i);
         svg.appendChild(path);
 
         const mid = start + seg / 2;
@@ -2810,6 +2873,7 @@
         text.setAttribute('dominant-baseline', 'middle');
         text.setAttribute('transform', `rotate(${rot.toFixed(2)} ${tx.toFixed(2)} ${ty.toFixed(2)})`);
         text.dataset.name = upper;
+        text.dataset.slot = String(i);
         text.textContent = upper;
         svg.appendChild(text);
       });
@@ -2833,11 +2897,10 @@
     function updateWheelSegmentStates() {
       const svg = document.getElementById('wheelSvg');
       if (!svg) return;
-      const curr = currentWheelWinner ? currentWheelWinner.trim().toUpperCase() : null;
       svg.querySelectorAll('path, text, circle').forEach(el => {
-        const name = (el.dataset.name || '').trim().toUpperCase();
-        const used = usedWheelNames.has(name);
-        const isCurrent = curr && name === curr;
+        const slot = Number(el.dataset.slot);
+        const used = usedWheelSlots.has(slot);
+        const isCurrent = currentWheelSlot !== null && slot === currentWheelSlot;
         const isText = el.tagName === 'text';
         el.style.opacity = used ? (isText ? '0.4' : '0.25') : '1';
         if (!isText) el.classList.toggle('wheel-current', !!isCurrent);
@@ -2858,11 +2921,12 @@
       const n = currentWheelList.length;
       const seg = 360 / n;
 
-      const pick = remainingWheelParticipants[
-        pickNextParticipantIndex(remainingWheelParticipants, currentWheelList.length)];
-      const pickUpper = pick.trim().toUpperCase();
-      const idx = currentWheelList.findIndex(
-        name => name.trim().toUpperCase() === pickUpper);
+      // Draw a position within the remaining slots; the anchor rule works on
+      // names, so hand it the names behind those slots.
+      const remainingNames = remainingWheelParticipants.map(slot => currentWheelList[slot]);
+      const pickPos = pickNextParticipantIndex(remainingNames, currentWheelList.length);
+      const idx = remainingWheelParticipants[pickPos];
+      const pick = currentWheelList[idx];
 
       // Rotation that brings slice `idx` centre under the top pointer, plus a few
       // full turns so the wheel always spins forward from its current position.
@@ -2883,15 +2947,15 @@
 
         // The previously highlighted speaker now becomes a greyed-out slice;
         // the freshly drawn name takes over as the highlighted current speaker.
-        if (currentWheelWinner) {
-          usedWheelNames.add(currentWheelWinner.trim().toUpperCase());
+        if (currentWheelSlot !== null) {
+          usedWheelSlots.add(currentWheelSlot);
         }
+        currentWheelSlot = idx;
         currentWheelWinner = pick.trim();
         previousWheelWinners.push(pick.trim());
-        remainingWheelParticipants = currentWheelList.filter(name => {
-          const u = name.trim().toUpperCase();
-          return !usedWheelNames.has(u) && u !== pickUpper;
-        });
+        // Drop exactly the slice that was drawn – never every slice that happens
+        // to carry the same name.
+        remainingWheelParticipants = remainingWheelParticipants.filter(slot => slot !== idx);
         updateWheelSegmentStates();
         updateWheelHistory();
 
@@ -2929,20 +2993,18 @@
     function displayWheelTeam(list) {
       currentShuffledList = list.filter(name => name.trim() !== '');
       currentWheelList = currentShuffledList.slice();
-      remainingWheelParticipants = currentWheelList.slice();
+      remainingWheelParticipants = currentWheelList.map((_, i) => i);
       previousWheelWinners = [];
-      usedWheelNames = new Set();
+      usedWheelSlots = new Set();
       currentWheelWinner = null;
+      currentWheelSlot = null;
       wheelSessionActive = true;
       wheelAnimating = false;
       wheelAwaitingFinish = false;
       wheelRotation = 0;
 
-      teamList.style.display = 'none';
-      slotContainer.style.display = 'none';
-      evContainer.style.display = 'none';
+      showView(VIEW_MODE_WHEEL);
       setNextButtonVisible(false);
-      wheelContainer.style.display = 'block';
       applySeason();
       updateWheelHistory();
 
@@ -2987,7 +3049,7 @@
       }
       if (wheelRestartButton) wheelRestartButton.style.display = 'none';
       clearText(wheelStatus);
-      wheelContainer.style.display = 'none';
+      showView(null);
       participantSelection.style.display = 'flex';
       if (shuffleButton) setText(shuffleButton, 'btnStart');
     }
@@ -3198,12 +3260,8 @@
       cardAnimating = false;
       cardSessionActive = true;
 
-      teamList.style.display = 'none';
-      slotContainer.style.display = 'none';
-      wheelContainer.style.display = 'none';
-      evContainer.style.display = 'none';
+      showView(VIEW_MODE_CARD);
       setNextButtonVisible(false);
-      cardContainer.style.display = 'block';
       applySeason();
       if (cardPile) cardPile.innerHTML = '';
       clearText(cardStatus);
@@ -3229,11 +3287,27 @@
     /** Plays another card round with the same participants (no detour back). */
     function playCardAgain() {
       const names = (currentShuffledList || []).slice();
-      if (names.length === 0) { participantSelection.style.display = 'flex'; cardContainer.style.display = 'none'; return; }
+      if (names.length === 0) { participantSelection.style.display = 'flex'; showView(null); return; }
       participantSelection.style.display = 'none';
       shuffleButton.style.display = 'inline-block';
       setText(shuffleButton, 'btnCardResetRound');
       displayCardTeam(names);
+    }
+
+    /**
+     * Shows exactly one stage and hides every other one. Previously six separate
+     * functions each hid a different, hand-maintained subset of the containers –
+     * which only worked because a mode change always funnelled through
+     * hideResults(). Driving it off [data-view] keeps every view honest.
+     *
+     * @param {string|null} mode - The view to reveal, or null to hide them all.
+     */
+    function showView(mode) {
+      // Every stage defaults to display:none in CSS, so the visible one needs an
+      // explicit value rather than a reset to ''.
+      document.querySelectorAll('[data-view]').forEach(el => {
+        el.style.display = (el.dataset.view === mode) ? 'block' : 'none';
+      });
     }
 
     function displayTeam(list) {
@@ -3251,19 +3325,14 @@
     }
 
     function setViewMode(mode) {
-      viewMode = (mode === VIEW_MODE_SLOT || mode === VIEW_MODE_EV || mode === VIEW_MODE_WHEEL || mode === VIEW_MODE_CARD)
-        ? mode : VIEW_MODE_CLASSIC;
+      viewMode = ALL_VIEW_MODES.indexOf(mode) !== -1 ? mode : VIEW_MODE_CLASSIC;
       localStorage.setItem(VIEW_MODE_KEY, viewMode);
-      teamList.style.display = 'none';
+      showView(null);
       setNextButtonVisible(false);
-      slotContainer.style.display = 'none';
-      evContainer.style.display = 'none';
-      wheelContainer.style.display = 'none';
-      cardContainer.style.display = 'none';
       participantSelection.style.display = 'flex';
       shuffleButton.style.display = 'inline-block';
-      // Slot, wheel and card all act after starting, so they share "Start".
-      const spinFirst = viewMode === VIEW_MODE_SLOT || viewMode === VIEW_MODE_WHEEL || viewMode === VIEW_MODE_CARD;
+      // The draw-one-at-a-time views all act after starting, so they share "Start".
+      const spinFirst = DRAW_ONE_BY_ONE_MODES.indexOf(viewMode) !== -1;
       setText(shuffleButton, spinFirst ? 'btnStart' : 'btnRoll');
       if (slotSpinButton) slotSpinButton.disabled = true;
       if (wheelSpinButton) wheelSpinButton.disabled = true;
@@ -3273,12 +3342,8 @@
     }
 
     function hideResults() {
-      teamList.style.display = 'none';
+      showView(null);
       setNextButtonVisible(false);
-      slotContainer.style.display = 'none';
-      evContainer.style.display = 'none';
-      wheelContainer.style.display = 'none';
-      cardContainer.style.display = 'none';
       if (slotTrack) {
         slotTrack.style.transition = 'none';
       }
@@ -3366,7 +3431,7 @@
       }
       hideSlotEndOverlay();
       setText(slotStatus, 'slotStatusRestart');
-      slotContainer.style.display = 'none';
+      showView(null);
       participantSelection.style.display = 'flex';
       if (shuffleButton) {
         setText(shuffleButton, 'btnStart');
@@ -3522,9 +3587,11 @@
      * Persists modal inputs to local storage and updates the application state.
      */
     function saveConfig() {
+      // Split on commas, semicolons and line breaks only – NOT on plain spaces,
+      // so multi-part names ("Anna Maria", "van Dijk") survive intact.
       const newNames = teamNamesInput.value
-        .split(/[,\s]+/)
-        .map(name => name.trim())
+        .split(/[,;\n\r]+/)
+        .map(name => name.replace(/\s+/g, ' ').trim())
         .filter(name => name.length > 0);
         
       currentTeamMembers = newNames.length > 0 ? newNames : [...initialTeamMembers]; 
@@ -3542,7 +3609,7 @@
       }
 
       const selectedViewMode = document.querySelector('input[name="viewMode"]:checked');
-      if (selectedViewMode && [VIEW_MODE_SLOT, VIEW_MODE_CLASSIC, VIEW_MODE_EV, VIEW_MODE_WHEEL, VIEW_MODE_CARD].indexOf(selectedViewMode.value) !== -1) {
+      if (selectedViewMode && ALL_VIEW_MODES.indexOf(selectedViewMode.value) !== -1) {
           viewMode = selectedViewMode.value;
           localStorage.setItem(VIEW_MODE_KEY, viewMode);
       }
@@ -3559,7 +3626,7 @@
       hideResults();
 
       shuffleButton.style.display = 'inline-block';
-      if (viewMode === VIEW_MODE_SLOT || viewMode === VIEW_MODE_WHEEL || viewMode === VIEW_MODE_CARD) {
+      if (DRAW_ONE_BY_ONE_MODES.indexOf(viewMode) !== -1) {
           setText(shuffleButton, 'btnStart');
           if (slotSpinButton) slotSpinButton.disabled = true;
           if (wheelSpinButton) wheelSpinButton.disabled = true;
@@ -3631,7 +3698,7 @@
       }
 
       const storedViewMode = localStorage.getItem(VIEW_MODE_KEY);
-      if ([VIEW_MODE_SLOT, VIEW_MODE_CLASSIC, VIEW_MODE_EV, VIEW_MODE_WHEEL, VIEW_MODE_CARD].indexOf(storedViewMode) !== -1) {
+      if (ALL_VIEW_MODES.indexOf(storedViewMode) !== -1) {
         viewMode = storedViewMode;
       } else {
         viewMode = VIEW_MODE_CLASSIC;
