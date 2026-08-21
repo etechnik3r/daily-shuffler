@@ -1519,10 +1519,16 @@
       position: relative;
       flex: 0 0 auto;
       min-width: 0.82em;
+      /* Everything about a flap is expressed in em, so its width scales exactly
+         with the type. With padding in pixels it did not, and the arithmetic
+         that shrinks a row to fit a long name (which assumes proportional
+         scaling) came out slightly wrong and overflowed. */
+      padding: 0.14em 0.05em;
       /* An explicit box, not a text-driven one: a blank flap must be exactly as
          tall as a lettered one, otherwise the board grows a little with every
          name that is revealed. */
       height: 1.5em;
+      box-sizing: content-box;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1534,7 +1540,7 @@
       font-size: 1.35em;
       line-height: 1;
       text-align: center;
-      color: hsl(var(--brand-h), calc(53% * var(--brand-sat)), 97%);
+      color: hsl(var(--brand-h), calc(30% * var(--brand-sat)), 98%);
       box-shadow: inset 0 -1px 0 rgba(0,0,0,0.5);
     }
     /* The hinge line that makes it read as a flap rather than a tile. */
@@ -1545,14 +1551,16 @@
       height: 1px;
       background: rgba(0,0,0,0.55);
     }
-    /* Flipping uses the resting grey – yellow is reserved for "up now". */
-    .flap-cell.flipping { color: hsl(var(--brand-h), calc(20% * var(--brand-sat)), 62%); }
+    /* Flipping looks exactly like a resting flap – white on dark. The only
+       colour change on the whole board is the yellow that lands with the final
+       flap and means "this person is up now". */
+    .flap-cell.flipping { color: hsl(var(--brand-h), calc(30% * var(--brand-sat)), 98%); }
     .flap-cell.blank { background: hsl(var(--brand-h), calc(24% * var(--brand-sat)), 17%); color: transparent; }
     /* Headings sit on the board as well, just quieter than live data. */
+    /* Headings sit on a slightly recessed flap, but carry the same white
+       lettering at the same size – a board has one kind of flap, not three. */
     .flap-cell.is-label {
       background: hsl(var(--brand-h), calc(24% * var(--brand-sat)), 18%);
-      color: rgba(255,255,255,0.5);
-      font-size: 0.78em;
     }
     .flap-cell.is-label.blank {
       background: hsl(var(--brand-h), calc(26% * var(--brand-sat)), 14%);
@@ -1562,21 +1570,17 @@
        the last flap, so the colour change *is* the "settled" signal. */
     .flap-row.is-current .flap-cell.flipping {
       background: hsl(var(--brand-h), calc(22% * var(--brand-sat)), 22%);
-      color: hsl(var(--brand-h), calc(20% * var(--brand-sat)), 62%);
+      color: hsl(var(--brand-h), calc(30% * var(--brand-sat)), 98%);
     }
     /* ...but the padding cells after a short name stay dark, so the row reads as
        the name it shows rather than as a full-width yellow bar. */
     .flap-row.is-current .flap-cell.blank { background: hsl(var(--brand-h), calc(22% * var(--brand-sat)), 24%); }
     .flap-row.is-done .flap-cell.blank { background: hsl(var(--brand-h), calc(24% * var(--brand-sat)), 17%); }
-    .flap-row.is-done .flap-cell { background: hsl(var(--brand-h), calc(22% * var(--brand-sat)), 19%); color: hsla(var(--brand-h), calc(53% * var(--brand-sat)), 97%, 0.42); }
-    .flap-pos .flap-cell,
-    .flap-state .flap-cell { font-size: 0.86em; }
-
+    .flap-row.is-done .flap-cell { background: hsl(var(--brand-h), calc(22% * var(--brand-sat)), 19%); }
     /* Done rows recede; the current row's position and status wear the accent. */
     .flap-row.is-done .flap-pos .flap-cell,
     .flap-row.is-done .flap-state .flap-cell {
       background: hsl(var(--brand-h), calc(24% * var(--brand-sat)), 17%);
-      color: hsla(var(--brand-h), calc(53% * var(--brand-sat)), 97%, 0.4);
     }
     .flap-row.is-current .flap-pos .flap-cell,
     .flap-row.is-current .flap-state .flap-cell {
@@ -2468,7 +2472,7 @@
     function relabelFlapBoard() {
       if (!document.getElementById('flapHead')) return;
       if (typeof buildFlapHeader !== 'function' || !flapCellCount) return;
-      const first = document.querySelector('#flapRows .flap-row .flap-name');
+      const first = document.querySelector('#flapRows .flap-row');
       const scale = first ? (parseFloat(first.style.fontSize) || 1) : 1;
       buildFlapHeader(scale);
       updateFlapRowStates();
@@ -4234,9 +4238,10 @@
     const FLAP_SETTLE_MS = 850;   // until the leftmost cell locks in
     const FLAP_STAGGER_MS = 95;   // extra delay for each cell to its right
     const FLAP_TICK_MS = 55;      // how fast the flaps change while running
-    // Upper bound only – the real count comes from measuring the row. Keeps a
-    // very wide column from turning into an absurd number of tiny flaps.
-    const FLAP_MAX_CELLS = 20;
+    // Upper bound only – the real count comes from measuring the row. Generous
+    // on purpose: once a long name has shrunk the type, many more flaps fit,
+    // and the row should still end flush rather than stop at an arbitrary cap.
+    const FLAP_MAX_CELLS = 30;
     // A blank flap. Deliberately a no-break space: a plain space collapses, and
     // a cell without a text line is shorter than one with a letter – which made
     // the whole board grow a few pixels with every name revealed.
@@ -4323,10 +4328,17 @@
       const avail = nameCol.getBoundingClientRect().width;
       const cellW = cell.getBoundingClientRect().width;
       const gap = parseFloat(getComputedStyle(nameCol).columnGap) || 0;
+      // Every flap is the same size, so shrinking for a long name shrinks the
+      // position and status columns too – which frees up width in turn. Capture
+      // what those side columns cost at full size so the scale can account for it.
+      const rowW = probeRow.getBoundingClientRect().width;
+      const sideW = pos.getBoundingClientRect().width + state.getBoundingClientRect().width;
+      const colGap = parseFloat(getComputedStyle(probeRow).columnGap) || 0;
       rows.removeChild(probeRow);
 
       if (!(avail > 0) || !(cellW > 0)) {
-        return { fit: Math.max(3, FLAP_MAX_CELLS), cellW: 0, gap: gap, avail: 0 };
+        return { fit: Math.max(3, FLAP_MAX_CELLS), cellW: 0, gap: gap,
+                 avail: 0, rowW: 0, sideW: 0, colGap: colGap };
       }
       // n cells need n*cellW + (n-1)*gap
       const n = Math.floor((avail + gap) / (cellW + gap));
@@ -4334,7 +4346,10 @@
         fit: Math.max(3, Math.min(FLAP_MAX_CELLS, n)),
         cellW: cellW,
         gap: gap,
-        avail: avail
+        avail: avail,
+        rowW: rowW,
+        sideW: sideW,
+        colGap: colGap
       };
     }
 
@@ -4350,7 +4365,16 @@
       rows.innerHTML = '';
 
       flapPosTotal = list.length;
-      const longest = list.reduce((max, name) => Math.max(max, name.trim().length), 1);
+      // The name column must hold its own heading as well as the names – with a
+      // team of "Jan", "Lea", "Ugur" it would otherwise be four flaps wide and
+      // print "SPRE". Both languages count, so switching language later cannot
+      // truncate it either.
+      const headingCells = SUPPORTED_LANGS.reduce((max, lang) => {
+        const label = (translations[lang] && translations[lang].flapColName) || '';
+        return Math.max(max, label.length);
+      }, 1);
+      const longest = list.reduce(
+        (max, name) => Math.max(max, name.trim().length), headingCells);
 
       // How many flaps actually fit across the name column? A real departure
       // board is flaps edge to edge, not a short strip sized to the longest
@@ -4362,15 +4386,13 @@
         // Room to spare: fill the whole width with (mostly blank) flaps.
         flapCellCount = geom.fit;
       } else {
-        // The longest name needs more flaps than fit at full size, so shrink
-        // them. The gap between flaps is a fixed pixel value and does NOT
-        // shrink with the type, so it has to come off the available width
-        // first – scaling by fit/longest alone overflows by exactly the gaps
-        // of the extra cells.
+        // The longest name needs more flaps than fit at full size, so the whole
+        // row shrinks – position and status included, since all flaps are one
+        // size. A first estimate; fitFlapScale() corrects it by measurement
+        // below, because the exact width of a flap depends on details (minimum
+        // width, the font the browser resolved) that arithmetic keeps missing.
         flapCellCount = Math.min(FLAP_MAX_CELLS, longest);
-        const gaps = (flapCellCount - 1) * geom.gap;
-        const perCell = (geom.avail - gaps) / flapCellCount;
-        fontSize = Math.max(0.4, geom.cellW > 0 ? perCell / geom.cellW : 1);
+        fontSize = Math.max(0.4, geom.fit / flapCellCount);
       }
 
       list.forEach((_, i) => {
@@ -4381,9 +4403,10 @@
         pos.className = 'flap-pos';
         renderFlaps(pos, (i + 1) + '.', flapPosCells(list.length));
 
+        row.style.fontSize = fontSize.toFixed(3) + 'em';
+
         const name = document.createElement('span');
         name.className = 'flap-name';
-        name.style.fontSize = fontSize.toFixed(3) + 'em';
         for (let c = 0; c < flapCellCount; c++) {
           const cell = document.createElement('span');
           cell.className = 'flap-cell blank';
@@ -4402,6 +4425,75 @@
       });
 
       buildFlapHeader(fontSize);
+      fontSize = fitFlapScale(rows, fontSize);
+      topUpFlaps(rows, fontSize);
+    }
+
+    /**
+     * Adds flaps until the row is full again. Shrinking the type to fit a long
+     * name frees up width, and a board with a stretch of bare panel at the end
+     * of every row is exactly what we set out to avoid.
+     *
+     * @param {HTMLElement} rows - The row container.
+     * @param {number} scale - The scale the rows ended up at.
+     */
+    function topUpFlaps(rows, scale) {
+      const first = rows.querySelector('.flap-row .flap-name');
+      const sample = first && first.querySelector('.flap-cell');
+      if (!first || !sample) return;
+
+      const cellW = sample.getBoundingClientRect().width;
+      const gap = parseFloat(getComputedStyle(first).columnGap) || 0;
+      const avail = first.clientWidth;
+      if (!(cellW > 0) || !(avail > 0)) return;
+
+      const canFit = Math.min(FLAP_MAX_CELLS, Math.floor((avail + gap) / (cellW + gap)));
+      if (canFit <= flapCellCount) return;
+
+      const extra = canFit - flapCellCount;
+      rows.querySelectorAll('.flap-row .flap-name').forEach(col => {
+        for (let i = 0; i < extra; i++) {
+          const cell = document.createElement('span');
+          cell.className = 'flap-cell blank';
+          cell.textContent = FLAP_BLANK;
+          col.appendChild(cell);
+        }
+      });
+      flapCellCount = canFit;
+      // The heading is padded to the flap count, so it has to follow.
+      buildFlapHeader(scale);
+    }
+
+    /** Applies one type scale to every row and to the header. */
+    function applyFlapScale(rows, scale) {
+      const value = scale.toFixed(4) + 'em';
+      Array.from(rows.children).forEach(row => { row.style.fontSize = value; });
+      const head = document.getElementById('flapHead');
+      if (head) head.style.fontSize = value;
+    }
+
+    /**
+     * Shrinks the board until the widest row actually fits, measuring instead
+     * of calculating. Each pass reads how much the name column overflows and
+     * scales by exactly that ratio; because the position and status columns
+     * shrink too, the name column gains a little room each time, so this
+     * converges in a pass or two.
+     *
+     * @param {HTMLElement} rows - The row container.
+     * @param {number} startScale - Estimated scale to begin from.
+     * @returns {number} The scale that fits.
+     */
+    function fitFlapScale(rows, startScale) {
+      let scale = startScale;
+      for (let pass = 0; pass < 8; pass++) {
+        const nameCol = rows.querySelector('.flap-row .flap-name');
+        if (!nameCol || nameCol.clientWidth <= 0) return scale;
+        const over = nameCol.scrollWidth / nameCol.clientWidth;
+        if (over <= 1.005) return scale;
+        scale = Math.max(0.3, scale / over * 0.997);
+        applyFlapScale(rows, scale);
+      }
+      return scale;
     }
 
     /**
@@ -4419,9 +4511,10 @@
       pos.className = 'flap-pos';
       renderFlaps(pos, t('flapColPos'), flapPosCells(flapPosTotal), 'is-label');
 
+      head.style.fontSize = fontSize.toFixed(3) + 'em';
+
       const name = document.createElement('span');
       name.className = 'flap-name';
-      name.style.fontSize = fontSize.toFixed(3) + 'em';
       // Left-aligned heading, padded on the right to the full row width.
       const label = String(t('flapColName')).toUpperCase().slice(0, flapCellCount);
       renderFlaps(name, label.padEnd(flapCellCount, ' '), flapCellCount, 'is-label');
