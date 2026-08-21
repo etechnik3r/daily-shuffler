@@ -2198,6 +2198,14 @@
             <label><input type="radio" name="viewMode" value="focus"> <span data-i18n="viewFocus">Fokus-Ansicht (Sanduhr)</span></label>
           </div>
 
+          <h2 data-i18n="cfgSoundTitle">Sounds</h2>
+          <p data-i18n="cfgSoundDesc">Untermalt die Animationen der Ansichten mit passenden Geräuschen – vom Klackern des Glücksrads bis zur Karte, die auf den Stapel klatscht.</p>
+          <label class="config-check" for="soundEnabledInput">
+            <input type="checkbox" id="soundEnabledInput">
+            <span data-i18n="cfgSoundLabel">Sounds abspielen</span>
+          </label>
+          <p class="config-hint" data-i18n="cfgSoundHint">Standardmäßig aus – gerade auf geteilten Bildschirmen. Die Klänge werden im Browser erzeugt, es wird nichts nachgeladen.</p>
+
           <h2 data-i18n="cfgThemeTitle">Farbthema</h2>
           <p class="config-hint" data-i18n="cfgThemeHint">Wähle einen Grundton – alle Flächen, Schatten und Verläufe werden daraus berechnet.</p>
           <div class="theme-picker" id="themePicker">
@@ -2545,6 +2553,10 @@
         cfgFirstLastDesc: 'Ist die Option aktiv, wird der zuerst eingetragene Name erst in den letzten 20 % der Reihenfolge gezogen – praktisch für alle, die das Daily abschließen.',
         cfgViewTitle: 'Anzeigemodus',
         cfgViewDesc: 'Wähle den bevorzugten Modus für die Teilnehmerauswahl.',
+        cfgSoundTitle: 'Sounds',
+        cfgSoundDesc: 'Untermalt die Animationen der Ansichten mit passenden Geräuschen – vom Klackern des Glücksrads bis zur Karte, die auf den Stapel klatscht.',
+        cfgSoundLabel: 'Sounds abspielen',
+        cfgSoundHint: 'Standardmäßig aus – gerade auf geteilten Bildschirmen. Die Klänge werden im Browser erzeugt, es wird nichts nachgeladen.',
         viewClassic: 'Klassische Ansicht',
         viewSlot: 'Slotmaschinen-Ansicht',
         viewEv: 'Roadtrip-Ansicht (E-Auto)',
@@ -2574,7 +2586,7 @@
         helpTitle: 'So funktioniert es',
         helpIntro: 'Lege in Sekunden eine faire, zufällige Reihenfolge für die Wortbeiträge in deinem Daily fest – mit einem Timer, der die Zeit gleichmäßig auf alle verteilt.',
         helpUsageTitle: 'Auf einen Blick',
-        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Anwesenheit</b>Hake oben ab, wer heute dabei ist. Abgewählte Personen (Urlaub, krank) werden übersprungen.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Reihenfolge würfeln</b>Tippe auf „Würfeln": Die App erstellt eine zufällige Reihenfolge der aktiven Personen und startet den Timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>Die Gesamtdauer wird gleichmäßig aufgeteilt. Wird die Zeit knapp, färbt sich der Timer – erst gelb, dann rot.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Weiter zur nächsten Person</b>Tippe auf „Nächster Teilnehmer" oder drücke die Leertaste.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Einen Schritt zurück</b>Strg oder Umschalt + Leertaste springt zur vorherigen Person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slotmaschinen-Ansicht</b>Lust auf Show? In den Einstellungen schaltest du auf die animierte Slotmaschine um.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip-Ansicht</b>Ein E-Auto fährt die Daily-Strecke ab, die Batterie zeigt die Redezeit. Ist sie leer, kommt die Schildkröte.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Glücksrad-Ansicht</b>Ein buntes Rad mit allen Namen dreht sich und lost nacheinander aus, wer dran ist.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Kartenspiel-Ansicht</b>Für jeden Sprecher fliegt eine bunte Namenskarte auf den Stapel. Sonderkarten sorgen für Spaß – „Aussetzen" verschiebt jemanden ans Ende, der Rest ist nur Show.</div></li><li><span class="help-ico">🚉</span><div class="help-text"><b>Abfahrtstafel-Ansicht</b>Wie am Bahnhof: Pro Klick klappert eine Zeile durch und rastet auf dem nächsten Sprecher ein – die ganze Reihenfolge bleibt dabei sichtbar.</div></li><li><span class="help-ico">🚇</span><div class="help-text"><b>Linienplan-Ansicht</b>Die Reihenfolge als Strecke: Jede Person ist eine Haltestelle, der Zug fährt während der Redezeit zur nächsten. So sieht man immer, wie weit das Daily ist.</div></li><li><span class="help-ico">⏳</span><div class="help-text"><b>Fokus-Ansicht</b>Bewusst ruhig: ein großer Name und eine Sanduhr, die abläuft. Kein Bunt, keine Animation nebenbei.</div></li><li><span class="help-ico">🎨</span><div class="help-text"><b>Farbthema</b>In den Einstellungen wählst du einen Grundton – klassisch Blau, eine der Voreinstellungen oder eine eigene Farbe. Alle Flächen, Verläufe und Schatten werden daraus berechnet.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Einstellungen</b>Namen, Dauer, Ansicht, Farbe und Sprache jederzeit anpassen. Mit <b>Esc</b> schließt du die Dialoge.</div></li>',
+        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Anwesenheit</b>Hake oben ab, wer heute dabei ist. Abgewählte Personen (Urlaub, krank) werden übersprungen.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Reihenfolge würfeln</b>Tippe auf „Würfeln": Die App erstellt eine zufällige Reihenfolge der aktiven Personen und startet den Timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>Die Gesamtdauer wird gleichmäßig aufgeteilt. Wird die Zeit knapp, färbt sich der Timer – erst gelb, dann rot.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Weiter zur nächsten Person</b>Tippe auf „Nächster Teilnehmer" oder drücke die Leertaste.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Einen Schritt zurück</b>Strg oder Umschalt + Leertaste springt zur vorherigen Person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slotmaschinen-Ansicht</b>Lust auf Show? In den Einstellungen schaltest du auf die animierte Slotmaschine um.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip-Ansicht</b>Ein E-Auto fährt die Daily-Strecke ab, die Batterie zeigt die Redezeit. Ist sie leer, kommt die Schildkröte.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Glücksrad-Ansicht</b>Ein buntes Rad mit allen Namen dreht sich und lost nacheinander aus, wer dran ist.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Kartenspiel-Ansicht</b>Für jeden Sprecher fliegt eine bunte Namenskarte auf den Stapel. Sonderkarten sorgen für Spaß – „Aussetzen" verschiebt jemanden ans Ende, der Rest ist nur Show.</div></li><li><span class="help-ico">🚉</span><div class="help-text"><b>Abfahrtstafel-Ansicht</b>Wie am Bahnhof: Pro Klick klappert eine Zeile durch und rastet auf dem nächsten Sprecher ein – die ganze Reihenfolge bleibt dabei sichtbar.</div></li><li><span class="help-ico">🚇</span><div class="help-text"><b>Linienplan-Ansicht</b>Die Reihenfolge als Strecke: Jede Person ist eine Haltestelle, der Zug fährt während der Redezeit zur nächsten. So sieht man immer, wie weit das Daily ist.</div></li><li><span class="help-ico">⏳</span><div class="help-text"><b>Fokus-Ansicht</b>Bewusst ruhig: ein großer Name und eine Sanduhr, die abläuft. Kein Bunt, keine Animation nebenbei.</div></li><li><span class="help-ico">🔊</span><div class="help-text"><b>Sounds</b>Jede Ansicht hat ihren eigenen Klang – Glücksrad-Klackern, Slotmaschine, Kartenwurf, Fallblatt-Tafel. In den Einstellungen einschaltbar, ab Werk aus.</div></li><li><span class="help-ico">🎨</span><div class="help-text"><b>Farbthema</b>In den Einstellungen wählst du einen Grundton – klassisch Blau, eine der Voreinstellungen oder eine eigene Farbe. Alle Flächen, Verläufe und Schatten werden daraus berechnet.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Einstellungen</b>Namen, Dauer, Ansicht, Farbe und Sprache jederzeit anpassen. Mit <b>Esc</b> schließt du die Dialoge.</div></li>',
         alertPickOne: 'Bitte wähle mindestens einen Teilnehmer aus!',
         alertError: 'Ein Fehler ist aufgetreten: {msg}\nBitte Seite neu laden oder Cache leeren.',
         errorNotice: 'Es ist ein Fehler aufgetreten ({msg}) – das Daily läuft weiter.',
@@ -2634,6 +2646,10 @@
         cfgFirstLastDesc: 'With this on, the name entered first is only drawn within the final 20 % of the order – handy for whoever wraps up the daily.',
         cfgViewTitle: 'Display mode',
         cfgViewDesc: 'Choose your preferred mode for picking participants.',
+        cfgSoundTitle: 'Sounds',
+        cfgSoundDesc: 'Gives the view animations a matching soundtrack – from the clatter of the wheel to a card slapping onto the pile.',
+        cfgSoundLabel: 'Play sounds',
+        cfgSoundHint: 'Off by default – shared screens come first. Every sound is synthesised in the browser, nothing is downloaded.',
         viewClassic: 'Classic view',
         viewSlot: 'Slot machine view',
         viewEv: 'Roadtrip view (EV)',
@@ -2663,7 +2679,7 @@
         helpTitle: 'How it works',
         helpIntro: 'Set a fair, random speaking order for your daily in seconds – with a timer that splits the time evenly across everyone.',
         helpUsageTitle: 'At a glance',
-        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Attendance</b>Tick who is in today. Unticked people (vacation, sick) are skipped.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Roll the order</b>Tap “Roll” and the app builds a random order of the active people and starts the timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>The total time is split evenly. As it runs low the timer changes colour – yellow, then red.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Next person</b>Tap “Next participant” or press the spacebar.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Step back</b>Ctrl or Shift + Space jumps to the previous person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slot machine view</b>Want a bit of show? Switch to the animated slot machine in the settings.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip view</b>An EV drives the daily route while the battery shows the speaking time. When it is empty, the turtle appears.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Wheel of fortune view</b>A colourful wheel with every name spins and draws who is up next, one by one.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Card game view</b>A colourful name card is thrown onto the pile for each speaker. Special cards add fun – “Skip” moves someone to the end, the rest are just for show.</div></li><li><span class="help-ico">🚉</span><div class="help-text"><b>Departure board view</b>Like a railway station: each click sends a row clattering until it settles on the next speaker – with the whole running order staying on screen.</div></li><li><span class="help-ico">🚇</span><div class="help-text"><b>Line map view</b>The running order as a route: every person is a stop and the train travels to the next one while they speak, so you can always see how far along the daily is.</div></li><li><span class="help-ico">⏳</span><div class="help-text"><b>Focus view</b>Deliberately quiet: one large name and an hourglass running out. No colour, no side show.</div></li><li><span class="help-ico">🎨</span><div class="help-text"><b>Colour theme</b>Pick a base colour in the settings – classic blue, one of the presets, or your own. Every surface, gradient and shadow is derived from it.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Settings</b>Adjust names, duration, view, colour and language anytime. Press <b>Esc</b> to close the dialogs.</div></li>',
+        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Attendance</b>Tick who is in today. Unticked people (vacation, sick) are skipped.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Roll the order</b>Tap “Roll” and the app builds a random order of the active people and starts the timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>The total time is split evenly. As it runs low the timer changes colour – yellow, then red.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Next person</b>Tap “Next participant” or press the spacebar.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Step back</b>Ctrl or Shift + Space jumps to the previous person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slot machine view</b>Want a bit of show? Switch to the animated slot machine in the settings.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip view</b>An EV drives the daily route while the battery shows the speaking time. When it is empty, the turtle appears.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Wheel of fortune view</b>A colourful wheel with every name spins and draws who is up next, one by one.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Card game view</b>A colourful name card is thrown onto the pile for each speaker. Special cards add fun – “Skip” moves someone to the end, the rest are just for show.</div></li><li><span class="help-ico">🚉</span><div class="help-text"><b>Departure board view</b>Like a railway station: each click sends a row clattering until it settles on the next speaker – with the whole running order staying on screen.</div></li><li><span class="help-ico">🚇</span><div class="help-text"><b>Line map view</b>The running order as a route: every person is a stop and the train travels to the next one while they speak, so you can always see how far along the daily is.</div></li><li><span class="help-ico">⏳</span><div class="help-text"><b>Focus view</b>Deliberately quiet: one large name and an hourglass running out. No colour, no side show.</div></li><li><span class="help-ico">🔊</span><div class="help-text"><b>Sounds</b>Every view has its own voice – the wheel’s clatter, the slot machine, cards landing, the departure board. Switch it on in the settings; it ships off.</div></li><li><span class="help-ico">🎨</span><div class="help-text"><b>Colour theme</b>Pick a base colour in the settings – classic blue, one of the presets, or your own. Every surface, gradient and shadow is derived from it.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Settings</b>Adjust names, duration, view, colour and language anytime. Press <b>Esc</b> to close the dialogs.</div></li>',
         alertPickOne: 'Please select at least one participant!',
         alertError: 'An error occurred: {msg}\nPlease reload the page or clear the cache.',
         errorNotice: 'Something went wrong ({msg}) – the daily keeps running.',
@@ -2803,9 +2819,15 @@
 
     let individualTimeSeconds = 0; 
     let timeRemainingSeconds = 0; 
+    // Which clock cue has already been played for the current speaker, so the
+    // warning and the overtime alarm sound once each instead of every second.
+    let lastTimerCue = null;
     let timerInterval = null; 
     let viewMode = VIEW_MODE_CLASSIC;
     let slotAnimating = false;
+    // Last EV warning stage that was announced, so a chime plays on the change
+    // rather than once per second for as long as the icon is up.
+    let lastEvWarnStage = null;
 
     // --- DOM Elements ---
     const teamList = document.getElementById('teamList');
@@ -2855,9 +2877,394 @@
     
     const teamNamesInput = document.getElementById('teamNamesInput');
     const firstMemberLastInput = document.getElementById('firstMemberLastInput');
+    const soundEnabledInput = document.getElementById('soundEnabledInput');
     const totalTimeInput = document.getElementById('totalTimeInput');
     const saveConfigButton = document.getElementById('saveConfigButton');
     const resetNamesButton = document.getElementById('resetNamesButton');
+
+    // --- Sound Module ---
+    // Every cue is synthesised with the Web Audio API instead of being shipped
+    // as an audio file: the app stays a single HTML file, keeps working offline
+    // straight out of the PWA cache, and downloads not one byte for a click
+    // that lasts 30 ms. The recipes live in CUES below – that table is the
+    // whole sound design, one entry per moment a view has something to say.
+    //
+    // Sounds are OFF by default (see the settings checkbox). Nothing is created
+    // until a cue is actually requested, which is always after a user gesture –
+    // browsers refuse to start audio any earlier.
+
+    const SOUND_KEY = 'dailySound';
+    const SOUND_MASTER_GAIN = 0.45;
+
+    let soundEnabled = false;
+    let audioCtx = null;
+    let soundBus = null;      // master gain – one place to set the volume
+    let noiseBuffer = null;   // half a second of white noise, reused by every cue
+    let runningCues = [];     // tick loops (wheel, reel), stopped on reset
+    // Extra offset for the next cue, so two clicks that fall into the same
+    // animation frame stay two clicks instead of stacking into one louder one.
+    let cueOffset = 0;
+    const lastCueAt = Object.create(null); // for playSoundThrottled()
+
+    /**
+     * Returns the audio context, creating it on first use, or null when sounds
+     * are off or the browser has no Web Audio at all.
+     */
+    function soundReady() {
+      if (!soundEnabled) return null;
+      try {
+        if (!audioCtx) {
+          const Ctx = window.AudioContext || window.webkitAudioContext;
+          if (!Ctx) return null;
+          audioCtx = new Ctx();
+          soundBus = audioCtx.createGain();
+          soundBus.gain.value = SOUND_MASTER_GAIN;
+          soundBus.connect(audioCtx.destination);
+        }
+        // Autoplay policies suspend a context that was created outside a
+        // gesture, and mobile browsers suspend it again whenever the tab sleeps.
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        return audioCtx;
+      } catch (e) {
+        soundEnabled = false; // a broken audio stack must never break the daily
+        return null;
+      }
+    }
+
+    /**
+     * One shaped oscillator note.
+     *
+     * @param {Object} o - freq (Hz), optional to (glide target), type
+     *   (waveform), dur (seconds), gain (peak), delay (seconds), attack.
+     */
+    function tone(o) {
+      const ctx = soundReady();
+      if (!ctx) return;
+      const t0 = ctx.currentTime + cueOffset + (o.delay || 0);
+      const dur = o.dur || 0.15;
+      const peak = o.gain == null ? 0.18 : o.gain;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = o.type || 'sine';
+      osc.frequency.setValueAtTime(Math.max(1, o.freq), t0);
+      if (o.to) osc.frequency.exponentialRampToValueAtTime(Math.max(1, o.to), t0 + dur);
+      // Exponential ramps cannot touch zero, hence the near-silent 0.0001 ends.
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(peak, t0 + (o.attack == null ? 0.004 : o.attack));
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      osc.connect(gain).connect(soundBus);
+      osc.start(t0);
+      osc.stop(t0 + dur + 0.03);
+    }
+
+    /** Shared white-noise buffer – the raw material for everything mechanical. */
+    function getNoiseBuffer(ctx) {
+      if (noiseBuffer) return noiseBuffer;
+      const len = Math.floor(ctx.sampleRate * 0.5);
+      noiseBuffer = ctx.createBuffer(1, len, ctx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+      return noiseBuffer;
+    }
+
+    /**
+     * A filtered noise burst: clicks, clatter, whooshes, thuds.
+     *
+     * @param {Object} o - freq (band centre), optional to (sweep target), q
+     *   (resonance; higher = more pitched/tick-like), filter type, dur, gain,
+     *   delay, attack.
+     */
+    function noiseBurst(o) {
+      const ctx = soundReady();
+      if (!ctx) return;
+      const t0 = ctx.currentTime + cueOffset + (o.delay || 0);
+      const dur = o.dur || 0.06;
+      const peak = o.gain == null ? 0.2 : o.gain;
+      const src = ctx.createBufferSource();
+      src.buffer = getNoiseBuffer(ctx);
+      src.loop = true;
+      const filter = ctx.createBiquadFilter();
+      filter.type = o.filter || 'bandpass';
+      filter.frequency.setValueAtTime(Math.max(20, o.freq || 1200), t0);
+      if (o.to) filter.frequency.exponentialRampToValueAtTime(Math.max(20, o.to), t0 + dur);
+      filter.Q.value = o.q == null ? 1 : o.q;
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(peak, t0 + (o.attack == null ? 0.003 : o.attack));
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      src.connect(filter).connect(gain).connect(soundBus);
+      // A random offset into the buffer keeps repeated clicks from sounding
+      // like a copy of each other.
+      src.start(t0, Math.random() * 0.4);
+      src.stop(t0 + dur + 0.03);
+    }
+
+    // The sound design, one entry per moment. Related moments deliberately
+    // share material: every "a name has landed" cue is the same rising chime,
+    // so the wheel, the reel and the board feel like one app.
+    const CUES = {
+      // --- Generic ---------------------------------------------------------
+      /** Dice rattling in a cup, then landing on the table. */
+      roll: () => {
+        for (let i = 0; i < 6; i++) {
+          noiseBurst({ freq: 900 + Math.random() * 1400, q: 2.5, dur: 0.04,
+                       gain: 0.16, delay: i * 0.055 + Math.random() * 0.02 });
+        }
+        noiseBurst({ freq: 260, filter: 'lowpass', dur: 0.16, gain: 0.22, delay: 0.36 });
+      },
+      /** Step to the next speaker (classic list). */
+      step: () => {
+        noiseBurst({ freq: 2000, q: 3, dur: 0.03, gain: 0.13 });
+        tone({ freq: 760, to: 980, dur: 0.07, gain: 0.1, type: 'triangle' });
+      },
+      /** Step back to the previous speaker – the same click, falling. */
+      stepBack: () => {
+        noiseBurst({ freq: 1400, q: 3, dur: 0.03, gain: 0.1 });
+        tone({ freq: 620, to: 420, dur: 0.09, gain: 0.1, type: 'triangle' });
+      },
+      /** A name has been drawn: the shared three-note chime. */
+      win: () => {
+        [784, 1046.5, 1318.5].forEach((f, i) =>
+          tone({ freq: f, dur: 0.32, gain: 0.14, type: 'triangle', delay: i * 0.07 }));
+      },
+      /** The daily is done – plays with the confetti. */
+      finish: () => {
+        [523.25, 659.25, 783.99, 1046.5].forEach((f, i) =>
+          tone({ freq: f, dur: 0.5, gain: 0.16, type: 'triangle', delay: i * 0.11 }));
+        tone({ freq: 1568, dur: 0.9, gain: 0.09, delay: 0.46 });
+      },
+      /** The last ten seconds of a slot have begun. */
+      timeLow: () => tone({ freq: 880, dur: 0.14, gain: 0.1, type: 'triangle' }),
+      /** Time is up and the speaker is in overtime. */
+      overtime: () => {
+        tone({ freq: 440, dur: 0.16, gain: 0.15, type: 'square' });
+        tone({ freq: 330, dur: 0.22, gain: 0.15, type: 'square', delay: 0.2 });
+      },
+      /** Confirmation blip when the sounds are switched on. */
+      toggle: () => tone({ freq: 660, to: 990, dur: 0.14, gain: 0.14, type: 'triangle' }),
+
+      // --- Slot machine ----------------------------------------------------
+      /** The lever being pulled: a mechanical clunk. */
+      slotLever: () => {
+        noiseBurst({ freq: 320, filter: 'lowpass', dur: 0.12, gain: 0.3 });
+        tone({ freq: 150, to: 70, dur: 0.16, gain: 0.2, type: 'triangle' });
+      },
+      /** One name passing the window while the reel spins. */
+      reelTick: () => noiseBurst({ freq: 2400 + Math.random() * 500, q: 6, dur: 0.025, gain: 0.1 }),
+      /** The reel dropping into its detent. */
+      slotStop: () => {
+        noiseBurst({ freq: 220, filter: 'lowpass', dur: 0.14, gain: 0.32 });
+        tone({ freq: 120, to: 60, dur: 0.18, gain: 0.2 });
+      },
+
+      // --- Wheel of fortune ------------------------------------------------
+      /** The flapper hitting one peg of the wheel. */
+      wheelTick: () => noiseBurst({ freq: 1500 + Math.random() * 500, q: 8, dur: 0.03, gain: 0.13 }),
+
+      // --- Card game -------------------------------------------------------
+      /** A card sailing through the air and slapping onto the pile. */
+      cardThrow: () => {
+        noiseBurst({ freq: 700, to: 2600, q: 0.8, dur: 0.16, gain: 0.16 });
+        noiseBurst({ freq: 1100, filter: 'lowpass', dur: 0.07, gain: 0.28, delay: 0.13 });
+      },
+      /** "Skip" – a flat, unimpressed buzzer. */
+      cardSkip: () => {
+        tone({ freq: 210, to: 150, dur: 0.18, gain: 0.15, type: 'square' });
+        tone({ freq: 210, to: 140, dur: 0.26, gain: 0.15, type: 'square', delay: 0.22 });
+      },
+      /** "+2" / "+4" – a little electric zap. */
+      cardPlus: () => {
+        tone({ freq: 220, to: 1400, dur: 0.18, gain: 0.12, type: 'sawtooth' });
+        noiseBurst({ freq: 1800, to: 3200, q: 1.5, dur: 0.16, gain: 0.12 });
+      },
+      /** "Reverse" – a swoosh there and back. */
+      cardTurn: () => {
+        noiseBurst({ freq: 500, to: 3000, q: 1.2, dur: 0.2, gain: 0.13 });
+        noiseBurst({ freq: 3000, to: 500, q: 1.2, dur: 0.2, gain: 0.13, delay: 0.18 });
+      },
+
+      // --- Departure board -------------------------------------------------
+      /** One flap turning over – played many times, hence very short. */
+      flapTick: () => noiseBurst({ freq: 1700 + Math.random() * 900, q: 9, dur: 0.022, gain: 0.09 }),
+      /** A single cell locking onto its letter. */
+      flapSettle: () => noiseBurst({ freq: 1200 + Math.random() * 600, q: 6, dur: 0.03, gain: 0.11 }),
+      /** The whole row rests: the board has an answer. */
+      flapLock: () => {
+        noiseBurst({ freq: 900, q: 4, dur: 0.05, gain: 0.2 });
+        tone({ freq: 180, to: 120, dur: 0.09, gain: 0.12, type: 'triangle' });
+      },
+
+      // --- EV roadtrip -----------------------------------------------------
+      /** The electric motor winding up as the car pulls away. */
+      evGo: () => {
+        tone({ freq: 180, to: 1500, dur: 0.45, gain: 0.1, type: 'sawtooth' });
+        noiseBurst({ freq: 600, to: 2200, q: 0.7, dur: 0.4, gain: 0.08 });
+      },
+      /** Dashboard chime for the yellow battery warning. */
+      evWarn: () => {
+        tone({ freq: 784, dur: 0.1, gain: 0.12, type: 'triangle' });
+        tone({ freq: 784, dur: 0.1, gain: 0.12, type: 'triangle', delay: 0.16 });
+      },
+      /** The turtle appears: reduced power, please charge. */
+      evTurtle: () => {
+        [0, 0.18].forEach(d =>
+          tone({ freq: 523, to: 392, dur: 0.16, gain: 0.13, type: 'square', delay: d }));
+      },
+
+      // --- Line map --------------------------------------------------------
+      /** Station chime plus closing doors as the train sets off. */
+      trainDepart: () => {
+        tone({ freq: 987.77, dur: 0.35, gain: 0.13 });
+        tone({ freq: 739.99, dur: 0.45, gain: 0.13, delay: 0.16 });
+        noiseBurst({ freq: 900, to: 300, q: 0.8, dur: 0.5, gain: 0.07, delay: 0.34 });
+      },
+
+      // --- Focus view ------------------------------------------------------
+      /** The hourglass being turned: a soft breath of sand, nothing more. */
+      focusTurn: () => {
+        noiseBurst({ freq: 3200, filter: 'highpass', q: 0.7, dur: 0.5, gain: 0.06 });
+        tone({ freq: 440, dur: 0.25, gain: 0.05 });
+      }
+    };
+
+    /**
+     * Plays a cue by name. A no-op while sounds are off, and deliberately
+     * exception-proof: audio is decoration and must never interrupt a daily.
+     *
+     * @param {string} name - Key in CUES.
+     * @param {number} [offset] - Extra delay in seconds (used to spread ticks).
+     */
+    function playSound(name, offset) {
+      if (!soundEnabled) return;
+      const cue = CUES[name];
+      if (!cue) return;
+      try {
+        cueOffset = offset || 0;
+        cue();
+      } catch (e) {
+        /* swallow – a failing cue is never worth an error banner */
+      } finally {
+        cueOffset = 0;
+      }
+    }
+
+    /** Plays a cue at most once every `gapMs` – for continuous clatter. */
+    function playSoundThrottled(name, gapMs) {
+      if (!soundEnabled) return;
+      const now = performance.now();
+      if (lastCueAt[name] && now - lastCueAt[name] < gapMs) return;
+      lastCueAt[name] = now;
+      playSound(name);
+    }
+
+    /**
+     * Evaluates a CSS cubic-bezier(x1, y1, x2, y2) curve, so a tick loop can
+     * follow the exact same easing the browser animates with.
+     *
+     * @returns {function(number): number} Maps progress in time to progress in
+     *   distance, both 0..1.
+     */
+    function bezierEase(x1, y1, x2, y2) {
+      const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+      const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+      const sampleX = t => ((ax * t + bx) * t + cx) * t;
+      const sampleY = t => ((ay * t + by) * t + cy) * t;
+      const slopeX = t => (3 * ax * t + 2 * bx) * t + cx;
+      return function (x) {
+        let t = x;
+        for (let i = 0; i < 6; i++) { // Newton–Raphson converges fast here
+          const dx = sampleX(t) - x;
+          if (Math.abs(dx) < 1e-4) break;
+          const d = slopeX(t);
+          if (Math.abs(d) < 1e-6) break;
+          t -= dx / d;
+        }
+        return sampleY(Math.max(0, Math.min(1, t)));
+      };
+    }
+
+    /**
+     * Clicks along with a decelerating animation: one cue every time the moving
+     * thing passes another notch – a wheel segment, a name on the reel. Because
+     * it reads the same easing curve as the CSS transition, the clicks land
+     * where the eye sees something go by, which is what makes a wheel sound
+     * like a wheel instead of a metronome.
+     *
+     * @param {Object} o - from/to (position in any unit), step (notch size in
+     *   that unit), dur (ms), ease (four cubic-bezier numbers), cue (name),
+     *   maxPerFrame (clicks allowed in one frame, default 2).
+     * @returns {Object|undefined} Handle for stopCue(), or nothing if silent.
+     */
+    function notchTicks(o) {
+      if (!soundEnabled || !o.step || !o.dur) return;
+      const ease = bezierEase.apply(null, o.ease);
+      const span = o.to - o.from;
+      const start = performance.now();
+      const entry = { raf: null, cancelled: false };
+      let lastNotch = Math.floor(o.from / o.step);
+
+      function frame(now) {
+        if (entry.cancelled) return;
+        const p = Math.min(1, (now - start) / o.dur);
+        const notch = Math.floor((o.from + span * ease(p)) / o.step);
+        // At full speed dozens of notches fly past between two frames; capping
+        // keeps that from turning into a burst of noise.
+        let plays = Math.min(Math.abs(notch - lastNotch), o.maxPerFrame || 2);
+        while (plays-- > 0) playSound(o.cue, plays * 0.014);
+        lastNotch = notch;
+        if (p >= 1) { stopCue(entry); return; }
+        entry.raf = requestAnimationFrame(frame);
+      }
+
+      entry.raf = requestAnimationFrame(frame);
+      runningCues.push(entry);
+      return entry;
+    }
+
+    /** Stops one running tick loop. */
+    function stopCue(entry) {
+      if (!entry) return;
+      entry.cancelled = true;
+      if (entry.raf !== null) cancelAnimationFrame(entry.raf);
+      const at = runningCues.indexOf(entry);
+      if (at !== -1) runningCues.splice(at, 1);
+    }
+
+    /** Stops every running tick loop (view switch, reset, end of round). */
+    function stopAllCues() {
+      runningCues.slice().forEach(stopCue);
+    }
+
+    /** Reads the stored preference. Anything but an explicit "1" means off. */
+    function loadSound() {
+      let stored = null;
+      try { stored = localStorage.getItem(SOUND_KEY); } catch (e) {}
+      soundEnabled = stored === '1';
+      const box = document.getElementById('soundEnabledInput');
+      if (box) box.checked = soundEnabled;
+    }
+
+    /**
+     * Switches the cues on or off. Turning them on plays a short confirmation
+     * blip, which doubles as the user gesture browsers insist on before any
+     * audio may start.
+     *
+     * @param {boolean} on - Whether cues should play.
+     * @param {boolean} [persist] - Remember the choice.
+     */
+    function setSoundEnabled(on, persist) {
+      soundEnabled = !!on;
+      if (soundBus) {
+        try { soundBus.gain.value = soundEnabled ? SOUND_MASTER_GAIN : 0; } catch (e) {}
+      }
+      if (!soundEnabled) stopAllCues();
+      if (persist) {
+        try { localStorage.setItem(SOUND_KEY, soundEnabled ? '1' : '0'); } catch (e) {}
+      }
+      const box = document.getElementById('soundEnabledInput');
+      if (box) box.checked = soundEnabled;
+      if (soundEnabled) playSound('toggle');
+    }
 
     // --- Timer Module ---
     
@@ -2937,6 +3344,19 @@
             timerDisplay.classList.add('color-20s');
         }
 
+        // Clock cues, in every view: one warning when the last ten seconds
+        // begin, one alarm the moment the time is up. Only while a timer really
+        // runs – the views that preview the per-speaker budget before the first
+        // draw must stay silent.
+        if (timerInterval !== null) {
+            if (timeRemainingSeconds < 0) {
+                if (lastTimerCue !== 'overtime') { lastTimerCue = 'overtime'; playSound('overtime'); }
+            } else if (timeRemainingSeconds <= 10 && lastTimerCue === null) {
+                lastTimerCue = 'low';
+                playSound('timeLow');
+            }
+        }
+
         updateEvView();
         updateLineView();
         updateFocusView();
@@ -2956,6 +3376,7 @@
      */
     function startTimer() {
         stopTimer();
+        lastTimerCue = null; // the new speaker gets their own warning and alarm
         
         const teamSize = currentShuffledList.length; 
         
@@ -3130,6 +3551,22 @@
       announceSpeaker(currentShuffledList[activeIndex], activeIndex, currentShuffledList.length);
     }
 
+    /**
+     * The cue for stepping between speakers. Every step-through view gets its
+     * own voice: the classic list clicks, the line map rings a station chime,
+     * the focus view only breathes sand. The EV is missing on purpose – its
+     * motor is played by evBoost(), which every forward step goes through.
+     *
+     * @param {boolean} forward - Stepping on, rather than back.
+     */
+    function playStepCue(forward) {
+      if (STEP_THROUGH_MODES.indexOf(viewMode) === -1) return;
+      if (!forward) { playSound('stepBack'); return; }
+      if (viewMode === VIEW_MODE_EV) return;
+      playSound(viewMode === VIEW_MODE_LINE ? 'trainDepart'
+              : viewMode === VIEW_MODE_FOCUS ? 'focusTurn' : 'step');
+    }
+
     /** Shows/hides the mobile "next participant" button (classic view only). */
     function setNextButtonVisible(visible) {
       const btn = document.getElementById('nextParticipantButton');
@@ -3173,6 +3610,7 @@
       if (currentShuffledList.length === 0) return;
       if (activeIndex < currentShuffledList.length - 1) {
         if (viewMode === VIEW_MODE_EV) evBoost();
+        playStepCue(true);
         updateActiveParticipant(activeIndex + 1);
         startTimer();
       } else {
@@ -3232,6 +3670,14 @@
 
     /** Shows exactly one staged warning pictogram (or none). */
     function setEvWarnIcon(stage) {
+      // Each warning announces itself once, when it appears – not on every
+      // tick. The red stage stays silent: the clock's own overtime alarm
+      // covers that moment and two alerts at once are just noise.
+      if (stage !== lastEvWarnStage) {
+        if (stage === 'battYellow') playSound('evWarn');
+        else if (stage === 'turtleYellow') playSound('evTurtle');
+        lastEvWarnStage = stage;
+      }
       const icons = {
         battYellow: document.getElementById('evIconBattYellow'),
         turtleYellow: document.getElementById('evIconTurtleYellow'),
@@ -3282,6 +3728,7 @@
 
     /** Boost transition: the car dashes out right and re-enters from the left. */
     function evBoost() {
+      playSound('evGo');
       if (!evCar) return;
       evCar.classList.remove('boosting');
       void evCar.offsetWidth; // restart the CSS animation
@@ -3417,12 +3864,19 @@
       slotTrack.style.transform = 'translateY(0px)';
       slotTrack.getBoundingClientRect();
 
+      // Set once the reel starts moving (see the requestAnimationFrame below),
+      // so the end handler can silence the ticking wherever it comes from.
+      let reelTicks = null;
+
       const onSlotEnd = (event) => {
         if (event && event.propertyName !== 'transform') return;
         clearTimeout(transitionTimeout);
         slotTrack.removeEventListener('transitionend', onSlotEnd);
         slotTrack.style.transition = 'none';
         slotAnimating = false;
+        stopCue(reelTicks);
+        playSound('slotStop');
+        playSound('win', 0.1);
 
         const winnerName = remainingSlotParticipants[index];
         // Append winner at the end so history reads oldest→newest top→bottom
@@ -3451,6 +3905,7 @@
       // pull the handle in sync with the spin
       const handle = document.getElementById('slotHandle');
       if (handle) handle.classList.add('pulled');
+      playSound('slotLever');
       slotTrack.addEventListener('transitionend', onSlotEnd);
 
       // requestAnimationFrame guarantees the reset above is painted first, so the
@@ -3462,6 +3917,12 @@
         slotTrack.style.transition =
           `transform ${SLOT_SPIN_DURATION_MS / 1000}s cubic-bezier(0.18, 0.86, 0.26, 1.04)`;
         slotTrack.style.transform = `translateY(${finalTranslate}px)`;
+        // One click per name passing the window, on the reel's own easing curve.
+        reelTicks = notchTicks({
+          from: 0, to: Math.abs(finalTranslate), step: ih,
+          dur: SLOT_SPIN_DURATION_MS, ease: [0.18, 0.86, 0.26, 1.04],
+          cue: 'reelTick', maxPerFrame: 3
+        });
       });
     }
 
@@ -3680,6 +4141,7 @@
       const center = idx * seg + seg / 2;
       const base = ((-center % 360) + 360) % 360;
       const minTurns = 3; // fewer rotations -> lower peak speed within the 3s cap
+      const startRotation = wheelRotation;
       let target = wheelRotation + minTurns * 360;
       target += (((base - (target % 360)) % 360) + 360) % 360;
       wheelRotation = target;
@@ -3688,11 +4150,24 @@
       // gets there at once instead of over three seconds.
       const dur = (prefersReducedMotion() ? 1 : WHEEL_SPIN_DURATION_MS) / 1000;
 
+      // The flapper ticks off the pegs as they pass, following the same easing
+      // curve as the disc – so the clicks slow down exactly as the wheel does.
+      // A small team means huge slices, so each one carries several pegs: about
+      // sixteen around the disc is what turns a lonely knock into a ratchet.
+      const pegStep = seg / Math.max(1, Math.round(16 / currentWheelList.length));
+      const pegTicks = prefersReducedMotion() ? null : notchTicks({
+        from: startRotation, to: target, step: pegStep,
+        dur: WHEEL_SPIN_DURATION_MS, ease: [0.22, 0.0, 0.22, 1.0],
+        cue: 'wheelTick', maxPerFrame: 3
+      });
+
       const finalize = (event) => {
         if (event && event.propertyName && event.propertyName !== 'transform') return;
         clearTimeout(transitionTimeout);
         wheelSpinner.removeEventListener('transitionend', finalize);
         wheelAnimating = false;
+        stopCue(pegTicks);
+        playSound('win');
 
         // The previously highlighted speaker now becomes a greyed-out slice;
         // the freshly drawn name takes over as the highlighted current speaker.
@@ -3901,8 +4376,13 @@
       inner.appendChild(center);
       addCardCorners(inner, () => document.createTextNode('●'));
       cardPile.appendChild(card);
+      playSound('cardThrow');
       fitCardName(center);
     }
+
+    // Which cue belongs to which special card: the buzzer for a skip, a zap
+    // for the draw cards, a swoosh for the reverse.
+    const CARD_CUES = { skip: 'cardSkip', wende: 'cardTurn', plus2: 'cardPlus', plus4: 'cardPlus' };
 
     function throwSpecialCard(kind) {
       const { card, inner } = createCardShell('pc-' + kind);
@@ -3919,6 +4399,10 @@
         addCardCorners(inner, () => document.createTextNode(text));
       }
       cardPile.appendChild(card);
+      // The card flies and lands like any other; its own voice follows once it
+      // is down, so the slap is not swallowed by the effect.
+      playSound('cardThrow');
+      playSound(CARD_CUES[kind] || 'cardThrow', 0.14);
     }
 
     /** True while the card session is still the live, visible one. */
@@ -4548,6 +5032,9 @@
       const settleMs = prefersReducedMotion() ? 0 : FLAP_SETTLE_MS;
       const staggerMs = prefersReducedMotion() ? 0 : FLAP_STAGGER_MS;
       const ticks = new Array(cells.length).fill(-1);
+      // One clack per cell as it locks in – the staggered settle turns that
+      // into the cascade a real board makes when it stops.
+      const locked = new Array(cells.length).fill(false);
 
       cells.forEach(cell => {
         cell.classList.remove('blank');
@@ -4566,6 +5053,10 @@
             cell.textContent = isBlank ? FLAP_BLANK : finalChar;
             cell.classList.remove('flipping');
             cell.classList.toggle('blank', isBlank);
+            if (!locked[i]) {
+              locked[i] = true;
+              if (!isBlank) playSound('flapSettle');
+            }
             return;
           }
           settled = false;
@@ -4574,11 +5065,15 @@
             ticks[i] = tick;
             cell.textContent = FLAP_ALPHABET.charAt(
               Math.floor(Math.random() * FLAP_ALPHABET.length));
+            // A click per cell and tick would be a machine gun (a dozen cells
+            // at 18 flips a second); the throttle turns it into clatter.
+            playSoundThrottled('flapTick', 45);
           }
         });
 
         if (settled) {
           flapRaf = null;
+          playSound('flapLock');
           onDone();
           return;
         }
@@ -4782,6 +5277,7 @@
     function setViewMode(mode) {
       viewMode = ALL_VIEW_MODES.indexOf(mode) !== -1 ? mode : VIEW_MODE_CLASSIC;
       localStorage.setItem(VIEW_MODE_KEY, viewMode);
+      stopAllCues();
       showView(null);
       setNextButtonVisible(false);
       participantSelection.style.display = 'flex';
@@ -4818,6 +5314,7 @@
       }
       clearCardTimeouts();
       if (flapRaf !== null) { cancelAnimationFrame(flapRaf); flapRaf = null; }
+      stopAllCues();
       cardAnimating = false;
       flapAnimating = false;
       wheelSessionActive = false;
@@ -4908,6 +5405,10 @@
     }
 
     function showConfetti(duration = 3000) {
+      // Both endings (classic/EV/line/focus and the draw-one-at-a-time views)
+      // pass through here, so this is the one place the closing fanfare needs.
+      stopAllCues();
+      playSound('finish');
       // Full-screen overlay so it works in every view (the classic list, the
       // slot machine, anywhere) and rains across the whole screen.
       const canvas = document.createElement('canvas');
@@ -5100,6 +5601,7 @@
           teamNamesInput.value = currentTeamMembers.join(', ');
       }
       if (firstMemberLastInput) firstMemberLastInput.checked = firstMemberLast;
+      if (soundEnabledInput) soundEnabledInput.checked = soundEnabled;
       totalTimeInput.value = totalDailyTimeMinutes;
       viewModeInputs.forEach(input => {
         input.checked = input.value === viewMode;
@@ -5152,6 +5654,12 @@
 
       firstMemberLast = !!(firstMemberLastInput && firstMemberLastInput.checked);
       try { localStorage.setItem(FIRST_LAST_KEY, firstMemberLast ? '1' : '0'); } catch (e) {}
+
+      // The checkbox already applied itself live (and played its blip); this
+      // only makes sure Save leaves the two in step.
+      if (soundEnabledInput && soundEnabledInput.checked !== soundEnabled) {
+        setSoundEnabled(soundEnabledInput.checked, true);
+      }
 
       const newTotalTime = parseInt(totalTimeInput.value, 10);
       if (newTotalTime > 0) {
@@ -5343,6 +5851,7 @@
             if (viewMode === VIEW_MODE_EV && newIndex > activeIndex) {
                 evBoost();
             }
+            if (newIndex !== activeIndex) playStepCue(newIndex > activeIndex);
             updateActiveParticipant(newIndex);
 
             if (viewMode === VIEW_MODE_SLOT) {
@@ -5384,6 +5893,7 @@
       }
       
       participantSelection.style.display = 'none';
+      playSound('roll');
       
       const shuffled = buildRunningOrder(activeNames);
       displayTeam(shuffled);
@@ -5444,6 +5954,15 @@
     if (evCar) {
       evCar.addEventListener('animationend', (e) => {
         if (e.animationName === 'ev-boost') evCar.classList.remove('boosting');
+      });
+    }
+
+    // Sound toggle – applies immediately, like the theme and the language. The
+    // click is also the user gesture that lets the browser start audio at all,
+    // so the confirmation blip is audible right away.
+    if (soundEnabledInput) {
+      soundEnabledInput.addEventListener('change', () => {
+        setSoundEnabled(soundEnabledInput.checked, true);
       });
     }
 
@@ -5509,6 +6028,7 @@
     
     try {
         loadTheme();
+        loadSound();
         loadLanguage();
         loadInitialConfig();
         applyLanguage(currentLang);
