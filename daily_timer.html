@@ -1213,11 +1213,16 @@
 
     .modal-content {
       background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
-      margin: 10% auto;
+      margin: 5vh auto;
       padding: 26px;
       border: var(--card-border);
-      width: 90%;
-      max-width: 400px;
+      /* Scales with the viewport instead of sitting at a fixed 400px: still
+         nearly full width on phones, but a much roomier panel on desktops so
+         there is far less scrolling. */
+      width: min(94vw, 820px);
+      max-width: none;
+      box-sizing: border-box;
+      position: relative; /* anchor for the absolutely placed close button */
       border-radius: 20px;
       box-shadow: 0 24px 60px rgba(3,21,60,0.35);
     }
@@ -1225,11 +1230,62 @@
       color: var(--accent-deep);
     }
 
+    /* Settings body: a single column on phones, two side by side as soon as the
+       modal is wide enough. The source order is unchanged, so the small-screen
+       layout stays exactly as before. */
+    .config-grid {
+      display: flex;
+      flex-direction: column;
+    }
+    .config-grid > .config-col {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+    @media (min-width: 700px) {
+      .config-grid {
+        flex-direction: row;
+        gap: 30px;
+        align-items: flex-start;
+      }
+      .config-grid > .config-col > h2:first-child {
+        margin-top: 0;
+      }
+    }
+
+    /* Checkbox option row inside the settings modal (styled like the view-mode
+       radio rows so both blocks read as one family). */
+    .config-check {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f5f7fb;
+      border: 1px solid #d0d7e5;
+      border-radius: 8px;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    .config-check input[type="checkbox"] {
+      accent-color: #002878;
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+    }
+    .config-hint {
+      margin: 8px 0 16px;
+      font-size: 0.88em;
+      line-height: 1.4;
+      color: #46556f;
+    }
+
     .close {
+      position: absolute;
+      top: 16px;
+      right: 20px;
       color: #aaa;
-      float: right;
       font-size: 28px;
       font-weight: bold;
+      line-height: 1;
     }
 
     .close:hover,
@@ -1580,29 +1636,40 @@
         <button id="installButton" class="app-button" data-i18n="btnInstallApp">App installieren</button>
       </div>
 
-      <h2 data-i18n="cfgLangTitle">Sprache</h2>
-      <p data-i18n="cfgLangDesc">Wähle die Sprache der Oberfläche.</p>
-      <div class="lang-switch" id="langSwitch">
-        <button type="button" class="lang-option" data-lang="de" data-i18n="langDe">Deutsch</button>
-        <button type="button" class="lang-option" data-lang="en" data-i18n="langEn">English</button>
-      </div>
+      <div class="config-grid">
+        <div class="config-col">
+          <h2 data-i18n="cfgLangTitle">Sprache</h2>
+          <p data-i18n="cfgLangDesc">Wähle die Sprache der Oberfläche.</p>
+          <div class="lang-switch" id="langSwitch">
+            <button type="button" class="lang-option" data-lang="de" data-i18n="langDe">Deutsch</button>
+            <button type="button" class="lang-option" data-lang="en" data-i18n="langEn">English</button>
+          </div>
 
-      <h2 data-i18n="cfgDurationTitle">Daily-Dauer einstellen</h2>
-      <p data-i18n="cfgDurationDesc">Gesamtdauer in Minuten, die auf alle Teilnehmer aufgeteilt wird (Standard: 15 Min.).</p>
-      <input type="number" id="totalTimeInput" min="1" value="15">
+          <h2 data-i18n="cfgMembersTitle">Team-Mitglieder bearbeiten</h2>
+          <p data-i18n="cfgMembersDesc">Gib die Namen der Teammitglieder ein, getrennt durch Kommas (oder Zeilenumbrüche). Leerzeichen werden automatisch entfernt.</p>
+          <textarea id="teamNamesInput"></textarea>
+          <label class="config-check" for="firstMemberLastInput">
+            <input type="checkbox" id="firstMemberLastInput">
+            <span data-i18n="cfgFirstLastLabel">Erstes Mitglied der Liste kommt zum Schluss</span>
+          </label>
+          <p class="config-hint" data-i18n="cfgFirstLastDesc">Ist die Option aktiv, wird der zuerst eingetragene Name erst in den letzten 20 % der Reihenfolge gezogen – praktisch für alle, die das Daily abschließen.</p>
+        </div>
 
-      <h2 data-i18n="cfgMembersTitle">Team-Mitglieder bearbeiten</h2>
-      <p data-i18n="cfgMembersDesc">Gib die Namen der Teammitglieder ein, getrennt durch Kommas (oder Zeilenumbrüche). Leerzeichen werden automatisch entfernt.</p>
-      <textarea id="teamNamesInput"></textarea>
+        <div class="config-col">
+          <h2 data-i18n="cfgDurationTitle">Daily-Dauer einstellen</h2>
+          <p data-i18n="cfgDurationDesc">Gesamtdauer in Minuten, die auf alle Teilnehmer aufgeteilt wird (Standard: 15 Min.).</p>
+          <input type="number" id="totalTimeInput" min="1" value="15">
 
-      <h2 data-i18n="cfgViewTitle">Anzeigemodus</h2>
-      <p data-i18n="cfgViewDesc">Wähle den bevorzugten Modus für die Teilnehmerauswahl.</p>
-      <div class="view-mode-options">
-        <label><input type="radio" name="viewMode" value="classic"> <span data-i18n="viewClassic">Klassische Ansicht</span></label>
-        <label><input type="radio" name="viewMode" value="slot"> <span data-i18n="viewSlot">Slotmaschinen-Ansicht</span></label>
-        <label><input type="radio" name="viewMode" value="ev"> <span data-i18n="viewEv">Roadtrip-Ansicht (E-Auto)</span></label>
-        <label><input type="radio" name="viewMode" value="wheel"> <span data-i18n="viewWheel">Glücksrad-Ansicht</span></label>
-        <label><input type="radio" name="viewMode" value="card"> <span data-i18n="viewCard">Kartenspiel-Ansicht</span></label>
+          <h2 data-i18n="cfgViewTitle">Anzeigemodus</h2>
+          <p data-i18n="cfgViewDesc">Wähle den bevorzugten Modus für die Teilnehmerauswahl.</p>
+          <div class="view-mode-options">
+            <label><input type="radio" name="viewMode" value="classic"> <span data-i18n="viewClassic">Klassische Ansicht</span></label>
+            <label><input type="radio" name="viewMode" value="slot"> <span data-i18n="viewSlot">Slotmaschinen-Ansicht</span></label>
+            <label><input type="radio" name="viewMode" value="ev"> <span data-i18n="viewEv">Roadtrip-Ansicht (E-Auto)</span></label>
+            <label><input type="radio" name="viewMode" value="wheel"> <span data-i18n="viewWheel">Glücksrad-Ansicht</span></label>
+            <label><input type="radio" name="viewMode" value="card"> <span data-i18n="viewCard">Kartenspiel-Ansicht</span></label>
+          </div>
+        </div>
       </div>
 
       <div class="modal-button-container">
@@ -1672,6 +1739,10 @@
     const VIEW_MODE_WHEEL = 'wheel';
     const VIEW_MODE_CARD = 'card';
     const EVENT_OVERRIDE_KEY = 'dailyEventOverride';
+    const FIRST_LAST_KEY = 'dailyFirstMemberLast';
+    // Share of the running order reserved for the "first member goes last"
+    // option: the anchored name may only appear inside this trailing slice.
+    const ANCHOR_TAIL_SHARE = 0.2;
     const LANG_KEY = 'dailyLang';
     const SUPPORTED_LANGS = ['de', 'en'];
     let currentLang = 'de';
@@ -1713,6 +1784,8 @@
         cfgDurationDesc: 'Gesamtdauer in Minuten, die auf alle Teilnehmer aufgeteilt wird (Standard: 15 Min.).',
         cfgMembersTitle: 'Team-Mitglieder bearbeiten',
         cfgMembersDesc: 'Gib die Namen der Teammitglieder ein, getrennt durch Kommas (oder Zeilenumbrüche). Leerzeichen werden automatisch entfernt.',
+        cfgFirstLastLabel: 'Erstes Mitglied der Liste kommt zum Schluss',
+        cfgFirstLastDesc: 'Ist die Option aktiv, wird der zuerst eingetragene Name erst in den letzten 20 % der Reihenfolge gezogen – praktisch für alle, die das Daily abschließen.',
         cfgViewTitle: 'Anzeigemodus',
         cfgViewDesc: 'Wähle den bevorzugten Modus für die Teilnehmerauswahl.',
         viewClassic: 'Klassische Ansicht',
@@ -1779,6 +1852,8 @@
         cfgDurationDesc: 'Total time in minutes, divided among all participants (default: 15 min).',
         cfgMembersTitle: 'Edit team members',
         cfgMembersDesc: 'Enter the team member names, separated by commas (or line breaks). Spaces are removed automatically.',
+        cfgFirstLastLabel: 'First member on the list goes last',
+        cfgFirstLastDesc: 'With this on, the name entered first is only drawn within the final 20 % of the order – handy for whoever wraps up the daily.',
         cfgViewTitle: 'Display mode',
         cfgViewDesc: 'Choose your preferred mode for picking participants.',
         viewClassic: 'Classic view',
@@ -1899,6 +1974,9 @@
     // --- Application State ---
     let currentTeamMembers = [];
     let totalDailyTimeMinutes = DEFAULT_TOTAL_TIME_MINUTES;
+    // When true the first name in the team list is held back to the last 20 %
+    // of every running order (see the anchor helpers in the core logic module).
+    let firstMemberLast = false;
     let activeIndex = -1;
     let currentShuffledList = [];
     let remainingSlotParticipants = [];
@@ -1979,6 +2057,7 @@
     const helpClose = document.querySelector('.help-close');
     
     const teamNamesInput = document.getElementById('teamNamesInput');
+    const firstMemberLastInput = document.getElementById('firstMemberLastInput');
     const totalTimeInput = document.getElementById('totalTimeInput');
     const saveConfigButton = document.getElementById('saveConfigButton');
     const resetNamesButton = document.getElementById('resetNamesButton');
@@ -2110,6 +2189,95 @@
         [array[i], array[j]] = [array[j], array[i]];
       }
       return array;
+    }
+
+    /**
+     * The name that has to speak late, or null when the option is off / the
+     * team list is empty. It is always the first entry of the configured team
+     * list – attendance and the drawn order never change who the anchor is.
+     *
+     * @returns {string|null} The anchored name.
+     */
+    function getAnchorName() {
+      if (!firstMemberLast || !Array.isArray(currentTeamMembers)) return null;
+      const first = String(currentTeamMembers[0] || '').trim();
+      return first.length > 0 ? first : null;
+    }
+
+    /**
+     * Case-insensitive check against the anchored name (names travel through
+     * checkbox values and trimmed lists, so compare the same way).
+     *
+     * @param {string} name - Candidate name.
+     * @returns {boolean} True if this is the anchored name.
+     */
+    function isAnchorName(name) {
+      const anchor = getAnchorName();
+      if (!anchor) return false;
+      return String(name).trim().toUpperCase() === anchor.toUpperCase();
+    }
+
+    /**
+     * First position (0-based) that still counts as the last ANCHOR_TAIL_SHARE
+     * of a round. Always leaves at least one slot, so the rule also works for
+     * very small teams (4 people -> only the final slot qualifies).
+     *
+     * @param {number} total - Number of participants in the round.
+     * @returns {number} Index of the first "tail" slot.
+     */
+    function anchorTailStart(total) {
+      if (total <= 1) return 0;
+      const tailSlots = Math.max(1, Math.ceil(total * ANCHOR_TAIL_SHARE));
+      return total - tailSlots;
+    }
+
+    /**
+     * Builds the running order: a plain Fisher-Yates shuffle, then – if the
+     * option is on – the anchored name is moved into a random slot inside the
+     * final ANCHOR_TAIL_SHARE of the list. Everyone else keeps their random
+     * order, so only that one constraint is added.
+     *
+     * @param {Array<string>} names - Participants of this round.
+     * @returns {Array<string>} A new, ordered array.
+     */
+    function buildRunningOrder(names) {
+      const order = shuffle(names.slice());
+      if (!getAnchorName() || order.length < 2) return order;
+
+      const index = order.findIndex(isAnchorName);
+      if (index === -1) return order;
+
+      const tailStart = anchorTailStart(order.length);
+      if (index >= tailStart) return order;
+
+      const target = tailStart + Math.floor(Math.random() * (order.length - tailStart));
+      const [anchor] = order.splice(index, 1);
+      order.splice(target, 0, anchor);
+      return order;
+    }
+
+    /**
+     * Draw-by-draw counterpart of buildRunningOrder() for the views that pick
+     * one name at a time (slot machine, wheel): while the round is still
+     * outside its last ANCHOR_TAIL_SHARE the anchored name is kept out of the
+     * candidate pool, so it can only ever be drawn near the end.
+     *
+     * @param {Array<string>} remaining - Names not drawn yet.
+     * @param {number} total - Size of the full round.
+     * @returns {number} Index into `remaining` for the next pick.
+     */
+    function pickNextParticipantIndex(remaining, total) {
+      const alreadyDrawn = total - remaining.length;
+      if (getAnchorName() && remaining.length > 1 && alreadyDrawn < anchorTailStart(total)) {
+        const candidates = [];
+        remaining.forEach((name, index) => {
+          if (!isAnchorName(name)) candidates.push(index);
+        });
+        if (candidates.length > 0) {
+          return candidates[Math.floor(Math.random() * candidates.length)];
+        }
+      }
+      return Math.floor(Math.random() * remaining.length);
     }
 
     /**
@@ -2406,7 +2574,7 @@
     }
 
     function chooseRandomSlotIndex() {
-      return Math.floor(Math.random() * remainingSlotParticipants.length);
+      return pickNextParticipantIndex(remainingSlotParticipants, currentShuffledList.length);
     }
 
     function spinSlotMachine() {
@@ -2691,7 +2859,7 @@
       const seg = 360 / n;
 
       const pick = remainingWheelParticipants[
-        Math.floor(Math.random() * remainingWheelParticipants.length)];
+        pickNextParticipantIndex(remainingWheelParticipants, currentWheelList.length)];
       const pickUpper = pick.trim().toUpperCase();
       const idx = currentWheelList.findIndex(
         name => name.trim().toUpperCase() === pickUpper);
@@ -2978,7 +3146,14 @@
 
         cardLater(() => {
           if (!cardSequenceValid()) { cardAnimating = false; return; }
-          cardQueue.push(victim);   // the skipped person speaks at the very end
+          // The skipped person speaks at the very end – but never after the
+          // anchored name, which has to stay the closing speaker.
+          const anchorAt = getAnchorName() ? cardQueue.findIndex(isAnchorName) : -1;
+          if (anchorAt === -1) {
+            cardQueue.push(victim);
+          } else {
+            cardQueue.splice(anchorAt, 0, victim);
+          }
           cardAnimating = false;
           playNextSpeaker();
         }, CARD_STEP_MS);
@@ -3042,7 +3217,7 @@
         return;
       }
 
-      cardQueue = shuffle(currentShuffledList.slice());
+      cardQueue = buildRunningOrder(currentShuffledList);
       timerDisplay.style.display = 'inline-flex';
       if (cardThrowButton) {
         cardThrowButton.disabled = false;
@@ -3307,6 +3482,7 @@
       if(Array.isArray(currentTeamMembers)) {
           teamNamesInput.value = currentTeamMembers.join(', ');
       }
+      if (firstMemberLastInput) firstMemberLastInput.checked = firstMemberLast;
       totalTimeInput.value = totalDailyTimeMinutes;
       viewModeInputs.forEach(input => {
         input.checked = input.value === viewMode;
@@ -3353,6 +3529,9 @@
         
       currentTeamMembers = newNames.length > 0 ? newNames : [...initialTeamMembers]; 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(currentTeamMembers));
+
+      firstMemberLast = !!(firstMemberLastInput && firstMemberLastInput.checked);
+      try { localStorage.setItem(FIRST_LAST_KEY, firstMemberLast ? '1' : '0'); } catch (e) {}
 
       const newTotalTime = parseInt(totalTimeInput.value, 10);
       if (newTotalTime > 0) {
@@ -3434,6 +3613,13 @@
           localStorage.removeItem(STORAGE_KEY);
       }
       
+      try {
+          firstMemberLast = localStorage.getItem(FIRST_LAST_KEY) === '1';
+      } catch (e) {
+          firstMemberLast = false;
+      }
+      if (firstMemberLastInput) firstMemberLastInput.checked = firstMemberLast;
+
       renderParticipantSelection();
       participantSelection.style.display = 'flex';
       
@@ -3549,7 +3735,7 @@
       
       participantSelection.style.display = 'none';
       
-      const shuffled = shuffle([...activeNames]);
+      const shuffled = buildRunningOrder(activeNames);
       displayTeam(shuffled);
       if (viewMode === VIEW_MODE_SLOT) {
         setText(shuffleButton, 'btnSlotResetRound');

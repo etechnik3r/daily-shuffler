@@ -42,6 +42,7 @@ Klicke im Tool auf **Einstellungen**, um deine Stammdaten anzupassen:
 - **Sprache:** Deutsch oder Englisch.
 - **Daily-Dauer:** Gib die Gesamtzeit deines Meetings in Minuten an (Standard: 15).
 - **Team-Mitglieder:** Trage die Namen deines Teams ein (getrennt durch Kommas oder Zeilenumbrüche).
+- **Erstes Mitglied der Liste kommt zum Schluss:** Ist diese Option aktiv, wird der zuerst eingetragene Name erst in den letzten 20 % der Reihenfolge gezogen – praktisch für alle, die das Daily abschließen (Moderation, Scrum Master). Die Regel gilt in allen Ansichten; bei kleinen Teams ist es schlicht der letzte Platz. Fehlt die Person heute, läuft die Runde ganz normal.
 - **Anzeigemodus:** Klassisch, Slotmaschine, Roadtrip (E-Auto), Glücksrad oder Kartenspiel.
 - **Entwickler-Optionen** (ausklappbar): Saison-Override zum Testen der Karneval-, Oster-, Halloween- und Winter-Themes unabhängig vom Systemdatum sowie ein Schnelltest-Button, der den laufenden Timer auf 3 Sekunden setzt.
 
