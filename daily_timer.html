@@ -1472,7 +1472,11 @@
        =================================================================== */
     #flapContainer {
       width: 100%;
-      max-width: var(--col-width);
+      /* Wider than the other views on purpose: the status column now reserves
+         room for "verspätet"/"delayed", and rather than squeeze the name flaps
+         the whole board is allowed a little more width – it still sits well on
+         screen and only ever grows to what fits. */
+      max-width: 430px;
       margin: 8px auto 0;
       display: none;
     }
@@ -1481,6 +1485,9 @@
     #flapContainer {
       --flap-font: 'Courier New', 'Cutive Mono', monospace;
       --flap-accent: #f5c518;
+      /* Overtime turns the running speaker's whole row red (the "verspätet"
+         signal); a fixed hue, like the accent, not derived from the theme. */
+      --flap-late: #d32f2f;
     }
     .flap-board {
       background: linear-gradient(180deg, hsl(var(--brand-h), calc(26% * var(--brand-sat)), 15%) 0%, hsl(var(--brand-h), calc(31% * var(--brand-sat)), 11%) 100%);
@@ -1590,6 +1597,20 @@
     .flap-row.is-current .flap-pos .flap-cell.blank,
     .flap-row.is-current .flap-state .flap-cell.blank {
       background: hsl(var(--brand-h), calc(22% * var(--brand-sat)), 24%);
+    }
+    /* Overtime: the current row (already yellow) flips to red and its status
+       column reads "verspätet". Placed after the is-current rules so it wins –
+       an is-late row is always an is-current row too. */
+    .flap-row.is-late .flap-cell,
+    .flap-row.is-late .flap-pos .flap-cell,
+    .flap-row.is-late .flap-state .flap-cell {
+      background: var(--flap-late);
+      color: #fff;
+    }
+    .flap-row.is-late .flap-cell.blank,
+    .flap-row.is-late .flap-pos .flap-cell.blank,
+    .flap-row.is-late .flap-state .flap-cell.blank {
+      background: hsl(0, 42%, 30%);
     }
 
     /* ===================================================================
@@ -2528,6 +2549,7 @@
         flapStateNow: 'jetzt',
         flapStateDone: 'fertig',
         flapStateWaiting: 'wartet',
+        flapStateDelayed: 'verspätet',
         lineTerminus: 'Ziel',
         focusProgress: '{n} von {total}',
         focusUpNext: 'Danach: {name}',
@@ -2621,6 +2643,7 @@
         flapStateNow: 'now',
         flapStateDone: 'done',
         flapStateWaiting: 'waiting',
+        flapStateDelayed: 'delayed',
         lineTerminus: 'Destination',
         focusProgress: '{n} of {total}',
         focusUpNext: 'Up next: {name}',
@@ -3303,14 +3326,30 @@
         timerDisplay.classList.remove('color-20s', 'color-15s', 'color-10s', 'color-05s', 'overtime');
     }
 
+    // Overtime badges around the timer pill, one pair per view. The classic
+    // view keeps the original exploding head and alarm clock; every other view
+    // gets a pair that fits its own metaphor – the departure board a train that
+    // has already pulled out, the wheel a dizzy spin, and so on. The EV view is
+    // absent on purpose: it signals overtime with its own turtle, not the pill.
+    const OVERTIME_ICONS = {
+        [VIEW_MODE_CLASSIC]: ['🤯', '⏰'],
+        [VIEW_MODE_SLOT]:    ['🎰', '💸'],
+        [VIEW_MODE_WHEEL]:   ['🎡', '😵'],
+        [VIEW_MODE_CARD]:    ['🃏', '✋'],
+        [VIEW_MODE_FLAP]:    ['🚆', '💨'],
+        [VIEW_MODE_LINE]:    ['🚇', '💨'],
+        [VIEW_MODE_FOCUS]:   ['⌛', '⏳'],
+    };
+
     /**
      * Toggles the visibility of the overtime indicators (Emojis).
      * * @param {boolean} show - Indicates whether the icons should be displayed.
      */
     function toggleOvertimeIcons(show) {
         if (show) {
-            timerIconLeft.textContent = '🤯'; 
-            timerIconRight.textContent = '⏰'; 
+            const pair = OVERTIME_ICONS[viewMode] || OVERTIME_ICONS[VIEW_MODE_CLASSIC];
+            timerIconLeft.textContent = pair[0];
+            timerIconRight.textContent = pair[1];
             timerIconLeft.style.display = 'inline';
             timerIconRight.style.display = 'inline';
         } else {
@@ -3360,6 +3399,7 @@
         updateEvView();
         updateLineView();
         updateFocusView();
+        updateFlapView();
     }
     
     /**
@@ -4743,7 +4783,11 @@
         t('flapColState').length,
         t('flapStateNow').length,
         t('flapStateDone').length,
-        t('flapStateWaiting').length
+        t('flapStateWaiting').length,
+        // "verspätet"/"delayed" is the widest word the column ever shows, so the
+        // status column reserves its width from the start – the board must not
+        // reflow the moment someone runs into overtime.
+        t('flapStateDelayed').length
       );
     }
 
@@ -5092,6 +5136,9 @@
         const isDone = i < flapDrawn.length - 1;
         row.classList.toggle('is-current', isCurrent);
         row.classList.toggle('is-done', isDone);
+        // A freshly stamped state always starts on time; overtime is layered
+        // back on by updateFlapView() once the clock actually runs over.
+        row.classList.remove('is-late');
         const state = row.querySelector('.flap-state');
         if (state) {
           const text = isCurrent ? t('flapStateNow')
@@ -5100,6 +5147,29 @@
           renderFlaps(state, text, flapStateCells());
         }
       });
+    }
+
+    /**
+     * Reflects overtime on the board: while the current speaker is over their
+     * time, their whole row turns red and the status column reads "verspätet".
+     * Driven from updateTimerDisplay(), like the EV, line and focus views.
+     */
+    function updateFlapView() {
+      if (viewMode !== VIEW_MODE_FLAP || !flapSessionActive) return;
+      const rows = document.getElementById('flapRows');
+      if (!rows) return;
+      const idx = flapDrawn.length - 1;
+      const row = idx >= 0 ? rows.children[idx] : null;
+      // Only the settled current row; a row still clattering keeps its grey.
+      if (!row || !row.classList.contains('is-current') || flapAnimating) return;
+      const late = timeRemainingSeconds < 0;
+      if (late === row.classList.contains('is-late')) return;
+      row.classList.toggle('is-late', late);
+      const state = row.querySelector('.flap-state');
+      if (state) {
+        renderFlaps(state, late ? t('flapStateDelayed') : t('flapStateNow'),
+          flapStateCells());
+      }
     }
 
     /**
