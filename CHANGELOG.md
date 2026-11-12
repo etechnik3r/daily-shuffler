@@ -10,6 +10,24 @@ den Cache-Namen und löst im laufenden Betrieb das „Neue Version verfügbar“
 aus. **Merkregel:** Bei jeder Änderung, die ausgeliefert wird, `CACHE_VERSION`
 hochzählen *und* hier einen Eintrag ergänzen.
 
+## [v14] – 2026-11-12
+
+### Geändert
+- **Roadtrip-Ansicht – neue Szene:** Himmel mit Sonne und ziehenden Wolken,
+  zwei Hügel-Ebenen, die beim Fahren mit Parallaxe vorbeiziehen, Straße mit
+  Randlinien, Grünstreifen und laufender Mittellinie sowie eine Ladesäule
+  neben der Zielflagge.
+- **Roadtrip-Ansicht – neues Auto:** Lack im Grundton mit Verlauf, getönte
+  Scheiben mit Spiegelung, LED-Scheinwerfer, Rücklicht, Alufelgen,
+  Bodenschatten und leichtes Federn beim Fahren; beim Wechsel Fahrtwind-Linien
+  und ein dynamischerer Boost.
+- **Roadtrip-Ansicht – Akku:** Dunkles Gehäuse mit zehn Segmenten, glänzender
+  Ladebalken mit Energie-Schimmer; die Farbstufen (grün/gelb/rot) und
+  Schwellen bleiben gleich.
+- **Saison:** Halloween als Nachtfahrt unter der Mondsichel mit Scheinwerfer-
+  kegel, Winter mit verschneiten Hügeln.
+- Die Warnsymbole (Akku, Schildkröte) sind unverändert.
+
 ## [v13] – 2026-11-12
 
 ### Geändert

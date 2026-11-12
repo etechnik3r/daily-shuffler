@@ -808,62 +808,196 @@
       text-align: center;
     }
 
-    /* --- EV Roadtrip View (compact, for narrow windows) --- */
+    /* --- EV Roadtrip View ---
+       A little side-scrolling scene: sky with sun and drifting clouds, two
+       layers of hills that scroll while the car drives (parallax), a road with
+       edge lines and running centre dashes, a charging pillar next to the
+       finish flag and the car in the brand colour. The road is the progress
+       bar for the current speaker; the battery below is their speaking time.
+       The warning pictograms next to the battery are fixed in look and
+       meaning and not styled here. --- */
     #evContainer {
       width: 100%;
       max-width: var(--col-width);
       margin: 8px auto 0;
       position: relative;
       display: none;
+      --ev-hill-far: hsl(var(--brand-h), calc(38% * var(--brand-sat)), 84%);
+      --ev-hill-near: #a9d89c;
+      --ev-verge: #7cc06b;
+      --ev-asphalt-top: hsl(var(--brand-h), calc(10% * var(--brand-sat)), 34%);
+      --ev-asphalt-bottom: hsl(var(--brand-h), calc(12% * var(--brand-sat)), 24%);
     }
-    /* Road = progress bar for the whole daily. overflow:hidden lets the car
-       drive off-screen during the boost transition. */
+    /* Scene frame. overflow:hidden lets the car drive off-screen during the
+       boost transition. */
     #evRoadWrap {
       position: relative;
       width: 100%;
-      height: 86px;
+      height: 122px;
       overflow: hidden;
-      border-radius: 14px;
-      background: var(--card-bg);
+      border-radius: 16px;
       border: var(--card-border);
-      box-shadow: var(--card-shadow);
+      box-shadow: var(--card-shadow), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+      background: #fff;
     }
+    .ev-sky {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg,
+        hsl(var(--brand-h), calc(75% * var(--brand-sat)), 86%) 0%,
+        hsl(var(--brand-h), calc(70% * var(--brand-sat)), 94%) 55%,
+        #ffffff 100%);
+    }
+    .ev-sun {
+      position: absolute;
+      top: 12px;
+      right: 11%;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 40%, #fffbe0 0%, #ffe27a 55%, #ffc93c 100%);
+      box-shadow: 0 0 18px 7px rgba(255, 214, 90, 0.45);
+    }
+    .ev-cloud {
+      position: absolute;
+      width: 62px;
+      height: 22px;
+      opacity: 0.95;
+      background:
+        radial-gradient(circle 9px at 26% 62%, #fff 96%, transparent 100%),
+        radial-gradient(circle 12px at 52% 46%, #fff 96%, transparent 100%),
+        radial-gradient(circle 8px at 77% 64%, #fff 96%, transparent 100%),
+        linear-gradient(#fff, #fff) 50% 100% / 70% 8px no-repeat;
+      filter: drop-shadow(0 2px 2px hsla(var(--brand-h), calc(40% * var(--brand-sat)), 40%, 0.12));
+      animation: ev-cloud-drift 46s linear infinite;
+    }
+    .ev-cloud.is-a { top: 10px; left: 18%; animation-delay: -12s; }
+    .ev-cloud.is-b { top: 26px; left: 52%; transform: scale(0.75); animation-duration: 64s; animation-delay: -40s; }
+    @keyframes ev-cloud-drift {
+      from { left: 105%; }
+      to   { left: -25%; }
+    }
+    /* Hills: semicircle bumps tiled along x; they scroll while driving. */
+    .ev-hills {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 40px;
+    }
+    .ev-hills.is-far {
+      height: 34px;
+      background: radial-gradient(64px 30px at 50% 100%, var(--ev-hill-far) 98%, transparent 100%) 0 100% / 110px 34px repeat-x;
+    }
+    .ev-hills.is-near {
+      height: 22px;
+      background: radial-gradient(50px 20px at 50% 100%, var(--ev-hill-near) 98%, transparent 100%) 30px 100% / 84px 22px repeat-x;
+    }
+    .ev-driving .ev-hills.is-far  { animation: ev-scroll-far 24s linear infinite; }
+    .ev-driving .ev-hills.is-near { animation: ev-scroll-near 9s linear infinite; }
+    @keyframes ev-scroll-far  { from { background-position: 0 100%; }    to { background-position: -110px 100%; } }
+    @keyframes ev-scroll-near { from { background-position: 30px 100%; } to { background-position: -54px 100%; } }
+    /* Road: asphalt with solid edge lines, a grass verge on top and the
+       centre dashes on their own layer so only they run. */
     #evRoad {
       position: absolute;
-      left: 10px;
-      right: 10px;
-      bottom: 12px;
-      height: 26px;
-      border-radius: 8px;
-      background: linear-gradient(180deg, #5a6377 0%, hsl(var(--brand-h), calc(17% * var(--brand-sat)), 32%) 100%);
-      /* dashed centre line */
-      background-image: repeating-linear-gradient(90deg,
-        transparent 0 18px, rgba(255,255,255,0.85) 18px 30px, transparent 30px 48px);
-      background-size: 48px 3px;
-      background-repeat: repeat-x;
-      background-position: 0 50%;
-      background-color: hsl(var(--brand-h), calc(16% * var(--brand-sat)), 35%);
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 40px;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)) 0 4px / 100% 2px no-repeat,
+        linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)) 0 calc(100% - 5px) / 100% 2px no-repeat,
+        linear-gradient(180deg, var(--ev-asphalt-top) 0%, var(--ev-asphalt-bottom) 100%);
+      box-shadow: inset 0 6px 8px -6px rgba(0, 0, 0, 0.5);
+    }
+    #evRoad::before {
+      /* centre dashes */
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 3px;
+      margin-top: -1px;
+      background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.9) 0 16px, transparent 16px 36px);
+    }
+    .ev-driving #evRoad::before { animation: ev-dash-run 0.9s linear infinite; }
+    @keyframes ev-dash-run {
+      from { background-position: 0 0; }
+      to   { background-position: -36px 0; }
+    }
+    #evRoad::after {
+      /* grass verge along the far edge */
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -4px;
+      height: 5px;
+      border-radius: 3px 3px 0 0;
+      background: linear-gradient(180deg, var(--ev-verge) 0%, color-mix(in srgb, var(--ev-verge) 70%, #000) 100%);
     }
     /* Finish flag at 75% of the road, so there is visible tarmac behind it. */
     #evGoal {
       position: absolute;
       left: 75%;
       transform: translateX(-50%);
-      bottom: 36px; /* standing on the road surface */
-      font-size: 1.5em;
+      bottom: 37px; /* planted on the verge */
+      font-size: 1.6em;
       line-height: 1;
       z-index: 2;
+      filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.18));
     }
+    /* Charging pillar just past the flag – where the battery gets refilled
+       for the next speaker. Decoration only. */
+    .ev-charger {
+      position: absolute;
+      left: calc(75% + 20px);
+      bottom: 37px;
+      width: 16px;
+      height: 30px;
+      z-index: 2;
+    }
+    .ev-charger svg { display: block; width: 100%; height: 100%; overflow: visible; }
+    .ev-charger-led { fill: #3ddc6a; }
+    .ev-driving .ev-charger-led { animation: ev-led-blink 1.6s ease-in-out infinite; }
+    @keyframes ev-led-blink { 50% { fill: #b9f5c9; } }
     #evCar {
       position: absolute;
       left: 2%;
-      bottom: 33px; /* wheels resting on top of the road */
-      width: 84px;
+      bottom: 24px; /* wheels on the far lane */
+      width: 92px;
       z-index: 3;
       transition: left 0.9s linear;
       will-change: transform;
     }
-    #evCar svg { display: block; width: 100%; height: auto; overflow: visible; }
+    #evCar svg { position: relative; display: block; width: 100%; height: auto; overflow: visible; }
+    /* Soft contact shadow under the car. */
+    .ev-shadow {
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      bottom: -3px;
+      height: 7px;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0) 70%);
+    }
+    /* Body sways a hair on its springs while driving; the wheels stay put. */
+    .ev-body { transform-box: view-box; transform-origin: 50% 100%; }
+    .ev-driving .ev-body { animation: ev-sway 0.46s ease-in-out infinite alternate; }
+    @keyframes ev-sway {
+      from { transform: translateY(0); }
+      to   { transform: translateY(-0.9px); }
+    }
+    /* Car paint and glass, derived from the brand hue. */
+    .ev-paint-top    { stop-color: hsl(var(--brand-h), calc(85% * var(--brand-sat)), 66%); }
+    .ev-paint-mid    { stop-color: hsl(var(--brand-h), calc(85% * var(--brand-sat)), 50%); }
+    .ev-paint-bottom { stop-color: hsl(var(--brand-h), calc(90% * var(--brand-sat)), 30%); }
+    .ev-outline      { stroke: hsl(var(--brand-h), calc(80% * var(--brand-sat)), 20%); }
+    .ev-glass-top    { stop-color: #2a3442; }
+    .ev-glass-bottom { stop-color: hsl(var(--brand-h), calc(40% * var(--brand-sat)), 46%); }
+    /* Headlight beam – only visible at night (Halloween). */
+    .ev-beam { opacity: 0; transition: opacity 0.4s ease; }
     /* The wheels spin while the car drives; they stand still at the finish
        flag or when the battery is empty (no blinking – the car just stops). */
     .ev-wheel {
@@ -871,10 +1005,41 @@
       transform-origin: center;
     }
     .ev-driving .ev-wheel {
-      animation: ev-wheel-spin 0.9s linear infinite;
+      animation: ev-wheel-spin 0.7s linear infinite;
     }
     @keyframes ev-wheel-spin {
       to { transform: rotate(360deg); }
+    }
+    /* Airflow streaks behind the car: faint while driving, strong on a boost. */
+    .ev-speedlines {
+      position: absolute;
+      right: 100%;
+      top: 52%;
+      width: 40px;
+      height: 20px;
+      margin-right: -4px;
+      opacity: 0;
+      background:
+        linear-gradient(90deg, transparent, hsla(var(--brand-h), calc(60% * var(--brand-sat)), 45%, 0.55)) 0 2px / 70% 2px no-repeat,
+        linear-gradient(90deg, transparent, hsla(var(--brand-h), calc(60% * var(--brand-sat)), 45%, 0.45)) 30% 10px / 100% 2px no-repeat,
+        linear-gradient(90deg, transparent, hsla(var(--brand-h), calc(60% * var(--brand-sat)), 45%, 0.5)) 60% 18px / 60% 2px no-repeat;
+    }
+    .ev-driving .ev-speedlines { animation: ev-wind 0.9s ease-in-out infinite; }
+    @keyframes ev-wind {
+      0%, 100% { opacity: 0; transform: translateX(6px); }
+      50%      { opacity: 0.45; transform: translateX(-4px); }
+    }
+    #evCar.boosting .ev-speedlines {
+      animation: ev-speed 0.8s ease-in-out;
+      width: 90px;
+    }
+    @keyframes ev-speed {
+      0%   { opacity: 0; }
+      15%  { opacity: 1; }
+      42%  { opacity: 1; }
+      46%  { opacity: 0; }
+      60%  { opacity: 1; }
+      100% { opacity: 0; }
     }
     /* Boost: dash out the right edge, instantly re-enter from the left. */
     #evCar.boosting {
@@ -882,10 +1047,12 @@
     }
     @keyframes ev-boost {
       0%   { transform: translateX(0); opacity: 1; }
-      42%  { transform: translateX(380px); opacity: 1; }
+      8%   { transform: translateX(-6px) skewX(4deg); opacity: 1; }
+      42%  { transform: translateX(380px) skewX(-8deg); opacity: 1; }
       46%  { transform: translateX(380px); opacity: 0; }
       54%  { transform: translateX(-380px); opacity: 0; }
-      60%  { transform: translateX(-380px); opacity: 1; }
+      60%  { transform: translateX(-380px) skewX(-8deg); opacity: 1; }
+      92%  { transform: translateX(3px) skewX(2deg); opacity: 1; }
       100% { transform: translateX(0); opacity: 1; }
     }
     /* Roof accessories (seasonal) */
@@ -897,23 +1064,39 @@
       font-size: 1.25em;
       line-height: 1;
       display: none;
+      z-index: 1;
     }
-    /* Battery (SoC) = timer for the current speaker. */
+    /* Battery (SoC) = timer for the current speaker: a dark cell housing with
+       ten segments, a glossy charge bar and a metal terminal. */
     #evBatteryRow {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      margin-top: 14px;
+      gap: 12px;
+      margin-top: 16px;
     }
     #evBattery {
       position: relative;
-      width: 170px;
-      height: 30px;
+      width: 178px;
+      height: 34px;
       border: 3px solid var(--accent-deep);
-      border-radius: 8px;
-      background: #ffffff;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #161b25 0%, #262d3a 100%);
       box-sizing: border-box;
+      box-shadow:
+        0 6px 14px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.18),
+        inset 0 2px 4px rgba(0, 0, 0, 0.6);
+    }
+    /* segment separators, drawn over the charge bar */
+    #evBattery::before {
+      content: '';
+      position: absolute;
+      inset: 2px;
+      z-index: 2;
+      border-radius: 5px;
+      pointer-events: none;
+      background: repeating-linear-gradient(90deg,
+        transparent 0 calc(10% - 2px), rgba(22, 27, 37, 0.75) calc(10% - 2px) 10%);
     }
     /* battery terminal */
     #evBattery::after {
@@ -923,27 +1106,64 @@
       top: 50%;
       transform: translateY(-50%);
       width: 7px;
-      height: 14px;
-      border-radius: 0 3px 3px 0;
-      background: var(--accent-deep);
+      height: 15px;
+      border-radius: 0 4px 4px 0;
+      background: linear-gradient(180deg, hsl(var(--brand-h), calc(40% * var(--brand-sat)), 60%) 0%, var(--accent-deep) 60%);
     }
     #evBatteryFill {
       position: absolute;
       inset: 2px;
       width: calc(100% - 4px);
-      border-radius: 4px;
-      background: #2fbf4f;
+      border-radius: 5px;
+      overflow: hidden;
+      background: linear-gradient(180deg, #8af5a8 0%, #34cc58 40%, #1c9a3b 100%);
+      box-shadow: 0 0 10px rgba(52, 204, 88, 0.55);
       transform-origin: left center;
-      transition: width 0.9s linear, background-color 0.3s ease;
+      transition: width 0.9s linear, box-shadow 0.3s ease;
     }
-    #evBatteryFill.warn { background: #f5c518; }
-    #evBatteryFill.crit { background: #e23030; }
+    /* glossy top half */
+    #evBatteryFill::after {
+      content: '';
+      position: absolute;
+      left: 2px;
+      right: 2px;
+      top: 1px;
+      height: 45%;
+      border-radius: 4px 4px 8px 8px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.05));
+    }
+    /* energy shimmer travelling along the bar while the car drives */
+    #evBatteryFill::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: -40%;
+      width: 40%;
+      opacity: 0;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0));
+    }
+    .ev-driving #evBatteryFill::before { animation: ev-shimmer 2.2s ease-in-out infinite; }
+    @keyframes ev-shimmer {
+      0%   { left: -40%; opacity: 0; }
+      20%  { opacity: 1; }
+      100% { left: 110%; opacity: 0; }
+    }
+    #evBatteryFill.warn {
+      background: linear-gradient(180deg, #fff09a 0%, #f5c518 45%, #c99a00 100%);
+      box-shadow: 0 0 10px rgba(245, 197, 24, 0.6);
+    }
+    #evBatteryFill.crit {
+      background: linear-gradient(180deg, #ff9a9a 0%, #e23030 45%, #a50f0f 100%);
+      box-shadow: 0 0 12px rgba(226, 48, 48, 0.7);
+    }
     #evBatteryPct {
       font-weight: 800;
-      font-size: 1.1em;
+      font-size: 1.15em;
       color: var(--accent-deep);
       min-width: 56px;
       text-align: left;
+      font-variant-numeric: tabular-nums;
     }
     /* Staged warning pictograms next to the SoC display. */
     #evWarnIcons {
@@ -997,22 +1217,34 @@
       font-weight: 800;
     }
 
-    /* --- Season: Halloween --- */
-    .season-halloween #evRoadWrap {
-      background: linear-gradient(180deg, #2a1a3d 0%, #41245c 100%);
-      border-color: rgba(255,140,0,0.35);
+    /* --- Season: Halloween – night drive under a crescent moon --- */
+    .season-halloween #evContainer {
+      --ev-hill-far: #3b2358;
+      --ev-hill-near: #26163a;
+      --ev-verge: #4a2a24;
+      --ev-asphalt-top: #2a2236;
+      --ev-asphalt-bottom: #17111f;
     }
-    .season-halloween #evRoad {
-      background-color: #1d1430;
-      background-image: repeating-linear-gradient(90deg,
-        transparent 0 18px, rgba(255,150,40,0.85) 18px 30px, transparent 30px 48px);
+    .season-halloween #evRoadWrap { border-color: rgba(255,140,0,0.35); }
+    .season-halloween .ev-sky { background: linear-gradient(180deg, #120a24 0%, #2a1745 60%, #43255f 100%); }
+    .season-halloween .ev-sun {
+      background: transparent;
+      box-shadow: inset -7px 3px 0 0 #f6efc8, 0 0 14px 2px rgba(246, 239, 200, 0.25);
     }
+    .season-halloween .ev-cloud { opacity: 0.18; }
+    .season-halloween #evRoad::before {
+      background: repeating-linear-gradient(90deg, rgba(255,150,40,0.85) 0 16px, transparent 16px 36px);
+    }
+    .season-halloween .ev-beam { opacity: 1; }
     .season-halloween .ev-hat-svg { visibility: visible; }
-    /* --- Season: Winter --- */
-    .season-winter #evRoadWrap { border: 2px solid #ffffff; }
-    .season-winter #evRoad {
-      box-shadow: 0 -4px 0 0 rgba(255,255,255,0.9); /* snow cover on the road */
+    /* --- Season: Winter – snowy hills and a white verge --- */
+    .season-winter #evContainer {
+      --ev-hill-far: #e7eef8;
+      --ev-hill-near: #ffffff;
+      --ev-verge: #ffffff;
     }
+    .season-winter #evRoadWrap { border: 2px solid #ffffff; }
+    .season-winter .ev-hills.is-near { filter: drop-shadow(0 -1px 1px rgba(80, 110, 150, 0.25)); }
     .season-winter .ev-roof.ev-sled { display: block; }
     #evSnow {
       position: absolute;
@@ -2182,7 +2414,8 @@
         scroll-behavior: auto !important;
       }
       /* Decorative loops carry no information at all – stop them outright. */
-      #evSnow, .ev-wheel, .focus-stream, .slot-bulb { animation: none !important; }
+      #evSnow, .ev-wheel, .focus-stream, .slot-bulb, .ev-cloud, .ev-hills, #evRoad::before,
+      .ev-body, .ev-speedlines, #evBatteryFill::before { animation: none !important; }
       .slot-coin { display: none; }
     }
 
@@ -2392,50 +2625,126 @@
 
   <div id="evContainer" data-view="ev">
     <div id="evRoadWrap">
+      <div class="ev-sky" aria-hidden="true">
+        <span class="ev-sun"></span>
+        <span class="ev-cloud is-a"></span>
+        <span class="ev-cloud is-b"></span>
+      </div>
+      <div class="ev-hills is-far" aria-hidden="true"></div>
+      <div class="ev-hills is-near" aria-hidden="true"></div>
       <div id="evRoad"></div>
       <div id="evGoal">🏁</div>
+      <div class="ev-charger" aria-hidden="true">
+        <svg viewBox="0 0 16 30" xmlns="http://www.w3.org/2000/svg">
+          <rect x="1" y="1" width="12" height="27" rx="3" fill="#f4f6f9" stroke="#5c6675" stroke-width="1.2"/>
+          <rect x="3.5" y="4" width="7" height="6" rx="1.2" fill="#2a3442"/>
+          <circle class="ev-charger-led" cx="7" cy="13.5" r="1.4"/>
+          <path d="M7.6 16.5 L5.2 20.5 H7.2 L6.4 24 L9 19.6 H7 Z" fill="#3ddc6a"/>
+          <path d="M13 9 C17 10 17 16 14.5 18" fill="none" stroke="#2a3442" stroke-width="1.6" stroke-linecap="round"/>
+          <rect x="0" y="27.5" width="14" height="2.5" rx="1" fill="#5c6675"/>
+        </svg>
+      </div>
       <div id="evCar">
         <span class="ev-roof ev-sled">🛷</span>
+        <span class="ev-shadow" aria-hidden="true"></span>
+        <span class="ev-speedlines" aria-hidden="true"></span>
         <svg viewBox="0 -18 150 71" xmlns="http://www.w3.org/2000/svg" aria-label="Elektroauto">
-          <!-- generic one-box EV profile: short nose, windscreen flowing into
-               the bonnet, high arched roof falling to a rear spoiler lip -->
-          <path d="M13 44 C10 40 9 33 11 27 C12 19 15 12 22 9 C38 3 62 2 78 6 C92 10 102 15 110 20 C120 23 128 28 132 33 C136 36 137 41 133 43 L121 44 A14 14 0 0 1 93 44 L52 44 A14 14 0 0 1 24 44 Z"
-                fill="#a9b2bc" stroke="#4a5562" stroke-width="2" stroke-linejoin="round"/>
-          <!-- glasshouse hugging the roofline, rising beltline -->
-          <path d="M28 12 C45 6 65 5.5 79 8.5 C89 11 98 16 105 21 L96 23 C84 17.5 64 16 48 18 C39 19.2 32 21 29 23.5 C27.5 19.5 27 15 28 12 Z"
-                fill="#414b58" stroke="#4a5562" stroke-width="1.2"/>
-          <!-- door seam -->
-          <path d="M72 8 L72 43" stroke="#7c8794" stroke-width="1.2" fill="none"/>
-          <!-- headlight -->
-          <path d="M125 30 q6 2 7 7 l-8 0 z" fill="#eef4fa" stroke="#4a5562" stroke-width="1"/>
-          <!-- wheels with spokes; the groups rotate while the car drives -->
-          <g class="ev-wheel">
-            <circle cx="38" cy="42" r="10.5" fill="#1f242c"/>
-            <g stroke="#cdd5de" stroke-width="2">
-              <line x1="38" y1="42" x2="38" y2="34.5"/>
-              <line x1="38" y1="42" x2="45.1" y2="39.7"/>
-              <line x1="38" y1="42" x2="42.4" y2="48.1"/>
-              <line x1="38" y1="42" x2="33.6" y2="48.1"/>
-              <line x1="38" y1="42" x2="30.9" y2="39.7"/>
+          <defs>
+            <linearGradient id="evPaint" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" class="ev-paint-top"/>
+              <stop offset="0.55" class="ev-paint-mid"/>
+              <stop offset="1" class="ev-paint-bottom"/>
+            </linearGradient>
+            <linearGradient id="evGlass" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" class="ev-glass-top"/>
+              <stop offset="1" class="ev-glass-bottom"/>
+            </linearGradient>
+            <radialGradient id="evRim" cx="0.4" cy="0.35" r="0.75">
+              <stop offset="0" stop-color="#ffffff"/>
+              <stop offset="0.5" stop-color="#c9d0d9"/>
+              <stop offset="1" stop-color="#7c8592"/>
+            </radialGradient>
+            <linearGradient id="evBeam" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#fff6c8" stop-opacity="0.75"/>
+              <stop offset="1" stop-color="#fff6c8" stop-opacity="0"/>
+            </linearGradient>
+            <clipPath id="evBodyClip">
+              <path d="M13 44 C10 40 9 33 11 27 C12 19 15 12 22 9 C38 3 62 2 78 6 C92 10 102 15 110 20 C120 23 128 28 132 33 C136 36 137 41 133 43 L121 44 A14 14 0 0 1 93 44 L52 44 A14 14 0 0 1 24 44 Z"/>
+            </clipPath>
+            <clipPath id="evGlassClip">
+              <path d="M28 12 C45 6 65 5.5 79 8.5 C89 11 98 16 105 21 L96 23 C84 17.5 64 16 48 18 C39 19.2 32 21 29 23.5 C27.5 19.5 27 15 28 12 Z"/>
+            </clipPath>
+          </defs>
+          <!-- headlight beam, only shown at night -->
+          <path class="ev-beam" d="M131 34 L190 24 L190 50 Z" fill="url(#evBeam)"/>
+          <g class="ev-body">
+            <!-- one-box EV profile: short nose, windscreen flowing into the
+                 bonnet, high arched roof falling to a rear spoiler lip -->
+            <path d="M13 44 C10 40 9 33 11 27 C12 19 15 12 22 9 C38 3 62 2 78 6 C92 10 102 15 110 20 C120 23 128 28 132 33 C136 36 137 41 133 43 L121 44 A14 14 0 0 1 93 44 L52 44 A14 14 0 0 1 24 44 Z"
+                  fill="url(#evPaint)"/>
+            <g clip-path="url(#evBodyClip)">
+              <!-- shoulder highlight and darker rocker panel -->
+              <path d="M14 25 C40 22 90 22 128 30" fill="none" stroke="#ffffff" stroke-opacity="0.55" stroke-width="1.6"/>
+              <rect x="0" y="36" width="150" height="12" fill="#0b1020" opacity="0.32"/>
+              <path d="M20 37.5 H128" stroke="#ffffff" stroke-opacity="0.25" stroke-width="0.8"/>
             </g>
-            <circle cx="38" cy="42" r="2.8" fill="#cdd5de"/>
+            <path d="M13 44 C10 40 9 33 11 27 C12 19 15 12 22 9 C38 3 62 2 78 6 C92 10 102 15 110 20 C120 23 128 28 132 33 C136 36 137 41 133 43 L121 44 A14 14 0 0 1 93 44 L52 44 A14 14 0 0 1 24 44 Z"
+                  class="ev-outline" fill="none" stroke-width="1.6" stroke-linejoin="round"/>
+            <!-- glasshouse hugging the roofline, rising beltline -->
+            <path d="M28 12 C45 6 65 5.5 79 8.5 C89 11 98 16 105 21 L96 23 C84 17.5 64 16 48 18 C39 19.2 32 21 29 23.5 C27.5 19.5 27 15 28 12 Z"
+                  fill="url(#evGlass)" class="ev-outline" stroke-width="1"/>
+            <g clip-path="url(#evGlassClip)">
+              <polygon points="52,0 62,0 48,30 38,30" fill="#ffffff" opacity="0.28"/>
+              <polygon points="66,0 70,0 56,30 52,30" fill="#ffffff" opacity="0.18"/>
+              <rect x="70.6" y="0" width="3.2" height="30" fill="#1a212c"/>
+            </g>
+            <!-- door seam, handle and mirror -->
+            <path d="M72 23 L72 42" class="ev-outline" stroke-opacity="0.5" stroke-width="1" fill="none"/>
+            <rect x="77" y="26" width="8" height="1.8" rx="0.9" fill="#ffffff" opacity="0.7"/>
+            <path d="M96 22.5 q4 -2.6 6.5 0.4 l-1 2 q-3 -0.4 -5.5 0.2 z" class="ev-outline" stroke-width="0.8" fill="url(#evPaint)"/>
+            <!-- LED headlight and daytime light strip -->
+            <path d="M124 29.5 q7 2 8.5 7.5 l-9 -0.4 z" fill="#f4fbff" stroke="#2a3442" stroke-width="0.8"/>
+            <path d="M118 28.2 q5 0.6 10 2.4" stroke="#e8fbff" stroke-width="1.3" stroke-linecap="round" fill="none"/>
+            <!-- rear light bar -->
+            <path d="M11.2 24.5 q3 -1.4 6 -0.6 l-0.4 5.6 q-3 0.4 -5.8 -0.8 z" fill="#ff2a3a" stroke="#7a0010" stroke-width="0.6"/>
+            <!-- charge port lid -->
+            <rect x="19" y="27" width="5" height="3.6" rx="0.8" fill="none" class="ev-outline" stroke-opacity="0.55" stroke-width="0.7"/>
+            <!-- witch hat (Halloween, toggled via CSS) -->
+            <g class="ev-hat-svg" visibility="hidden">
+              <polygon points="44,3 56,-16 68,3" fill="#5b2a86" stroke="#3d1c5c" stroke-width="1.2"/>
+              <ellipse cx="56" cy="3" rx="17" ry="3.4" fill="#3d1c5c"/>
+              <rect x="50" y="-7" width="12" height="3.6" fill="#f5a623" rx="1"/>
+            </g>
+          </g>
+          <!-- wheel arches -->
+          <path d="M24.5 44 A13.5 13.5 0 0 1 51.5 44" fill="none" stroke="#0b1020" stroke-opacity="0.55" stroke-width="2.4"/>
+          <path d="M93.5 44 A13.5 13.5 0 0 1 120.5 44" fill="none" stroke="#0b1020" stroke-opacity="0.55" stroke-width="2.4"/>
+          <!-- alloy wheels; the groups rotate while the car drives -->
+          <g class="ev-wheel">
+            <circle cx="38" cy="42" r="10.5" fill="#151920"/>
+            <circle cx="38" cy="42" r="7.6" fill="#2b313b"/>
+            <g stroke="url(#evRim)" stroke-width="2.6" stroke-linecap="round">
+              <line x1="38" y1="42" x2="38" y2="35"/>
+              <line x1="38" y1="42" x2="44.7" y2="39.8"/>
+              <line x1="38" y1="42" x2="42.1" y2="47.7"/>
+              <line x1="38" y1="42" x2="33.9" y2="47.7"/>
+              <line x1="38" y1="42" x2="31.3" y2="39.8"/>
+            </g>
+            <circle cx="38" cy="42" r="7.6" fill="none" stroke="#c9d0d9" stroke-width="1.1"/>
+            <circle cx="38" cy="42" r="2.4" fill="url(#evRim)"/>
           </g>
           <g class="ev-wheel">
-            <circle cx="107" cy="42" r="10.5" fill="#1f242c"/>
-            <g stroke="#cdd5de" stroke-width="2">
-              <line x1="107" y1="42" x2="107" y2="34.5"/>
-              <line x1="107" y1="42" x2="114.1" y2="39.7"/>
-              <line x1="107" y1="42" x2="111.4" y2="48.1"/>
-              <line x1="107" y1="42" x2="102.6" y2="48.1"/>
-              <line x1="107" y1="42" x2="99.9" y2="39.7"/>
+            <circle cx="107" cy="42" r="10.5" fill="#151920"/>
+            <circle cx="107" cy="42" r="7.6" fill="#2b313b"/>
+            <g stroke="url(#evRim)" stroke-width="2.6" stroke-linecap="round">
+              <line x1="107" y1="42" x2="107" y2="35"/>
+              <line x1="107" y1="42" x2="113.7" y2="39.8"/>
+              <line x1="107" y1="42" x2="111.1" y2="47.7"/>
+              <line x1="107" y1="42" x2="102.9" y2="47.7"/>
+              <line x1="107" y1="42" x2="100.3" y2="39.8"/>
             </g>
-            <circle cx="107" cy="42" r="2.8" fill="#cdd5de"/>
-          </g>
-          <!-- witch hat (Halloween, toggled via CSS) -->
-          <g class="ev-hat-svg" visibility="hidden">
-            <polygon points="44,3 56,-16 68,3" fill="#5b2a86" stroke="#3d1c5c" stroke-width="1.2"/>
-            <ellipse cx="56" cy="3" rx="17" ry="3.4" fill="#3d1c5c"/>
-            <rect x="50" y="-7" width="12" height="3.6" fill="#f5a623" rx="1"/>
+            <circle cx="107" cy="42" r="7.6" fill="none" stroke="#c9d0d9" stroke-width="1.1"/>
+            <circle cx="107" cy="42" r="2.4" fill="url(#evRim)"/>
           </g>
         </svg>
       </div>
