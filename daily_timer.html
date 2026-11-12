@@ -336,125 +336,431 @@
       color: var(--accent-deep);
     }
 
-    /* --- Slot Machine View (minimalist) --- */
-    /* The whole slot view lives in one centred column. */
+    /* --- Slot Machine View (cabinet) ---
+       A real one-reel machine: chrome-trimmed cabinet in the brand hue, a
+       marquee with chasing bulbs, a curved ivory reel behind glass, a payline,
+       a side lever that swings towards the viewer and a coin tray. Only the
+       look lives here – the draw itself is still animateSlotToWinner(). The
+       bulbs and chrome are deliberately NOT themed: warm light and metal read
+       as "machine" in every colour. --- */
     #slotContainer {
       width: 100%;
       max-width: var(--col-width);
       margin: 8px auto 0;
       position: relative;
       display: none;
+      --slot-chrome: linear-gradient(180deg, #f7f8fb 0%, #c3c8d2 22%, #8d939f 48%, #e4e7ed 62%, #a2a8b3 82%, #6f7580 100%);
+      --slot-chrome-h: linear-gradient(90deg, #6f7580 0%, #c9ced7 22%, #f7f8fb 42%, #aeb3bd 64%, #e2e5eb 82%, #7c828d 100%);
+      --slot-bulb-on: #ffd66b;
+      --slot-bulb-glow: rgba(255, 196, 60, 0.85);
+      --slot-bulb-off: #6b4a1e;
+      --slot-pivot: 190px;      /* lever pivot, measured from the cabinet top */
+      --slot-lever-len: 96px;
     }
-    /* Positioning context for the reel + the absolutely placed handle, so the
-       handle never pushes the reel off the column's centre axis. */
+    /* Positioning context for the cabinet + the absolutely placed lever, so the
+       lever never pushes the reel off the column's centre axis. */
     .slot-machine-row {
       position: relative;
       width: 100%;
       margin: 0 auto;
+      box-sizing: border-box;
     }
+    .slot-cabinet {
+      position: relative;
+      padding: 4px;
+      border-radius: 30px 30px 20px 20px;
+      background: var(--slot-chrome);
+      box-shadow:
+        0 26px 44px hsla(var(--brand-h), calc(60% * var(--brand-sat)), 10%, 0.34),
+        0 6px 14px rgba(0, 0, 0, 0.18);
+    }
+    .slot-cabinet-body {
+      position: relative;
+      padding: 12px 12px 14px;
+      border-radius: 26px 26px 16px 16px;
+      background:
+        radial-gradient(120% 60% at 50% 0%, hsla(var(--brand-h), calc(90% * var(--brand-sat)), 60%, 0.35) 0%, transparent 60%),
+        linear-gradient(180deg,
+          hsl(var(--brand-h), calc(70% * var(--brand-sat)), 32%) 0%,
+          hsl(var(--brand-h), calc(78% * var(--brand-sat)), 19%) 45%,
+          hsl(var(--brand-h), calc(82% * var(--brand-sat)), 11%) 100%);
+      box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.22),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.35),
+        inset 0 -14px 24px rgba(0, 0, 0, 0.38);
+    }
+
+    /* Marquee: bulb row over a backlit panel with the classic triple seven. */
+    .slot-marquee {
+      position: relative;
+      margin-bottom: 12px;
+      padding: 7px 10px 8px;
+      border-radius: 18px 18px 10px 10px;
+      background:
+        radial-gradient(90% 120% at 50% 0%, hsl(var(--brand-h), calc(95% * var(--brand-sat)), 46%) 0%, hsl(var(--brand-h), calc(88% * var(--brand-sat)), 20%) 75%);
+      box-shadow:
+        inset 0 0 0 2px rgba(255, 214, 120, 0.55),
+        inset 0 0 22px rgba(0, 0, 0, 0.5),
+        0 2px 0 rgba(255, 255, 255, 0.12);
+    }
+    .slot-bulbs {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .slot-bulbs-top { padding: 0 6px; margin-bottom: 5px; }
+    .slot-bulbs-side {
+      flex-direction: column;
+      justify-content: space-around;
+      align-self: stretch;
+      padding: 10px 0;
+    }
+    .slot-bulb {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      flex: 0 0 auto;
+      background: radial-gradient(circle at 35% 30%, #fffbe6 0%, var(--slot-bulb-on) 45%, #c98a12 100%);
+      box-shadow: 0 0 6px 1px var(--slot-bulb-glow), 0 0 0 1px rgba(0, 0, 0, 0.35);
+      animation: slot-bulb-chase 1.4s linear infinite;
+      animation-delay: calc(var(--i, 0) * -0.14s);
+    }
+    @keyframes slot-bulb-chase {
+      0%, 34%   { background: radial-gradient(circle at 35% 30%, #fffbe6 0%, var(--slot-bulb-on) 45%, #c98a12 100%);
+                  box-shadow: 0 0 7px 2px var(--slot-bulb-glow), 0 0 0 1px rgba(0, 0, 0, 0.35); }
+      35%, 100% { background: radial-gradient(circle at 35% 30%, #a88a4e 0%, var(--slot-bulb-off) 60%, #3a2508 100%);
+                  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45); }
+    }
+    /* While the reel runs the lights race; on a win they all flash together. */
+    .slot-cabinet.is-spinning .slot-bulb { animation-duration: 0.42s; }
+    .slot-cabinet.is-win .slot-bulb {
+      animation: slot-bulb-chase 0.24s steps(1, end) infinite;
+      animation-delay: 0s;
+    }
+    .slot-marquee-panel {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+      height: 38px;
+      font-family: 'Arial Black', 'Helvetica Neue', Impact, Arial, sans-serif;
+      user-select: none;
+    }
+    .slot-seven {
+      font-size: 32px;
+      font-weight: 900;
+      line-height: 1;
+      font-style: italic;
+      background: linear-gradient(180deg, #ffb3a8 0%, #ff3b2f 38%, #c0000f 70%, #7a0008 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-stroke: 1px #ffd66b;
+      filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.55)) drop-shadow(0 0 6px rgba(255, 190, 60, 0.45));
+    }
+    .slot-star {
+      font-size: 18px;
+      color: #ffd66b;
+      text-shadow: 0 0 6px rgba(255, 196, 60, 0.9), 0 1px 0 rgba(0, 0, 0, 0.5);
+      margin: 0 4px;
+    }
+    .slot-cabinet.is-win .slot-seven { animation: slot-seven-pop 0.5s ease-in-out 3; }
+    .slot-cabinet.is-win .slot-seven:nth-child(3) { animation-delay: 0.08s; }
+    .slot-cabinet.is-win .slot-seven:nth-child(4) { animation-delay: 0.16s; }
+    @keyframes slot-seven-pop {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.18) translateY(-2px); }
+    }
+
+    /* Reel window: bulb columns left and right of a chrome bezel. */
+    .slot-window {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .slot-window-bezel {
+      position: relative;
+      flex: 1 1 auto;
+      min-width: 0;
+      padding: 6px;
+      border-radius: 14px;
+      background: var(--slot-chrome);
+      box-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    }
+    /* Payline arrows riding on the bezel, pointing at the winning row. */
+    .slot-payline-arrow {
+      position: absolute;
+      top: 50%;
+      width: 0;
+      height: 0;
+      margin-top: -7px;
+      border-top: 7px solid transparent;
+      border-bottom: 7px solid transparent;
+      z-index: 6;
+      filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.5));
+    }
+    .slot-payline-arrow.is-left  { left: -3px;  border-left: 9px solid #e0101e; }
+    .slot-payline-arrow.is-right { right: -3px; border-right: 9px solid #e0101e; }
     #slotTrackWrapper {
       position: relative;
       width: 100%;
-      max-width: var(--col-width);
-      height: 200px;
+      height: 168px;            /* exactly three rows of 56 px */
       margin: 0 auto;
       overflow: hidden;
-      border-radius: 16px;
-      border: 1px solid hsla(var(--brand-h), calc(100% * var(--brand-sat)), 24%, 0.10);
-      background: linear-gradient(180deg,#ffffff 0%, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 98%) 100%);
-      /* outer lift + top/bottom inner vignette so names roll into the cabinet */
-      box-shadow:
-        0 14px 30px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.14),
-        0 2px 0 rgba(255,255,255,0.9) inset,
-        0 22px 22px -16px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.30) inset,
-        0 -22px 22px -16px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.30) inset;
+      border-radius: 9px;
+      /* Ivory reel strip; the sides fall off as the drum curves away. */
+      background: linear-gradient(90deg, #cfc6b4 0%, #f6efdf 14%, #fffdf6 50%, #f6efdf 86%, #cfc6b4 100%);
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);
     }
     #slotTrack {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
+      z-index: 1;
       transition: transform 1.7s cubic-bezier(0.22, 0.9, 0.28, 1);
       will-change: transform;
     }
     .slot-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       width: 100%;
-      padding: 20px 12px;
+      padding: 0 14px;
       background: transparent;
-      border-bottom: 1px solid rgba(0,0,0,0.04);
+      border-bottom: 1px solid rgba(60, 40, 10, 0.08);
       box-sizing: border-box;
-      font-size: 1.3em;
-      font-weight: 700;
-      color: hsl(var(--brand-h), calc(92% * var(--brand-sat)), 19%);
+      font-family: 'Arial Black', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 1.32em;
+      font-weight: 900;
+      color: #1d1b24;
       text-transform: uppercase;
       text-align: center;
       letter-spacing: 0.06em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+      transition: color 0.25s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), text-shadow 0.25s ease;
     }
     .slot-item.used-participant {
-      color: hsla(var(--brand-h), calc(92% * var(--brand-sat)), 19%, 0.35);
+      color: rgba(29, 27, 36, 0.35);
       opacity: 0.6;
     }
-    #slotStatus {
-      display: block;
-      margin-bottom: 14px;
-      font-size: 1em;
-      font-weight: 700;
-      color: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 27%);
-      text-align: center;
+    /* Motion blur while the drum is at speed: ghost copies above and below. */
+    #slotTrack.is-spinning .slot-item {
+      color: rgba(29, 27, 36, 0.72);
+      text-shadow:
+        0 -9px 0 rgba(29, 27, 36, 0.2),
+        0 9px 0 rgba(29, 27, 36, 0.2),
+        0 -18px 0 rgba(29, 27, 36, 0.08),
+        0 18px 0 rgba(29, 27, 36, 0.08);
+      transition: none;
     }
-    /* Highlight band marking the winning row. */
+    #slotTrack.is-spinning { filter: blur(0.5px); }
+    /* The name that just landed on the payline. */
+    .slot-item.is-winner {
+      color: hsl(var(--brand-h), calc(95% * var(--brand-sat)), 26%);
+      transform: scale(1.1);
+      text-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.9),
+        0 0 14px rgba(255, 190, 60, 0.75);
+    }
+    /* Drum curvature: rows darken towards the top and bottom edge. */
+    .slot-reel-shade {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background: linear-gradient(180deg,
+        rgba(20, 12, 0, 0.62) 0%,
+        rgba(20, 12, 0, 0.22) 20%,
+        rgba(20, 12, 0, 0) 36%,
+        rgba(20, 12, 0, 0) 64%,
+        rgba(20, 12, 0, 0.22) 80%,
+        rgba(20, 12, 0, 0.62) 100%);
+    }
+    /* Payline: the winning row between two gold rails. */
     #slotIndicator {
       position: absolute;
       top: 50%;
       left: 0;
       width: 100%;
-      height: 58px;
+      height: 56px;
+      z-index: 3;
       transform: translateY(-50%);
-      border-radius: 10px;
-      background: linear-gradient(180deg, hsla(var(--brand-h), calc(100% * var(--brand-sat)), 50%, 0.10), hsla(var(--brand-h), calc(100% * var(--brand-sat)), 50%, 0.03));
+      background: linear-gradient(180deg, rgba(255, 214, 107, 0.16), rgba(255, 214, 107, 0.04) 50%, rgba(255, 214, 107, 0.16));
       box-shadow:
-        0 0 0 2px hsla(var(--brand-h), calc(100% * var(--brand-sat)), 50%, 0.55),
-        0 6px 16px hsla(var(--brand-h), calc(100% * var(--brand-sat)), 50%, 0.18);
+        inset 0 2px 0 rgba(214, 150, 20, 0.95),
+        inset 0 -2px 0 rgba(214, 150, 20, 0.95),
+        0 0 12px rgba(255, 190, 60, 0.25);
       pointer-events: none;
     }
-    /* Lever, mounted on the right of the cabinet. Absolutely positioned so it
-       decorates the reel without affecting the column's horizontal centring. */
+    .slot-cabinet.is-win #slotIndicator { animation: slot-payline-flash 0.4s ease-in-out 4; }
+    @keyframes slot-payline-flash {
+      0%, 100% { background-color: rgba(255, 214, 107, 0); box-shadow: inset 0 2px 0 rgba(214, 150, 20, 0.95), inset 0 -2px 0 rgba(214, 150, 20, 0.95), 0 0 12px rgba(255, 190, 60, 0.25); }
+      50%      { background-color: rgba(255, 214, 107, 0.28); box-shadow: inset 0 2px 0 #ffd66b, inset 0 -2px 0 #ffd66b, 0 0 26px rgba(255, 190, 60, 0.9); }
+    }
+    /* Glass in front of the reel: a fixed reflection plus a sweep on a win. */
+    .slot-glass {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      pointer-events: none;
+      overflow: hidden;
+      border-radius: inherit;
+      background:
+        linear-gradient(170deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.1) 22%, rgba(255, 255, 255, 0) 23%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0) 70%, rgba(255, 255, 255, 0.08) 100%);
+      box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.35), inset 0 -3px 6px rgba(0, 0, 0, 0.3);
+    }
+    .slot-glass::after {
+      content: '';
+      position: absolute;
+      top: -20%;
+      bottom: -20%;
+      left: -60%;
+      width: 40%;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.55) 50%, rgba(255, 255, 255, 0) 100%);
+      transform: skewX(-18deg);
+      opacity: 0;
+    }
+    .slot-cabinet.is-win .slot-glass::after { animation: slot-glass-sweep 0.9s ease-out 0.1s 1; }
+    @keyframes slot-glass-sweep {
+      0%   { left: -60%; opacity: 1; }
+      100% { left: 130%; opacity: 1; }
+    }
+
+    /* Coin tray with a payout chute; coins drop in on a win. */
+    .slot-tray {
+      position: relative;
+      height: 40px;
+      margin-top: 14px;
+      border-radius: 8px 8px 18px 18px;
+      overflow: hidden;
+      background: linear-gradient(180deg, #0d0d12 0%, #22222a 55%, #34343e 100%);
+      box-shadow:
+        inset 0 10px 14px rgba(0, 0, 0, 0.8),
+        inset 0 -2px 0 rgba(255, 255, 255, 0.12),
+        0 0 0 3px #b9bec8,
+        0 0 0 4px rgba(0, 0, 0, 0.35);
+    }
+    .slot-tray::before {
+      /* Payout chute mouth at the back of the tray. */
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 62px;
+      height: 9px;
+      margin-left: -31px;
+      border-radius: 0 0 10px 10px;
+      background: #000;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+    .slot-coin {
+      position: absolute;
+      top: 2px;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #fff6c4 0%, #ffd34d 35%, #d99a0b 75%, #8f5e00 100%);
+      box-shadow: inset 0 0 0 2px rgba(143, 94, 0, 0.55), 0 1px 2px rgba(0, 0, 0, 0.6);
+      animation: slot-coin-drop 0.75s cubic-bezier(0.3, 0, 0.6, 1) both,
+                 slot-coin-fade 0.4s ease-in 1.7s forwards;
+    }
+    @keyframes slot-coin-drop {
+      0%   { transform: translate(0, -14px) rotateX(70deg); }
+      62%  { transform: translate(var(--dx, 0px), 20px) rotateX(20deg); }
+      78%  { transform: translate(calc(var(--dx, 0px) * 1.1), 14px) rotateX(55deg); }
+      100% { transform: translate(calc(var(--dx, 0px) * 1.2), 20px) rotateX(62deg); }
+    }
+    @keyframes slot-coin-fade { to { opacity: 0; } }
+
+    /* Lever on the right flank: chrome mount, rod and a red ball. Pulling it
+       swings the rod towards the viewer and down past the pivot, then it
+       springs back – the rod shortens through zero, the ball grows as it
+       comes closest. */
     .slot-handle-container {
       position: absolute;
-      top: 50%;
-      /* Anchor to the reel's right edge (reel max-width 300, centred) and push
-         the lever just outside so it reads as mounted on the cabinet side. */
-      left: calc(50% + 150px - 14px);
-      transform: translateY(-50%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 130px;
+      top: 0;
+      right: -30px;
+      width: 34px;
+      height: 100%;
       z-index: 8;
     }
+    .slot-lever-mount {
+      position: absolute;
+      left: 0;
+      top: calc(var(--slot-pivot) - 24px);
+      width: 20px;
+      height: 48px;
+      border-radius: 0 10px 10px 0;
+      background: var(--slot-chrome);
+      box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+    }
     .slot-handle {
-      width: 36px;
-      height: 120px;
-      background: linear-gradient(180deg,hsl(var(--brand-h), calc(79% * var(--brand-sat)), 95%) 0%, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 91%) 100%);
-      border-radius: 10px;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding-top: 10px;
-      box-shadow: 0 6px 12px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.06);
-      transform-origin: bottom center;
-      transform: rotate(-14deg);
-      transition: transform 0.35s cubic-bezier(0.22,1,0.36,1);
+      position: absolute;
+      left: 0;
+      top: calc(var(--slot-pivot) - var(--slot-lever-len));
+      width: 34px;
+      height: var(--slot-lever-len);
+    }
+    .slot-handle-rod {
+      position: absolute;
+      left: 16px;
+      bottom: 0;
+      width: 7px;
+      height: 100%;
+      border-radius: 4px;
+      background: var(--slot-chrome-h);
+      box-shadow: 1px 0 2px rgba(0, 0, 0, 0.35);
+      transform-origin: 50% 100%;
+    }
+    .slot-handle::after {
+      /* Ball joint over the pivot. */
+      content: '';
+      position: absolute;
+      left: 11px;
+      bottom: -8px;
+      width: 17px;
+      height: 17px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #ffffff 0%, #c3c8d2 40%, #5e636d 100%);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
     }
     .slot-handle-knob {
-      width: 20px;
-      height: 20px;
-      background: radial-gradient(circle at 30% 30%, #fff 0%, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 91%) 30%, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 71%) 100%);
+      position: absolute;
+      left: 6px;
+      top: -14px;
+      width: 27px;
+      height: 27px;
+      z-index: 1;
       border-radius: 50%;
-      box-shadow: 0 2px 6px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.15);
+      background: radial-gradient(circle at 34% 28%, #ffffff 0%, #ff8a80 10%, #e3101e 42%, #9b0010 78%, #5a0008 100%);
+      box-shadow: 0 5px 9px rgba(0, 0, 0, 0.4), inset 0 -3px 5px rgba(0, 0, 0, 0.3);
     }
-    .slot-handle.pulled { transform: rotate(24deg); }
+    .slot-handle.pulled .slot-handle-rod  { animation: slot-lever-rod 0.95s cubic-bezier(0.45, 0, 0.3, 1) 1; }
+    .slot-handle.pulled .slot-handle-knob { animation: slot-lever-knob 0.95s cubic-bezier(0.45, 0, 0.3, 1) 1; }
+    /* L = 96 px: at scaleY s the tip sits L*(1-s) lower than at rest. */
+    @keyframes slot-lever-rod {
+      0%   { transform: scaleY(1); }
+      30%  { transform: scaleY(0.05); }
+      46%  { transform: scaleY(-0.8); }
+      62%  { transform: scaleY(-0.8); }
+      80%  { transform: scaleY(0.1); }
+      100% { transform: scaleY(1); }
+    }
+    @keyframes slot-lever-knob {
+      0%   { transform: translateY(0) scale(1); }
+      30%  { transform: translateY(91px) scale(1.3); }
+      46%  { transform: translateY(173px) scale(1.06); }
+      62%  { transform: translateY(173px) scale(1.06); }
+      80%  { transform: translateY(86px) scale(1.28); }
+      100% { transform: translateY(0) scale(1); }
+    }
     .slot-history {
       width: 100%;
       max-width: var(--col-width);
@@ -527,6 +833,8 @@
       align-items: center;
       justify-content: center;
       height: 100%;
+      min-height: 168px;
+      box-sizing: border-box;
       color: #666;
       font-size: 0.95em;
       padding: 15px;
@@ -784,22 +1092,58 @@
     .season-winter #teamList li.active-participant::before { content: '⛄ '; }
 
     /* --- Seasonal themes for the slot machine --- */
-    .season-halloween #slotTrackWrapper {
-      background: linear-gradient(180deg, #2a1a3d 0%, #41245c 100%);
-      border-color: rgba(255,140,0,0.35);
+    /* Halloween: night-purple cabinet, pumpkin bulbs, a dark reel. */
+    .season-halloween .slot-cabinet-body {
+      background:
+        radial-gradient(120% 60% at 50% 0%, rgba(255, 140, 0, 0.22) 0%, transparent 60%),
+        linear-gradient(180deg, #3d1f5c 0%, #24123a 50%, #140a22 100%);
     }
-    .season-halloween .slot-item { color: #f0c489; }
+    .season-halloween .slot-marquee {
+      background: radial-gradient(90% 120% at 50% 0%, #6b2fa0 0%, #241038 75%);
+      box-shadow: inset 0 0 0 2px rgba(255, 140, 0, 0.6), inset 0 0 22px rgba(0, 0, 0, 0.5);
+    }
+    .season-halloween #slotContainer { --slot-bulb-on: #ff9a2e; --slot-bulb-glow: rgba(255, 120, 0, 0.85); }
+    .season-halloween #slotTrackWrapper {
+      background: linear-gradient(90deg, #1c1029 0%, #2f1b45 14%, #3a2156 50%, #2f1b45 86%, #1c1029 100%);
+    }
+    .season-halloween .slot-item { color: #f0c489; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6); }
     .season-halloween .slot-item.used-participant { color: rgba(240,196,137,0.4); }
-    .season-halloween #slotIndicator {
-      background: linear-gradient(180deg, rgba(255,150,40,0.16), rgba(255,150,40,0.05));
-      box-shadow: 0 0 0 2px rgba(255,150,40,0.8), 0 6px 16px rgba(255,140,0,0.3);
+    .season-halloween .slot-item.is-winner { color: #ffb347; text-shadow: 0 0 14px rgba(255, 140, 0, 0.9); }
+    .season-halloween #slotTrack.is-spinning .slot-item {
+      color: rgba(240, 196, 137, 0.75);
+      text-shadow: 0 -9px 0 rgba(240, 196, 137, 0.2), 0 9px 0 rgba(240, 196, 137, 0.2);
+    }
+    .season-halloween .slot-handle-knob {
+      background: radial-gradient(circle at 34% 28%, #fff3e0 0%, #ffb347 14%, #ff7a00 45%, #a64400 80%, #5a2400 100%);
     }
     .season-halloween .slot-history-title::before { content: '🎃 '; }
-    .season-winter #slotTrackWrapper {
-      border: 2px solid #ffffff;
-      background: linear-gradient(180deg, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 97%) 0%, hsl(var(--brand-h), calc(79% * var(--brand-sat)), 92%) 100%);
+    /* Winter: snow cap on the marquee, frosted chrome. */
+    .season-winter .slot-marquee::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      top: -10px;
+      height: 14px;
+      border-radius: 10px 10px 6px 6px;
+      background:
+        radial-gradient(14px 10px at 12% 100%, #fff 60%, transparent 62%),
+        radial-gradient(18px 12px at 38% 100%, #fff 60%, transparent 62%),
+        radial-gradient(16px 11px at 66% 100%, #fff 60%, transparent 62%),
+        radial-gradient(14px 10px at 90% 100%, #fff 60%, transparent 62%),
+        linear-gradient(#fff, #eef4ff);
+      background-size: 100% 100%;
+      box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+      z-index: 2;
     }
+    .season-winter #slotContainer { --slot-bulb-on: #e6f3ff; --slot-bulb-glow: rgba(170, 215, 255, 0.9); --slot-bulb-off: #3c5570; }
     .season-winter .slot-history-title::before { content: '❄️ '; }
+    /* Carnival and Easter: party / pastel bulbs. */
+    .season-carnival .slot-bulb:nth-child(4n+1) { --slot-bulb-on: #ff4fb3; --slot-bulb-glow: rgba(255, 79, 179, 0.85); }
+    .season-carnival .slot-bulb:nth-child(4n+2) { --slot-bulb-on: #3fd46f; --slot-bulb-glow: rgba(63, 212, 111, 0.85); }
+    .season-carnival .slot-bulb:nth-child(4n+3) { --slot-bulb-on: #4fa8ff; --slot-bulb-glow: rgba(79, 168, 255, 0.85); }
+    .season-easter .slot-bulb:nth-child(3n+1) { --slot-bulb-on: #ffd1e8; --slot-bulb-glow: rgba(255, 170, 210, 0.8); }
+    .season-easter .slot-bulb:nth-child(3n+2) { --slot-bulb-on: #c8f0b0; --slot-bulb-glow: rgba(150, 220, 120, 0.8); }
 
     /* Falling snow over the classic list and the slot reel in winter. */
     .season-winter #teamList::after,
@@ -918,7 +1262,10 @@
       /* Narrow screens: let the column use the full width, but keep every
          element measuring against the same variable so they stay flush. */
       :root { --col-width: 100%; }
-      .slot-item { font-size: 1em; padding: 14px 8px; }
+      .slot-item { font-size: 1.08em; padding: 0 8px; }
+      /* Keep the lever on screen: reserve its width inside the column. */
+      .slot-machine-row { padding-right: 30px; }
+      .slot-handle-container { right: 0; }
     }
 
     /* --- Wheel of Fortune View (Glücksrad) --- */
@@ -1864,7 +2211,8 @@
         scroll-behavior: auto !important;
       }
       /* Decorative loops carry no information at all – stop them outright. */
-      #evSnow, .ev-wheel, .focus-stream { animation: none !important; }
+      #evSnow, .ev-wheel, .focus-stream, .slot-bulb { animation: none !important; }
+      .slot-coin { display: none; }
     }
 
     /* Visible to assistive tech only. */
@@ -1999,12 +2347,36 @@
   <div id="slotContainer" data-view="slot" style="display: none; position: relative;">
     <div id="slotStatus" data-i18n="slotStatusInitial">Drücke Starten für Zufall.</div>
     <div class="slot-machine-row">
-      <div id="slotTrackWrapper">
-        <div id="slotTrack"></div>
-        <div id="slotIndicator"></div>
+      <div id="slotCabinet" class="slot-cabinet">
+        <div class="slot-cabinet-body">
+          <!-- Decoration only: bulbs are filled in by initSlotCabinet(). -->
+          <div class="slot-marquee" aria-hidden="true">
+            <div class="slot-bulbs slot-bulbs-top" data-count="13"></div>
+            <div class="slot-marquee-panel">
+              <span class="slot-star">★</span><span class="slot-seven">7</span><span class="slot-seven">7</span><span class="slot-seven">7</span><span class="slot-star">★</span>
+            </div>
+          </div>
+          <div class="slot-window">
+            <div class="slot-bulbs slot-bulbs-side" data-count="5" aria-hidden="true"></div>
+            <div class="slot-window-bezel">
+              <span class="slot-payline-arrow is-left" aria-hidden="true"></span>
+              <div id="slotTrackWrapper">
+                <div id="slotTrack"></div>
+                <div class="slot-reel-shade" aria-hidden="true"></div>
+                <div id="slotIndicator"></div>
+                <div class="slot-glass" aria-hidden="true"></div>
+              </div>
+              <span class="slot-payline-arrow is-right" aria-hidden="true"></span>
+            </div>
+            <div class="slot-bulbs slot-bulbs-side" data-count="5" aria-hidden="true"></div>
+          </div>
+          <div id="slotTray" class="slot-tray" aria-hidden="true"></div>
+        </div>
       </div>
       <div class="slot-handle-container">
+        <div class="slot-lever-mount" aria-hidden="true"></div>
         <div id="slotHandle" class="slot-handle" data-i18n-title="handleTitle" title="Hebel">
+          <div class="slot-handle-rod"></div>
           <div class="slot-handle-knob"></div>
         </div>
       </div>
@@ -3857,7 +4229,80 @@
         slotTrack.appendChild(item);
       });
 
+      // Park the reel with a name on the payline (second pass, so names fill
+      // the window above it too) instead of leaving the strip's top edge in view.
+      slotTrack.style.transform = `translateY(${slotRestOffset(list.length, itemHeight)}px)`;
       return itemHeight;
+    }
+
+    /** Reel offset that puts the first name of the second pass on the payline. */
+    function slotRestOffset(listLength, itemHeight) {
+      const wrapperHeight = (slotTrackWrapper && slotTrackWrapper.clientHeight) || 168;
+      return -(listLength * itemHeight + itemHeight / 2 - wrapperHeight / 2);
+    }
+
+    // --- Slot cabinet effects (pure decoration, no influence on the draw) ---
+    const slotCabinet = document.getElementById('slotCabinet');
+    const slotTray = document.getElementById('slotTray');
+    let slotBlurTimer = null;
+    let slotWinTimer = null;
+
+    /** Fills the bulb rows once; each bulb gets its index for the chase. */
+    function initSlotCabinet() {
+      document.querySelectorAll('#slotContainer .slot-bulbs').forEach(row => {
+        if (row.childElementCount) return;
+        const count = Number(row.dataset.count) || 0;
+        for (let i = 0; i < count; i++) {
+          const bulb = document.createElement('span');
+          bulb.className = 'slot-bulb';
+          bulb.style.setProperty('--i', String(i));
+          row.appendChild(bulb);
+        }
+      });
+    }
+
+    /** Reel at speed: racing lights and motion blur until the final slow-down. */
+    function slotSpinEffectsStart() {
+      clearTimeout(slotWinTimer);
+      clearTimeout(slotBlurTimer);
+      if (slotCabinet) slotCabinet.classList.remove('is-win');
+      if (slotCabinet) slotCabinet.classList.add('is-spinning');
+      if (prefersReducedMotion()) return;
+      slotTrack.classList.add('is-spinning');
+      // Drop the blur while the drum decelerates, so the last names that pass
+      // are readable – just like a real reel coming to rest.
+      slotBlurTimer = setTimeout(() => slotTrack.classList.remove('is-spinning'),
+        SLOT_SPIN_DURATION_MS * 0.6);
+    }
+
+    /** Reel has stopped: flash the cabinet, light the name, pay out coins. */
+    function slotSpinEffectsEnd(winnerEl) {
+      clearTimeout(slotBlurTimer);
+      slotTrack.classList.remove('is-spinning');
+      if (slotCabinet) slotCabinet.classList.remove('is-spinning');
+      if (winnerEl) winnerEl.classList.add('is-winner');
+      if (!slotCabinet) return;
+      // Restart the win animations even on two quick wins in a row.
+      slotCabinet.classList.remove('is-win');
+      void slotCabinet.offsetWidth;
+      slotCabinet.classList.add('is-win');
+      slotWinTimer = setTimeout(() => slotCabinet.classList.remove('is-win'), 1700);
+      slotPayoutCoins();
+    }
+
+    /** A handful of coins clatter out of the chute into the tray. */
+    function slotPayoutCoins() {
+      if (!slotTray || prefersReducedMotion()) return;
+      const count = 7;
+      for (let i = 0; i < count; i++) {
+        const coin = document.createElement('span');
+        coin.className = 'slot-coin';
+        coin.style.left = `calc(50% - 7px + ${(Math.random() * 20 - 10).toFixed(1)}px)`;
+        coin.style.setProperty('--dx', `${(Math.random() * 110 - 55).toFixed(1)}px`);
+        coin.style.animationDelay = `${(i * 0.07).toFixed(2)}s, ${(1.7 + i * 0.07).toFixed(2)}s`;
+        slotTray.appendChild(coin);
+        setTimeout(() => coin.remove(), 2600 + i * 70);
+      }
     }
 
     function updateSlotHistory() {
@@ -3898,10 +4343,12 @@
       const winnerPosition = listLength * fullPasses + index;
       const finalTranslate = -(winnerPosition * ih + ih / 2 - wrapperHeight / 2);
 
-      // Reset to the top without animation, then force a reflow so the browser
-      // registers the starting point before the transition begins.
+      // Start from the parked position without animation, then force a reflow
+      // so the browser registers the starting point before the transition begins.
+      const startTranslate = slotRestOffset(listLength, ih);
+      slotSpinEffectsStart();
       slotTrack.style.transition = 'none';
-      slotTrack.style.transform = 'translateY(0px)';
+      slotTrack.style.transform = `translateY(${startTranslate}px)`;
       slotTrack.getBoundingClientRect();
 
       // Set once the reel starts moving (see the requestAnimationFrame below),
@@ -3917,6 +4364,7 @@
         stopCue(reelTicks);
         playSound('slotStop');
         playSound('win', 0.1);
+        slotSpinEffectsEnd(slotTrack.children[winnerPosition]);
 
         const winnerName = remainingSlotParticipants[index];
         // Append winner at the end so history reads oldest→newest top→bottom
@@ -3959,7 +4407,7 @@
         slotTrack.style.transform = `translateY(${finalTranslate}px)`;
         // One click per name passing the window, on the reel's own easing curve.
         reelTicks = notchTicks({
-          from: 0, to: Math.abs(finalTranslate), step: ih,
+          from: Math.abs(startTranslate), to: Math.abs(finalTranslate), step: ih,
           dur: SLOT_SPIN_DURATION_MS, ease: [0.18, 0.86, 0.26, 1.04],
           cue: 'reelTick', maxPerFrame: 3
         });
@@ -5981,6 +6429,7 @@
     editButton.addEventListener('click', openConfig);
     helpButton.addEventListener('click', openHelp);
     
+    initSlotCabinet();
     if (slotSpinButton) {
       slotSpinButton.addEventListener('click', spinSlotMachine);
     }
