@@ -2151,52 +2151,201 @@
 
     /* ===================================================================
        Line map (view: line)
-       The running order as a route: stops top to bottom, the train riding
-       the rail between them driven by the per-speaker timer.
+       Built like the passenger information screen in a modern metro car: a
+       dark display in a bezel, a head row with line badge, "next stop", clock
+       and delay, and the route below – passed section grey, the line ahead in
+       the line colour. Mechanics unchanged: stops top to bottom, the train
+       rides between them driven by the per-speaker timer.
        =================================================================== */
     #lineContainer {
       width: 100%;
       max-width: var(--col-width);
       margin: 8px auto 0;
       display: none;
+      --line-colour: hsl(var(--brand-h), calc(95% * var(--brand-sat)), 52%);
+      --line-colour-hi: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 66%);
+      --line-passed: #4a525c;
+      --line-screen: #0f141b;
+      --line-text: #eef3f8;
+      --line-text-dim: #8b95a1;
+      --line-x: 30px;           /* rail centre inside the route area */
     }
+    /* Device: brushed bezel around a glass screen. */
+    .line-display {
+      position: relative;
+      padding: 9px;
+      border-radius: 20px;
+      background: linear-gradient(180deg, #3b4149 0%, #23282e 45%, #15191e 100%);
+      box-shadow:
+        0 18px 34px hsla(var(--brand-h), calc(60% * var(--brand-sat)), 10%, 0.30),
+        0 3px 8px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    }
+    .line-screen {
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+      background:
+        radial-gradient(120% 70% at 50% 0%, hsla(var(--brand-h), calc(60% * var(--brand-sat)), 40%, 0.22) 0%, transparent 60%),
+        var(--line-screen);
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.8), inset 0 0 22px rgba(0, 0, 0, 0.6);
+      color: var(--line-text);
+    }
+    /* Glass reflection over the whole screen. */
+    .line-screen::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+      background: linear-gradient(155deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.03) 28%, rgba(255, 255, 255, 0) 29%);
+    }
+    /* Head row */
+    .line-head {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 12px 14px 11px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .line-badge {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: linear-gradient(180deg, var(--line-colour-hi), var(--line-colour));
+      box-shadow: 0 0 12px hsla(var(--brand-h), calc(100% * var(--brand-sat)), 55%, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    }
+    .line-badge { color: #0f141b; }
+    .line-badge svg { width: 22px; height: 22px; display: block; }
+    .line-head-text {
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.15;
+    }
+    .line-head-label {
+      font-size: 0.72em;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--line-text-dim);
+    }
+    .line-head-name {
+      font-size: 1.28em;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #ffffff;
+    }
+    /* New stop name slides in like on the real display. */
+    .line-head-name.is-changing { animation: line-head-in 0.55s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    @keyframes line-head-in {
+      0%   { transform: translateY(70%); opacity: 0; filter: blur(2px); }
+      100% { transform: translateY(0); opacity: 1; filter: blur(0); }
+    }
+    .line-head-side {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 3px;
+    }
+    .line-clock {
+      font-size: 1.05em;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--line-text);
+    }
+    .line-clock .line-colon { animation: line-colon 1s steps(1, end) infinite; }
+    @keyframes line-colon { 50% { opacity: 0.25; } }
+    /* Delay chip: only shown in overtime, red like on a real board. */
+    .line-delay {
+      display: none;
+      padding: 1px 6px;
+      border-radius: 5px;
+      font-size: 0.78em;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: #fff;
+      background: #e0242f;
+      box-shadow: 0 0 10px rgba(224, 36, 47, 0.6);
+    }
+    .line-delay.is-on { display: inline-block; }
+    /* Route area */
     .line-map {
       position: relative;
-      background: var(--card-bg);
-      border: var(--card-border);
-      border-radius: var(--card-radius);
-      box-shadow: var(--card-shadow);
-      padding: 18px 16px 18px 14px;
+      padding: 12px 14px 14px 0;
     }
     /* The rail sits behind the stops; --line-top/--line-span are set from JS so
-       it spans exactly from the first stop's centre to the last one's. */
+       it spans exactly from the first stop's centre to the last one's. Ahead
+       it carries the line colour, the passed part (lineRailDone) is grey. */
     .line-rail {
       position: absolute;
-      /* 14px map padding + 2px stop padding + 15px dot margin + 9px half dot */
-      left: 37px;
+      left: calc(var(--line-x) - 4px);
       top: var(--line-top, 30px);
       height: var(--line-span, 0px);
-      width: 6px;
+      width: 8px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--line-colour) 0%, var(--line-colour-hi) 50%, var(--line-colour) 100%);
+      box-shadow: 0 0 10px hsla(var(--brand-h), calc(100% * var(--brand-sat)), 55%, 0.35);
+    }
+    /* A pulse of light runs down the line ahead (painted under the grey
+       passed section, so it only shows where the train still has to go). */
+    .line-rail::before {
+      content: '';
+      position: absolute;
+      left: 1px;
+      right: 1px;
+      top: 0;
+      height: 100%;
       border-radius: 3px;
-      background: hsla(var(--brand-h), calc(100% * var(--brand-sat)), 24%, 0.14);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.85) 6%, rgba(255, 255, 255, 0) 12%) 0 0 / 100% 100% no-repeat;
+      animation: line-flow 2.8s linear infinite;
+    }
+    @keyframes line-flow {
+      from { background-position: 0 -40%; }
+      to   { background-position: 0 140%; }
     }
     .line-rail-done {
+      position: relative;
+      z-index: 1;
       width: 100%;
       height: 0;
-      border-radius: 3px;
-      background: var(--cta-bg);
+      border-radius: 4px;
+      background: linear-gradient(90deg, #3d444d 0%, var(--line-passed) 50%, #3d444d 100%);
       transition: height 0.9s linear;
     }
+    /* Train seen from above, heading down the line, with a light trail. */
     .line-train {
       position: absolute;
-      left: 40px;
+      left: var(--line-x);
       top: 0;
-      font-size: 1.35em;
-      line-height: 1;
+      width: 16px;
+      height: 30px;
       transform: translate(-50%, -50%);
       transition: top 0.9s linear;
-      filter: drop-shadow(0 3px 6px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.30));
-      z-index: 2;
+      z-index: 3;
+      filter: drop-shadow(0 0 6px hsla(var(--brand-h), calc(100% * var(--brand-sat)), 70%, 0.6)) drop-shadow(0 3px 4px rgba(0, 0, 0, 0.6));
+    }
+    .line-train { color: var(--line-colour); }
+    .line-train svg { display: block; width: 100%; height: 100%; overflow: visible; }
+    .line-train::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: 60%;
+      width: 6px;
+      height: 46px;
+      margin-left: -3px;
+      border-radius: 3px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0), hsla(var(--brand-h), calc(100% * var(--brand-sat)), 80%, 0.55));
     }
     #lineStops {
       list-style: none;
@@ -2206,42 +2355,72 @@
       z-index: 1;
     }
     .line-stop {
+      position: relative;
       display: flex;
       align-items: center;
       gap: 14px;
       min-height: var(--line-gap, 46px);
-      padding-left: 2px;
+      padding-left: 0;
     }
     .line-dot {
+      position: relative;
+      z-index: 2;
       flex: 0 0 auto;
-      width: 18px;
-      height: 18px;
-      margin-left: 15px;
+      width: 16px;
+      height: 16px;
+      margin-left: calc(var(--line-x) - 8px);
       border-radius: 50%;
       background: #ffffff;
-      border: 4px solid hsla(var(--brand-h), calc(100% * var(--brand-sat)), 24%, 0.22);
+      border: 3px solid var(--line-screen);
+      box-shadow: 0 0 0 2px var(--line-colour);
       box-sizing: border-box;
-      transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
     }
     .line-label {
       font-weight: 700;
       font-size: 1.02em;
-      color: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 24%);
-      transition: opacity 0.25s ease;
+      color: var(--line-text);
+      transition: opacity 0.3s ease, color 0.3s ease;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .line-stop.is-done .line-dot { background: var(--accent); border-color: var(--accent); }
-    .line-stop.is-done .line-label { opacity: 0.45; text-decoration: line-through; }
-    .line-stop.is-current .line-dot {
-      transform: scale(1.35);
-      background: #ffffff;
-      border-color: var(--accent);
-      box-shadow: var(--glow);
+    .line-stop.is-done .line-dot { background: #8d96a1; box-shadow: 0 0 0 2px var(--line-passed); }
+    .line-stop.is-done .line-label { color: var(--line-text-dim); opacity: 0.6; }
+    /* The current speaker: their stop glows, the row gets a light band. */
+    .line-stop.is-current::before {
+      content: '';
+      position: absolute;
+      left: 6px;
+      right: -6px;
+      top: 50%;
+      height: 34px;
+      transform: translateY(-50%);
+      border-radius: 9px;
+      background: linear-gradient(90deg, hsla(var(--brand-h), calc(100% * var(--brand-sat)), 60%, 0.28), hsla(var(--brand-h), calc(100% * var(--brand-sat)), 60%, 0.04));
+      box-shadow: inset 0 0 0 1px hsla(var(--brand-h), calc(100% * var(--brand-sat)), 70%, 0.35);
     }
-    .line-stop.is-current .line-label { font-size: 1.16em; font-weight: 800; }
-    .line-terminus .line-dot { border-radius: 4px; border-color: hsla(var(--brand-h), calc(100% * var(--brand-sat)), 24%, 0.35); }
+    .line-stop.is-current .line-dot {
+      transform: scale(1.25);
+      background: var(--line-colour-hi);
+      box-shadow: 0 0 0 2px #ffffff, 0 0 14px 3px hsla(var(--brand-h), calc(100% * var(--brand-sat)), 65%, 0.8);
+    }
+    .line-stop.is-current .line-label { position: relative; font-size: 1.16em; font-weight: 800; color: #ffffff; }
+    /* The next stop pulses, matching "next stop" in the head row. */
+    .line-stop.is-next .line-dot::after {
+      content: '';
+      position: absolute;
+      inset: -5px;
+      border-radius: 50%;
+      border: 2px solid var(--line-colour-hi);
+      animation: line-pulse 1.8s ease-out infinite;
+    }
+    @keyframes line-pulse {
+      0%   { transform: scale(0.6); opacity: 0.9; }
+      100% { transform: scale(1.9); opacity: 0; }
+    }
+    .line-terminus .line-dot { border-radius: 4px; width: 18px; height: 18px; margin-left: calc(var(--line-x) - 9px); }
+    .line-terminus .line-label { font-weight: 800; }
 
     /* ===================================================================
        Focus view (view: focus)
@@ -2400,7 +2579,7 @@
         scroll-behavior: auto !important;
       }
       /* Decorative loops carry no information at all – stop them outright. */
-      #evSnow, .ev-wheel, .focus-stream, .slot-bulb, .ev-cloud, .ev-hills, #evRoad::before,
+      #evSnow, .ev-wheel, .focus-stream, .slot-bulb, .line-stop .line-dot::after, .line-clock .line-colon, .line-rail::before, .ev-cloud, .ev-hills, #evRoad::before,
       .ev-body, .ev-speedlines, #evBatteryFill::before { animation: none !important; }
       .slot-coin { display: none; }
     }
@@ -2773,10 +2952,42 @@
   <!-- Line map: the running order as a route, the train's position between two
        stops is the remaining time of the current speaker. -->
   <div id="lineContainer" data-view="line">
-    <div class="line-map">
-      <div class="line-rail"><div id="lineRailDone" class="line-rail-done"></div></div>
-      <div id="lineTrain" class="line-train">🚇</div>
-      <ol id="lineStops"></ol>
+    <div class="line-display">
+      <div class="line-screen">
+        <div class="line-head">
+          <span class="line-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <rect x="5" y="2.5" width="14" height="16" rx="4" fill="#ffffff"/>
+              <rect x="7.3" y="5" width="9.4" height="5.6" rx="1.4" fill="currentColor" opacity="0.55"/>
+              <circle cx="8.8" cy="14.6" r="1.3" fill="#1a1f26"/>
+              <circle cx="15.2" cy="14.6" r="1.3" fill="#1a1f26"/>
+              <path d="M8 19 L5.5 22 M16 19 L18.5 22" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <div class="line-head-text">
+            <span id="lineHeadLabel" class="line-head-label" data-i18n="lineNextStop">Nächster Halt</span>
+            <span id="lineHeadName" class="line-head-name"></span>
+          </div>
+          <div class="line-head-side">
+            <span id="lineClock" class="line-clock"></span>
+            <span id="lineDelay" class="line-delay"></span>
+          </div>
+        </div>
+        <div class="line-map">
+          <div class="line-rail"><div id="lineRailDone" class="line-rail-done"></div></div>
+          <div id="lineTrain" class="line-train" aria-hidden="true">
+            <svg viewBox="0 0 16 30" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="14" height="28" rx="5" fill="#f3f6f9" stroke="#1a1f26" stroke-width="1"/>
+              <rect x="1.6" y="9" width="12.8" height="2.6" fill="currentColor" class="line-train-stripe"/>
+              <path d="M3 21.5 Q8 19.5 13 21.5 L12.6 25.6 Q8 27.6 3.4 25.6 Z" fill="#1d2630"/>
+              <rect x="3.4" y="13.5" width="9.2" height="1.2" rx="0.6" fill="#9aa4ae"/>
+              <circle cx="4.4" cy="27.4" r="1" fill="#fff6c8"/>
+              <circle cx="11.6" cy="27.4" r="1" fill="#fff6c8"/>
+            </svg>
+          </div>
+          <ol id="lineStops"></ol>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -3191,6 +3402,8 @@
         flapStateWaiting: 'wartet',
         flapStateDelayed: 'verspätet',
         lineTerminus: 'Ziel',
+        lineNextStop: 'Nächster Halt',
+        lineEndStation: 'Endstation',
         focusProgress: '{n} von {total}',
         focusUpNext: 'Danach: {name}',
         focusLastSpeaker: 'Letzter Sprecher',
@@ -3285,6 +3498,8 @@
         flapStateWaiting: 'waiting',
         flapStateDelayed: 'delayed',
         lineTerminus: 'Destination',
+        lineNextStop: 'Next stop',
+        lineEndStation: 'Terminus',
         focusProgress: '{n} of {total}',
         focusUpNext: 'Up next: {name}',
         focusLastSpeaker: 'Last speaker',
@@ -5317,7 +5532,7 @@
 
       const entries = currentShuffledList.concat([t('lineTerminus')]);
       // Keep the whole route on screen: the more stops, the tighter the gaps.
-      const gap = Math.max(30, Math.min(52, Math.round(340 / entries.length)));
+      const gap = Math.max(32, Math.min(50, Math.round(360 / entries.length)));
 
       entries.forEach((name, i) => {
         const li = document.createElement('li');
@@ -5390,7 +5605,49 @@
       Array.from(stops.children).forEach((li, i) => {
         li.classList.toggle('is-done', atTerminus ? i < last : i < activeIndex);
         li.classList.toggle('is-current', !atTerminus && i === activeIndex);
+        li.classList.toggle('is-next', !atTerminus && i === activeIndex + 1);
       });
+
+      updateLineHead(atTerminus, stops, last);
+    }
+
+    /**
+     * Head row of the passenger display: "next stop" (or "terminus" once the
+     * train is in), the wall clock and, in overtime, a red delay chip.
+     */
+    function updateLineHead(atTerminus, stops, last) {
+      const label = document.getElementById('lineHeadLabel');
+      const nameEl = document.getElementById('lineHeadName');
+      const clock = document.getElementById('lineClock');
+      const delay = document.getElementById('lineDelay');
+
+      setText(label, atTerminus ? 'lineEndStation' : 'lineNextStop');
+      if (nameEl) {
+        const target = atTerminus ? last : Math.min(last, Math.max(0, activeIndex) + 1);
+        const next = target === last ? t('lineTerminus') : currentShuffledList[target];
+        if (nameEl.textContent !== next) {
+          nameEl.textContent = next;
+          nameEl.classList.remove('is-changing');
+          void nameEl.offsetWidth; // restart the slide-in
+          nameEl.classList.add('is-changing');
+        }
+      }
+
+      if (clock) {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        clock.innerHTML = hh + '<span class="line-colon">:</span>' + mm;
+      }
+
+      if (delay) {
+        const late = !atTerminus && timeRemainingSeconds < 0;
+        delay.classList.toggle('is-on', late);
+        if (late) {
+          const over = -timeRemainingSeconds;
+          delay.textContent = '+' + Math.floor(over / 60) + ':' + String(over % 60).padStart(2, '0');
+        }
+      }
     }
 
     /** Renders the line map and puts the train at the first stop. */

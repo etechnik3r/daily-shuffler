@@ -10,6 +10,20 @@ den Cache-Namen und löst im laufenden Betrieb das „Neue Version verfügbar“
 aus. **Merkregel:** Bei jeder Änderung, die ausgeliefert wird, `CACHE_VERSION`
 hochzählen *und* hier einen Eintrag ergänzen.
 
+## [v17] – 2026-11-12
+
+### Geändert
+- **Linienplan – neu als Fahrgastanzeige:** Die Ansicht sieht jetzt aus wie
+  der Bildschirm in einer modernen U-Bahn: dunkles Display im Rahmen mit
+  Glasspiegelung. Kopfzeile mit Liniensymbol, **„Nächster Halt“** (wer als
+  Nächstes dran ist, der Name gleitet beim Wechsel herein), Uhrzeit mit
+  blinkendem Doppelpunkt und bei Überziehung einer roten **Verspätung**
+  („+0:12“). Am Ende steht dort „Endstation“.
+- **Strecke:** Gefahrener Abschnitt grau, die Strecke voraus in der
+  Linienfarbe mit durchlaufendem Lichtimpuls; Zug in Draufsicht mit
+  Lichtschweif; aktuelle Station leuchtet mit Lichtband, die nächste pulsiert.
+  Ablauf und Zugbewegung (Redezeit = Fahrt zur nächsten Station) unverändert.
+
 ## [v16] – 2026-11-12
 
 ### Geändert
