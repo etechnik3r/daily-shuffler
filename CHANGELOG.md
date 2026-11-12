@@ -10,6 +10,19 @@ den Cache-Namen und löst im laufenden Betrieb das „Neue Version verfügbar“
 aus. **Merkregel:** Bei jeder Änderung, die ausgeliefert wird, `CACHE_VERSION`
 hochzählen *und* hier einen Eintrag ergänzen.
 
+## [v16] – 2026-11-12
+
+### Geändert
+- **Roadtrip-Ansicht – Auto nach Vorlage:** Seitenprofil nach dem echten ID.3
+  neu gezeichnet: flache, weit nach vorn gezogene Frontscheibe, sehr kurze
+  Haube, Dach mit Spoiler, schräge Heckklappe, Fensterband mit Knick am
+  hinteren Seitenfenster, ums Eck laufendes Rücklicht, langer Radstand und
+  große Räder mit Fünf-V-Speichen-Alus. Hellgrau, ohne Herstellerlogo.
+- **Räder rollen realistisch:** Der Drehwinkel folgt der tatsächlich
+  gefahrenen Strecke (Weg / Radradius) und läuft über alle Sprecher weiter
+  vorwärts; nur beim Boost wirbeln sie kurz. Die Fahrtwind-Linien erscheinen
+  nur noch beim Boost.
+
 ## [v15] – 2026-11-12
 
 ### Geändert
