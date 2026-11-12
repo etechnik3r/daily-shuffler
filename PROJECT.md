@@ -130,7 +130,7 @@ Jede Ansicht ist ein eigenes View-Modul mit gleichem Vertrag und wird über die
 |-----------|---------|------------------|
 | `classic` | Klassisch | Reihenfolge als Liste, aktuelle Person hervorgehoben. |
 | `slot` | Slotmaschine | Spielautomat mit Lauflichtern, Walze hinter Glas, Hebel (klickbar) und Münzschale; lost den nächsten Sprecher aus. |
-| `ev` | Roadtrip (E-Auto) | E-Auto fährt durch eine Parallax-Landschaft zur Ladesäule, Batterie = Redezeit, Schildkröte = knapp/vorbei. |
+| `ev` | Roadtrip (E-Auto) | E-Auto fährt über eine feste Landstraße zur Ladesäule, Batterie = Redezeit, Schildkröte = knapp/vorbei. |
 | `wheel` | Glücksrad | Buntes Rad dreht sich, per Klick wird gezogen. |
 | `card` | Kartenspiel | Namenskarten fliegen auf den Stapel, mit Sonderkarten. |
 | `flap` | Abfahrtstafel | Fallblatt-Tafel wie am Bahnhof; die ganze Reihenfolge bleibt sichtbar. |

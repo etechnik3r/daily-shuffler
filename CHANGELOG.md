@@ -10,6 +10,18 @@ den Cache-Namen und löst im laufenden Betrieb das „Neue Version verfügbar“
 aus. **Merkregel:** Bei jeder Änderung, die ausgeliefert wird, `CACHE_VERSION`
 hochzählen *und* hier einen Eintrag ergänzen.
 
+## [v15] – 2026-11-12
+
+### Geändert
+- **Roadtrip-Ansicht – feste Landschaft:** Hügel und Mittellinie laufen nicht
+  mehr mit. Das Auto fährt über die stehende Straße auf Zielflagge und
+  Ladesäule zu, so passt die Bewegung zur Szene. Nur die Wolken ziehen.
+- **Roadtrip-Ansicht – neues Auto:** Grauer Kompakt-Stromer im Stil eines
+  ID.3 – kurze Front, lang geneigte Frontscheibe, schwarzes Dach mit
+  Glasband, silberne C-Säule mit Wabenmuster, schwarze Beplankung, LED-Licht.
+  Felgen als Fünf-Doppelspeichen-Alus mit Felgenhorn, Bremsscheibe und
+  Nabendeckel. Ohne Herstellerlogo.
+
 ## [v14] – 2026-11-12
 
 ### Geändert

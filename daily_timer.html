@@ -809,10 +809,11 @@
     }
 
     /* --- EV Roadtrip View ---
-       A little side-scrolling scene: sky with sun and drifting clouds, two
-       layers of hills that scroll while the car drives (parallax), a road with
-       edge lines and running centre dashes, a charging pillar next to the
-       finish flag and the car in the brand colour. The road is the progress
+       A little roadside scene: sky with sun and drifting clouds, two layers
+       of hills, a road with
+       edge lines and centre dashes, a charging pillar next to the finish flag
+       and a grey compact EV. Only the car (and the clouds) move: the road is
+       fixed, so flag and charger stay where they are. The road is the progress
        bar for the current speaker; the battery below is their speaking time.
        The warning pictograms next to the battery are fixed in look and
        meaning and not styled here. --- */
@@ -877,7 +878,8 @@
       from { left: 105%; }
       to   { left: -25%; }
     }
-    /* Hills: semicircle bumps tiled along x; they scroll while driving. */
+    /* Hills: semicircle bumps tiled along x. The scenery stands still – the
+       car is what moves along the road, towards the fixed flag and charger. */
     .ev-hills {
       position: absolute;
       left: 0;
@@ -892,12 +894,8 @@
       height: 22px;
       background: radial-gradient(50px 20px at 50% 100%, var(--ev-hill-near) 98%, transparent 100%) 30px 100% / 84px 22px repeat-x;
     }
-    .ev-driving .ev-hills.is-far  { animation: ev-scroll-far 24s linear infinite; }
-    .ev-driving .ev-hills.is-near { animation: ev-scroll-near 9s linear infinite; }
-    @keyframes ev-scroll-far  { from { background-position: 0 100%; }    to { background-position: -110px 100%; } }
-    @keyframes ev-scroll-near { from { background-position: 30px 100%; } to { background-position: -54px 100%; } }
     /* Road: asphalt with solid edge lines, a grass verge on top and the
-       centre dashes on their own layer so only they run. */
+       centre dashes on their own layer. */
     #evRoad {
       position: absolute;
       left: 0;
@@ -920,11 +918,6 @@
       height: 3px;
       margin-top: -1px;
       background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.9) 0 16px, transparent 16px 36px);
-    }
-    .ev-driving #evRoad::before { animation: ev-dash-run 0.9s linear infinite; }
-    @keyframes ev-dash-run {
-      from { background-position: 0 0; }
-      to   { background-position: -36px 0; }
     }
     #evRoad::after {
       /* grass verge along the far edge */
@@ -989,13 +982,6 @@
       from { transform: translateY(0); }
       to   { transform: translateY(-0.9px); }
     }
-    /* Car paint and glass, derived from the brand hue. */
-    .ev-paint-top    { stop-color: hsl(var(--brand-h), calc(85% * var(--brand-sat)), 66%); }
-    .ev-paint-mid    { stop-color: hsl(var(--brand-h), calc(85% * var(--brand-sat)), 50%); }
-    .ev-paint-bottom { stop-color: hsl(var(--brand-h), calc(90% * var(--brand-sat)), 30%); }
-    .ev-outline      { stroke: hsl(var(--brand-h), calc(80% * var(--brand-sat)), 20%); }
-    .ev-glass-top    { stop-color: #2a3442; }
-    .ev-glass-bottom { stop-color: hsl(var(--brand-h), calc(40% * var(--brand-sat)), 46%); }
     /* Headlight beam – only visible at night (Halloween). */
     .ev-beam { opacity: 0; transition: opacity 0.4s ease; }
     /* The wheels spin while the car drives; they stand still at the finish
@@ -2651,101 +2637,97 @@
         <svg viewBox="0 -18 150 71" xmlns="http://www.w3.org/2000/svg" aria-label="Elektroauto">
           <defs>
             <linearGradient id="evPaint" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" class="ev-paint-top"/>
-              <stop offset="0.55" class="ev-paint-mid"/>
-              <stop offset="1" class="ev-paint-bottom"/>
+              <stop offset="0" stop-color="#d3d8dd"/>
+              <stop offset="0.45" stop-color="#a4abb3"/>
+              <stop offset="1" stop-color="#5d646c"/>
             </linearGradient>
             <linearGradient id="evGlass" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" class="ev-glass-top"/>
-              <stop offset="1" class="ev-glass-bottom"/>
+              <stop offset="0" stop-color="#3a4654"/>
+              <stop offset="1" stop-color="#10151c"/>
             </linearGradient>
-            <radialGradient id="evRim" cx="0.4" cy="0.35" r="0.75">
+            <linearGradient id="evCPillar" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#eef1f4"/>
+              <stop offset="1" stop-color="#8d959e"/>
+            </linearGradient>
+            <pattern id="evHoney" width="2.4" height="2.1" patternUnits="userSpaceOnUse">
+              <circle cx="1.2" cy="1.05" r="0.55" fill="#4b525a" opacity="0.55"/>
+            </pattern>
+            <radialGradient id="evRim" cx="0.38" cy="0.32" r="0.8">
               <stop offset="0" stop-color="#ffffff"/>
-              <stop offset="0.5" stop-color="#c9d0d9"/>
-              <stop offset="1" stop-color="#7c8592"/>
+              <stop offset="0.45" stop-color="#cfd5dc"/>
+              <stop offset="1" stop-color="#8a929c"/>
             </radialGradient>
             <linearGradient id="evBeam" x1="0" y1="0" x2="1" y2="0">
               <stop offset="0" stop-color="#fff6c8" stop-opacity="0.75"/>
               <stop offset="1" stop-color="#fff6c8" stop-opacity="0"/>
             </linearGradient>
-            <clipPath id="evBodyClip">
-              <path d="M13 44 C10 40 9 33 11 27 C12 19 15 12 22 9 C38 3 62 2 78 6 C92 10 102 15 110 20 C120 23 128 28 132 33 C136 36 137 41 133 43 L121 44 A14 14 0 0 1 93 44 L52 44 A14 14 0 0 1 24 44 Z"/>
-            </clipPath>
-            <clipPath id="evGlassClip">
-              <path d="M28 12 C45 6 65 5.5 79 8.5 C89 11 98 16 105 21 L96 23 C84 17.5 64 16 48 18 C39 19.2 32 21 29 23.5 C27.5 19.5 27 15 28 12 Z"/>
-            </clipPath>
+            <!-- one twin spoke, repeated five times per wheel -->
+            <g id="evSpokePair">
+              <path d="M-0.6 -2.6 L0.2 -2.6 L-0.4 -7.9 L-2.3 -7.6 Z" fill="url(#evRim)"/>
+              <path d="M0.6 -2.6 L-0.2 -2.6 L0.4 -7.9 L2.3 -7.6 Z" fill="url(#evRim)"/>
+            </g>
+            <g id="evRimFace">
+              <circle r="11" fill="#14171c"/>
+              <circle r="10.2" fill="none" stroke="#2a2f36" stroke-width="0.8"/>
+              <circle r="8.3" fill="#1d2229"/>
+              <circle r="6.2" fill="#3c424a"/>
+              <use href="#evSpokePair"/>
+              <use href="#evSpokePair" transform="rotate(72)"/>
+              <use href="#evSpokePair" transform="rotate(144)"/>
+              <use href="#evSpokePair" transform="rotate(216)"/>
+              <use href="#evSpokePair" transform="rotate(288)"/>
+              <circle r="8.1" fill="none" stroke="url(#evRim)" stroke-width="0.9"/>
+              <circle r="2.9" fill="url(#evRim)"/>
+              <circle r="1.3" fill="#5a616a"/>
+            </g>
           </defs>
           <!-- headlight beam, only shown at night -->
-          <path class="ev-beam" d="M131 34 L190 24 L190 50 Z" fill="url(#evBeam)"/>
+          <path class="ev-beam" d="M138 31 L192 22 L192 48 Z" fill="url(#evBeam)"/>
+          <!-- wheel wells -->
+          <path d="M20 43 A13 13 0 0 1 46 43 Z" fill="#0d1014"/>
+          <path d="M107 43 A13 13 0 0 1 133 43 Z" fill="#0d1014"/>
           <g class="ev-body">
-            <!-- one-box EV profile: short nose, windscreen flowing into the
-                 bonnet, high arched roof falling to a rear spoiler lip -->
-            <path d="M13 44 C10 40 9 33 11 27 C12 19 15 12 22 9 C38 3 62 2 78 6 C92 10 102 15 110 20 C120 23 128 28 132 33 C136 36 137 41 133 43 L121 44 A14 14 0 0 1 93 44 L52 44 A14 14 0 0 1 24 44 Z"
-                  fill="url(#evPaint)"/>
-            <g clip-path="url(#evBodyClip)">
-              <!-- shoulder highlight and darker rocker panel -->
-              <path d="M14 25 C40 22 90 22 128 30" fill="none" stroke="#ffffff" stroke-opacity="0.55" stroke-width="1.6"/>
-              <rect x="0" y="36" width="150" height="12" fill="#0b1020" opacity="0.32"/>
-              <path d="M20 37.5 H128" stroke="#ffffff" stroke-opacity="0.25" stroke-width="0.8"/>
-            </g>
-            <path d="M13 44 C10 40 9 33 11 27 C12 19 15 12 22 9 C38 3 62 2 78 6 C92 10 102 15 110 20 C120 23 128 28 132 33 C136 36 137 41 133 43 L121 44 A14 14 0 0 1 93 44 L52 44 A14 14 0 0 1 24 44 Z"
-                  class="ev-outline" fill="none" stroke-width="1.6" stroke-linejoin="round"/>
-            <!-- glasshouse hugging the roofline, rising beltline -->
-            <path d="M28 12 C45 6 65 5.5 79 8.5 C89 11 98 16 105 21 L96 23 C84 17.5 64 16 48 18 C39 19.2 32 21 29 23.5 C27.5 19.5 27 15 28 12 Z"
-                  fill="url(#evGlass)" class="ev-outline" stroke-width="1"/>
-            <g clip-path="url(#evGlassClip)">
-              <polygon points="52,0 62,0 48,30 38,30" fill="#ffffff" opacity="0.28"/>
-              <polygon points="66,0 70,0 56,30 52,30" fill="#ffffff" opacity="0.18"/>
-              <rect x="70.6" y="0" width="3.2" height="30" fill="#1a212c"/>
-            </g>
-            <!-- door seam, handle and mirror -->
-            <path d="M72 23 L72 42" class="ev-outline" stroke-opacity="0.5" stroke-width="1" fill="none"/>
-            <rect x="77" y="26" width="8" height="1.8" rx="0.9" fill="#ffffff" opacity="0.7"/>
-            <path d="M96 22.5 q4 -2.6 6.5 0.4 l-1 2 q-3 -0.4 -5.5 0.2 z" class="ev-outline" stroke-width="0.8" fill="url(#evPaint)"/>
-            <!-- LED headlight and daytime light strip -->
-            <path d="M124 29.5 q7 2 8.5 7.5 l-9 -0.4 z" fill="#f4fbff" stroke="#2a3442" stroke-width="0.8"/>
-            <path d="M118 28.2 q5 0.6 10 2.4" stroke="#e8fbff" stroke-width="1.3" stroke-linecap="round" fill="none"/>
-            <!-- rear light bar -->
-            <path d="M11.2 24.5 q3 -1.4 6 -0.6 l-0.4 5.6 q-3 0.4 -5.8 -0.8 z" fill="#ff2a3a" stroke="#7a0010" stroke-width="0.6"/>
-            <!-- charge port lid -->
-            <rect x="19" y="27" width="5" height="3.6" rx="0.8" fill="none" class="ev-outline" stroke-opacity="0.55" stroke-width="0.7"/>
+            <!-- compact EV hatch: very short bonnet, long flat roof, upright
+                 tailgate with a spoiler lip, short overhangs -->
+            <path d="M11 44 L8.5 40 L8 30 L9 23 Q10.5 15.5 13.5 11.5 Q16.5 8.6 24 7.4 Q40 5.6 52 5.6 Q61 5.8 66 6.6 L106 21.8 Q120 23.6 130 26.8 Q137.5 29 140.5 33 L141.5 38 Q141.5 42.5 138.5 44 L133 44 A13 13 0 0 0 107 44 L46 44 A13 13 0 0 0 20 44 Z"
+                  fill="url(#evPaint)" stroke="#3c434b" stroke-width="1.2" stroke-linejoin="round"/>
+            <!-- black roof, pillars and glass band -->
+            <path d="M13.5 11.5 Q16.5 8.6 24 7.4 Q40 5.6 52 5.6 Q61 5.8 66 6.6 L104.5 21.2 L100 23.4 L19 22.6 Q13.6 22 12.2 17.5 Z" fill="#1b2027"/>
+            <path d="M33 10 Q45 8.8 60 8.9 L60.5 21.8 L33.5 22.2 Z" fill="url(#evGlass)"/>
+            <path d="M63.5 8.9 L66.5 9.4 L97 21.4 L64 21.8 Z" fill="url(#evGlass)"/>
+            <!-- silver C-pillar panel with honeycomb dots -->
+            <path d="M17.5 11.8 Q23 10.4 30.5 10.2 L31 22.2 L19.5 22.1 Q15.8 21.8 15 18 Z" fill="url(#evCPillar)"/>
+            <path d="M17.5 11.8 Q23 10.4 30.5 10.2 L31 22.2 L19.5 22.1 Q15.8 21.8 15 18 Z" fill="url(#evHoney)"/>
+            <!-- glass reflections -->
+            <polygon points="46,9.3 51,9.0 46.5,22 41.5,22" fill="#ffffff" opacity="0.18"/>
+            <polygon points="72,10.8 75,12 70,21.8 67,21.8" fill="#ffffff" opacity="0.14"/>
+            <!-- shoulder highlight, door cuts, flush handles -->
+            <path d="M14 26.5 C45 25 95 25 132 28.5" fill="none" stroke="#ffffff" stroke-opacity="0.6" stroke-width="1.1"/>
+            <path d="M62 22 L62.6 42.5 M100.5 23 Q104.5 32 103 43" fill="none" stroke="#4b535c" stroke-width="0.8"/>
+            <rect x="50" y="27.2" width="7" height="1.5" rx="0.75" fill="#2e343b"/>
+            <rect x="86" y="27.2" width="7" height="1.5" rx="0.75" fill="#2e343b"/>
+            <!-- mirror -->
+            <path d="M99.5 21.6 q4.5 -2.8 7.2 0.3 l-1.2 2.2 q-3.3 -0.5 -6 0.3 z" fill="#1b2027"/>
+            <!-- black lower cladding and bumpers -->
+            <path d="M46 44 L107 44 L107 40.4 Q76 39.2 46 40.4 Z" fill="#262b32"/>
+            <path d="M8.6 38.5 L11 44 L20 44 Q20 40 21 38.5 Z" fill="#262b32"/>
+            <path d="M133 44 L138.5 44 Q141.5 42.5 141.5 39 L134.5 39.5 Q133.4 41.5 133 44 Z" fill="#262b32"/>
+            <!-- LED headlight with light strip, rear light bar -->
+            <path d="M126 26.4 Q134 27.4 139 30.2 L139.6 32.4 Q132.5 31.6 127 29.2 Z" fill="#eef7ff" stroke="#2e343b" stroke-width="0.6"/>
+            <path d="M117 23.8 Q123 24.6 127.5 26" stroke="#f2fbff" stroke-width="1.1" stroke-linecap="round" fill="none"/>
+            <path d="M8.4 23.4 L13.2 23 L13.4 27.2 L8.1 27.4 Z" fill="#e3101e" stroke="#7a0010" stroke-width="0.5"/>
+            <path d="M13.5 11.5 L11 12.8 L12.6 14 Z" fill="#1b2027"/>
             <!-- witch hat (Halloween, toggled via CSS) -->
-            <g class="ev-hat-svg" visibility="hidden">
+            <g class="ev-hat-svg" visibility="hidden" transform="translate(0 3)">
               <polygon points="44,3 56,-16 68,3" fill="#5b2a86" stroke="#3d1c5c" stroke-width="1.2"/>
               <ellipse cx="56" cy="3" rx="17" ry="3.4" fill="#3d1c5c"/>
               <rect x="50" y="-7" width="12" height="3.6" fill="#f5a623" rx="1"/>
             </g>
           </g>
-          <!-- wheel arches -->
-          <path d="M24.5 44 A13.5 13.5 0 0 1 51.5 44" fill="none" stroke="#0b1020" stroke-opacity="0.55" stroke-width="2.4"/>
-          <path d="M93.5 44 A13.5 13.5 0 0 1 120.5 44" fill="none" stroke="#0b1020" stroke-opacity="0.55" stroke-width="2.4"/>
-          <!-- alloy wheels; the groups rotate while the car drives -->
-          <g class="ev-wheel">
-            <circle cx="38" cy="42" r="10.5" fill="#151920"/>
-            <circle cx="38" cy="42" r="7.6" fill="#2b313b"/>
-            <g stroke="url(#evRim)" stroke-width="2.6" stroke-linecap="round">
-              <line x1="38" y1="42" x2="38" y2="35"/>
-              <line x1="38" y1="42" x2="44.7" y2="39.8"/>
-              <line x1="38" y1="42" x2="42.1" y2="47.7"/>
-              <line x1="38" y1="42" x2="33.9" y2="47.7"/>
-              <line x1="38" y1="42" x2="31.3" y2="39.8"/>
-            </g>
-            <circle cx="38" cy="42" r="7.6" fill="none" stroke="#c9d0d9" stroke-width="1.1"/>
-            <circle cx="38" cy="42" r="2.4" fill="url(#evRim)"/>
-          </g>
-          <g class="ev-wheel">
-            <circle cx="107" cy="42" r="10.5" fill="#151920"/>
-            <circle cx="107" cy="42" r="7.6" fill="#2b313b"/>
-            <g stroke="url(#evRim)" stroke-width="2.6" stroke-linecap="round">
-              <line x1="107" y1="42" x2="107" y2="35"/>
-              <line x1="107" y1="42" x2="113.7" y2="39.8"/>
-              <line x1="107" y1="42" x2="111.1" y2="47.7"/>
-              <line x1="107" y1="42" x2="102.9" y2="47.7"/>
-              <line x1="107" y1="42" x2="100.3" y2="39.8"/>
-            </g>
-            <circle cx="107" cy="42" r="7.6" fill="none" stroke="#c9d0d9" stroke-width="1.1"/>
-            <circle cx="107" cy="42" r="2.4" fill="url(#evRim)"/>
-          </g>
+          <!-- wheels: tyre, twin-five-spoke alloy, hub; the groups rotate while
+               the car drives -->
+          <g class="ev-wheel"><use href="#evRimFace" transform="translate(33 41.5)"/></g>
+          <g class="ev-wheel"><use href="#evRimFace" transform="translate(120 41.5)"/></g>
         </svg>
       </div>
     </div>
