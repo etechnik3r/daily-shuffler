@@ -10,6 +10,20 @@ den Cache-Namen und löst im laufenden Betrieb das „Neue Version verfügbar“
 aus. **Merkregel:** Bei jeder Änderung, die ausgeliefert wird, `CACHE_VERSION`
 hochzählen *und* hier einen Eintrag ergänzen.
 
+## [v12] – 2026-11-12
+
+### Geändert
+- **Slotmaschine – neues Gehäuse:** Die Ansicht ist jetzt als echter
+  Spielautomat gebaut: verchromtes Gehäuse im Grundton, Marquee mit
+  Lauflichtern und „777“, gewölbte Walze hinter Glas mit Payline-Pfeilen,
+  seitlicher Hebel, der sich zum Betrachter hin nach unten zieht und
+  zurückfedert, sowie eine Münzschale. Effekte: rasende Lichter und
+  Bewegungsunschärfe beim Drehen, beim Einrasten blinkende Lichter, leuchtende
+  Payline, Glanz über das Glas und Münzen in der Schale. Die Walze ruht mit
+  einem Namen auf der Payline statt am oberen Rand.
+  Ablauf, Ziehung, Timer, Sounds und angezeigte Inhalte sind unverändert; bei
+  „reduzierte Bewegung“ entfallen Lauflicht, Unschärfe und Münzen.
+
 ## [v11] – 2026-09-08
 
 ### Hinzugefügt

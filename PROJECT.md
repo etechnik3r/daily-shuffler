@@ -129,7 +129,7 @@ Jede Ansicht ist ein eigenes View-Modul mit gleichem Vertrag und wird über die
 | Konstante | Ansicht | Kurzbeschreibung |
 |-----------|---------|------------------|
 | `classic` | Klassisch | Reihenfolge als Liste, aktuelle Person hervorgehoben. |
-| `slot` | Slotmaschine | Animierte Walze mit Hebel, lost den nächsten Sprecher aus. |
+| `slot` | Slotmaschine | Spielautomat mit Lauflichtern, Walze hinter Glas, Hebel und Münzschale; lost den nächsten Sprecher aus. |
 | `ev` | Roadtrip (E-Auto) | E-Auto fährt die Strecke, Batterie = Redezeit, Schildkröte = knapp/vorbei. |
 | `wheel` | Glücksrad | Buntes Rad dreht sich, per Klick wird gezogen. |
 | `card` | Kartenspiel | Namenskarten fliegen auf den Stapel, mit Sonderkarten. |
