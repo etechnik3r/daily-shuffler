@@ -134,7 +134,7 @@ Jede Ansicht ist ein eigenes View-Modul mit gleichem Vertrag und wird über die
 | `wheel` | Glücksrad | Buntes Rad dreht sich, per Klick wird gezogen. |
 | `card` | Kartenspiel | Namenskarten fliegen auf den Stapel, mit Sonderkarten. |
 | `flap` | Abfahrtstafel | Fallblatt-Tafel wie am Bahnhof; die ganze Reihenfolge bleibt sichtbar. |
-| `line` | Linienplan | Fahrgastanzeige wie in der U-Bahn: „Nächster Halt“, Uhr, Verspätung; der Zug fährt während der Redezeit zur nächsten Haltestelle. |
+| `line` | Linienplan | Bunter Stadtplan: die Linie schlängelt sich durch die Stadt, der Zug fährt während der Redezeit zur nächsten Station; Schild mit „Nächster Halt“, Uhr, Verspätung. |
 | `focus` | Fokus | Ruhig: großer Name plus ablaufende Sanduhr. |
 
 Zwei Ablauf-Familien:

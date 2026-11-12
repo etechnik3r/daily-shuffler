@@ -10,6 +10,25 @@ den Cache-Namen und löst im laufenden Betrieb das „Neue Version verfügbar“
 aus. **Merkregel:** Bei jeder Änderung, die ausgeliefert wird, `CACHE_VERSION`
 hochzählen *und* hier einen Eintrag ergänzen.
 
+## [v18] – 2026-11-12
+
+### Geändert
+- **Linienplan – komplett neu als bunter Stadtplan:** Die Linie schlängelt
+  sich in Serpentinen (drei Stationen pro Reihe, Kehren an den Rändern) durch
+  eine kleine Stadt mit Straßenraster, Häuserblöcken, Fluss mit glitzernder
+  Strömung und Parks. Zwei weitere Linien (Orange, Magenta) kreuzen das Netz,
+  auf ihnen fahren eigene kleine Züge.
+- **Der Zug:** zwei Wagen mit Scheinwerfern, die einzeln der Strecke folgen
+  und sich in die Kurven legen; er gleitet flüssig statt in Sekunden-
+  sprüngen. Die gefahrene Strecke leuchtet in der Linienfarbe mit
+  durchlaufenden Lichtpunkten, die Strecke voraus ist blass.
+- **Stationen:** Die aktuelle Person bekommt ein Namensschild und poppt beim
+  Wechsel auf, die nächste Station pulsiert orange, erledigte sind gefüllt.
+- **Stationsschild oben:** in der Linienfarbe mit Glanz-Effekt, „Nächster
+  Halt“ mit hereinspringendem Namen, Uhr und blinkende rote Verspätung bei
+  Überziehung – dann glüht auch der Zug rot.
+  Ablauf (Redezeit = Fahrt zur nächsten Station) unverändert.
+
 ## [v17] – 2026-11-12
 
 ### Geändert
