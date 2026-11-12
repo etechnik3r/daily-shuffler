@@ -354,7 +354,7 @@
       --slot-bulb-on: #ffd66b;
       --slot-bulb-glow: rgba(255, 196, 60, 0.85);
       --slot-bulb-off: #6b4a1e;
-      --slot-pivot: 190px;      /* lever pivot, measured from the cabinet top */
+      --slot-pivot: 164px;      /* lever pivot, measured from the cabinet top */
       --slot-lever-len: 96px;
     }
     /* Positioning context for the cabinet + the absolutely placed lever, so the
@@ -390,7 +390,7 @@
         inset 0 -14px 24px rgba(0, 0, 0, 0.38);
     }
 
-    /* Marquee: bulb row over a backlit panel with the classic triple seven. */
+    /* Marquee: two rows of bulbs chasing in opposite directions. */
     .slot-marquee {
       position: relative;
       margin-bottom: 12px;
@@ -408,7 +408,8 @@
       justify-content: space-between;
       align-items: center;
     }
-    .slot-bulbs-top { padding: 0 6px; margin-bottom: 5px; }
+    .slot-bulbs-top { padding: 0 6px; }
+    .slot-bulbs-top + .slot-bulbs-top { margin-top: 9px; padding: 0 16px; }
     .slot-bulbs-side {
       flex-direction: column;
       justify-content: space-around;
@@ -437,41 +438,6 @@
       animation: slot-bulb-chase 0.24s steps(1, end) infinite;
       animation-delay: 0s;
     }
-    .slot-marquee-panel {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 4px;
-      height: 38px;
-      font-family: 'Arial Black', 'Helvetica Neue', Impact, Arial, sans-serif;
-      user-select: none;
-    }
-    .slot-seven {
-      font-size: 32px;
-      font-weight: 900;
-      line-height: 1;
-      font-style: italic;
-      background: linear-gradient(180deg, #ffb3a8 0%, #ff3b2f 38%, #c0000f 70%, #7a0008 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      -webkit-text-stroke: 1px #ffd66b;
-      filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.55)) drop-shadow(0 0 6px rgba(255, 190, 60, 0.45));
-    }
-    .slot-star {
-      font-size: 18px;
-      color: #ffd66b;
-      text-shadow: 0 0 6px rgba(255, 196, 60, 0.9), 0 1px 0 rgba(0, 0, 0, 0.5);
-      margin: 0 4px;
-    }
-    .slot-cabinet.is-win .slot-seven { animation: slot-seven-pop 0.5s ease-in-out 3; }
-    .slot-cabinet.is-win .slot-seven:nth-child(3) { animation-delay: 0.08s; }
-    .slot-cabinet.is-win .slot-seven:nth-child(4) { animation-delay: 0.16s; }
-    @keyframes slot-seven-pop {
-      0%, 100% { transform: scale(1); }
-      50%      { transform: scale(1.18) translateY(-2px); }
-    }
-
     /* Reel window: bulb columns left and right of a chrome bezel. */
     .slot-window {
       display: flex;
@@ -704,6 +670,7 @@
     .slot-handle {
       position: absolute;
       left: 0;
+      cursor: pointer;
       top: calc(var(--slot-pivot) - var(--slot-lever-len));
       width: 34px;
       height: var(--slot-lever-len);
@@ -1123,17 +1090,21 @@
       position: absolute;
       left: 8px;
       right: 8px;
-      top: -10px;
-      height: 14px;
-      border-radius: 10px 10px 6px 6px;
+      top: -12px;
+      height: 24px;
+      /* Lumpy drifts on a thin base, plus a few drips over the edge. */
       background:
-        radial-gradient(14px 10px at 12% 100%, #fff 60%, transparent 62%),
-        radial-gradient(18px 12px at 38% 100%, #fff 60%, transparent 62%),
-        radial-gradient(16px 11px at 66% 100%, #fff 60%, transparent 62%),
-        radial-gradient(14px 10px at 90% 100%, #fff 60%, transparent 62%),
-        linear-gradient(#fff, #eef4ff);
-      background-size: 100% 100%;
-      box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+        radial-gradient(ellipse 16px 6px at 8% 9px, #fff 95%, transparent 100%),
+        radial-gradient(ellipse 22px 8px at 23% 8px, #fff 95%, transparent 100%),
+        radial-gradient(ellipse 17px 6px at 40% 10px, #fff 95%, transparent 100%),
+        radial-gradient(ellipse 25px 8px at 57% 8px, #fff 95%, transparent 100%),
+        radial-gradient(ellipse 16px 6px at 74% 10px, #fff 95%, transparent 100%),
+        radial-gradient(ellipse 20px 7px at 90% 9px, #fff 95%, transparent 100%),
+        radial-gradient(ellipse 3px 6px at 16% 15px, #fff 90%, transparent 100%),
+        radial-gradient(ellipse 2.5px 5px at 47% 15px, #fff 90%, transparent 100%),
+        radial-gradient(ellipse 3px 7px at 81% 15px, #fff 90%, transparent 100%),
+        linear-gradient(#fff, #e9f2ff) 0 9px / 100% 6px no-repeat;
+      filter: drop-shadow(0 1px 1.5px rgba(20, 40, 80, 0.35));
       z-index: 2;
     }
     .season-winter #slotContainer { --slot-bulb-on: #e6f3ff; --slot-bulb-glow: rgba(170, 215, 255, 0.9); --slot-bulb-off: #3c5570; }
@@ -2352,9 +2323,7 @@
           <!-- Decoration only: bulbs are filled in by initSlotCabinet(). -->
           <div class="slot-marquee" aria-hidden="true">
             <div class="slot-bulbs slot-bulbs-top" data-count="13"></div>
-            <div class="slot-marquee-panel">
-              <span class="slot-star">★</span><span class="slot-seven">7</span><span class="slot-seven">7</span><span class="slot-seven">7</span><span class="slot-star">★</span>
-            </div>
+            <div class="slot-bulbs slot-bulbs-top" data-count="13" data-reverse="1"></div>
           </div>
           <div class="slot-window">
             <div class="slot-bulbs slot-bulbs-side" data-count="5" aria-hidden="true"></div>
@@ -4255,7 +4224,7 @@
         for (let i = 0; i < count; i++) {
           const bulb = document.createElement('span');
           bulb.className = 'slot-bulb';
-          bulb.style.setProperty('--i', String(i));
+          bulb.style.setProperty('--i', String(row.dataset.reverse ? count - 1 - i : i));
           row.appendChild(bulb);
         }
       });
@@ -6432,6 +6401,16 @@
     initSlotCabinet();
     if (slotSpinButton) {
       slotSpinButton.addEventListener('click', spinSlotMachine);
+    }
+    // Pulling the lever does the same as the spin button – and only when the
+    // button itself would be allowed to (round running, reel at rest).
+    const slotHandleEl = document.getElementById('slotHandle');
+    if (slotHandleEl) {
+      slotHandleEl.addEventListener('click', () => {
+        if (slotSpinButton && !slotSpinButton.disabled && slotSpinButton.style.display !== 'none') {
+          spinSlotMachine();
+        }
+      });
     }
     const slotRestartButton = document.getElementById('slotRestartButton');
     if (slotRestartButton) {

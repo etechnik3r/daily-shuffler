@@ -10,6 +10,17 @@ den Cache-Namen und löst im laufenden Betrieb das „Neue Version verfügbar“
 aus. **Merkregel:** Bei jeder Änderung, die ausgeliefert wird, `CACHE_VERSION`
 hochzählen *und* hier einen Eintrag ergänzen.
 
+## [v13] – 2026-11-12
+
+### Geändert
+- **Slotmaschine:** Das Marquee zeigt nur noch Lichter – zwei Reihen, die
+  gegenläufig laufen; das „777“-Schild entfällt.
+- **Slotmaschine – Hebel:** Ein Klick auf den Hebel dreht die Walze, genau wie
+  der Drehen-Button (nur wenn dieser aktiv ist, also nicht während einer
+  Drehung oder nach Rundenende).
+- **Winter-Saison:** Die Schneehaube auf dem Automaten ist jetzt wellig mit
+  kleinen Tropfen statt eines glatten Balkens.
+
 ## [v12] – 2026-11-12
 
 ### Geändert
