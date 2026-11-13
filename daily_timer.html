@@ -340,7 +340,8 @@
        A real three-reel machine: chrome-trimmed cabinet in the brand hue, a
        marquee and a footer row of bulbs running changing light programs, three
        curved ivory reels behind glass (the outer two run downwards, the middle
-       one upwards) that each carry one third of every name, a payline, a side
+       one upwards) that share one letter grid, so every name reads as one
+       evenly spaced word across all three reels, a payline, a side
        lever that swings towards the viewer and a coin tray. Only the look lives
        here – the draw itself is animateSlotToWinner(). The bulbs and chrome
        are deliberately NOT themed: warm light and metal read as "machine" in
@@ -351,6 +352,10 @@
       margin: 8px auto 0;
       position: relative;
       display: none;
+    }
+    /* Chrome and bulb colours shared by the two machines (slot cabinet and the
+       wheel's light ring). */
+    #slotContainer, #wheelContainer {
       --slot-chrome: linear-gradient(180deg, #f7f8fb 0%, #c3c8d2 22%, #8d939f 48%, #e4e7ed 62%, #a2a8b3 82%, #6f7580 100%);
       --slot-chrome-h: linear-gradient(90deg, #6f7580 0%, #c9ced7 22%, #f7f8fb 42%, #aeb3bd 64%, #e2e5eb 82%, #7c828d 100%);
       --slot-bulb-on: #ffd66b;
@@ -430,8 +435,8 @@
     .slot-bulbs-bottom { margin-top: 12px; padding: 0 6px; }
     /* A bulb is unlit glass; the lit filament is its ::before layer. Every
        light program below only animates that layer's opacity, so programs can
-       be swapped at any time (class lights-* on the cabinet, see
-       setSlotLights()) and fades stay smooth. */
+       be swapped at any time (class lights-* on the slot cabinet or the wheel
+       stage, see setRigLights()) and fades stay smooth. */
     .slot-bulb {
       position: relative;
       width: 9px;
@@ -459,29 +464,29 @@
     @keyframes slot-sparkle     { 0%, 7% { opacity: 1; } 16%, 100% { opacity: 0.08; } }
     /* Idle programs, cycled every few seconds: chase (default), a soft wave,
        even/odd alternation, rows filling up and draining, random sparkle. */
-    .slot-cabinet.lights-wave .slot-bulb::before {
+    .lights-wave .slot-bulb::before {
       animation: slot-glow-sine 1.8s ease-in-out infinite;
       animation-delay: calc(var(--i, 0) * -0.15s);
     }
-    .slot-cabinet.lights-alternate .slot-bulb::before {
+    .lights-alternate .slot-bulb::before {
       animation: slot-blink-half 0.9s linear infinite;
       animation-delay: calc(var(--p, 0) * -0.45s);
     }
-    .slot-cabinet.lights-fill .slot-bulb::before {
+    .lights-fill .slot-bulb::before {
       animation: slot-blink-half 2.4s linear infinite;
       animation-delay: calc(var(--i, 0) * -1.2s / var(--n, 10));
     }
-    .slot-cabinet.lights-sparkle .slot-bulb::before {
+    .lights-sparkle .slot-bulb::before {
       animation: slot-sparkle var(--sd, 1.2s) linear infinite;
       animation-delay: var(--sr, 0s);
     }
     /* While the reels run the lights race; on a win they flash in jackpot
        alternation. */
-    .slot-cabinet.lights-race .slot-bulb::before {
+    .lights-race .slot-bulb::before {
       animation: slot-blink-third 0.42s linear infinite;
       animation-delay: calc(var(--i, 0) * -0.14s);
     }
-    .slot-cabinet.lights-jackpot .slot-bulb::before {
+    .lights-jackpot .slot-bulb::before {
       animation: slot-blink-half 0.24s linear infinite;
       animation-delay: calc(var(--p, 0) * -0.12s);
     }
@@ -520,7 +525,7 @@
     #slotTrackWrapper {
       position: relative;
       display: flex;
-      gap: 4px;
+      gap: 3px;
       width: 100%;
       height: 192px;            /* exactly three rows of 64 px */
       margin: 0 auto;
@@ -528,7 +533,7 @@
       border-radius: 9px;
       background: linear-gradient(180deg, #050407 0%, #1d1b22 50%, #050407 100%);
       box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);
-      --slot-font: 28px;        /* fitted to the longest name part, fitSlotFont() */
+      --slot-font: 28px;        /* fitted to the letter grid, fitSlotFont() */
     }
     .slot-reel {
       position: relative;
@@ -551,7 +556,7 @@
       align-items: center;
       justify-content: center;
       width: 100%;
-      padding: 0 3px;
+      padding: 0;
       background: transparent;
       border-bottom: 1px solid rgba(60, 40, 10, 0.08);
       box-sizing: border-box;
@@ -560,16 +565,20 @@
       font-weight: 900;
       color: #1d1b24;
       text-transform: uppercase;
-      letter-spacing: 0.02em;
       white-space: pre;
       overflow: hidden;
       text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
-      transition: color 0.25s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), text-shadow 0.25s ease;
+      transition: color 0.25s ease, text-shadow 0.25s ease;
     }
-    /* The three parts of a name hug the reel gaps, so on the payline they read
-       as one word: left part right-aligned, right part left-aligned. */
-    .slot-reel.is-left .slot-item  { justify-content: flex-end;   transform-origin: 100% 50%; }
-    .slot-reel.is-right .slot-item { justify-content: flex-start; transform-origin: 0 50%; }
+    /* One letter cell of the shared grid (see layoutSlotNames()): every reel
+       holds the same number of equal cells, so the letter pitch is uniform
+       across all three reels and the gaps always fall between two letters. */
+    .slot-cell {
+      flex: 1 1 0;
+      min-width: 0;
+      text-align: center;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
     .slot-item.used-participant {
       color: rgba(29, 27, 36, 0.35);
       opacity: 0.6;
@@ -586,9 +595,9 @@
     }
     .slot-strip.is-spinning { filter: blur(0.5px); }
     /* The part that just landed on the payline – lit reel by reel. */
+    .slot-item.is-winner .slot-cell { transform: scale(1.08); }
     .slot-item.is-winner {
       color: hsl(var(--brand-h), calc(95% * var(--brand-sat)), 26%);
-      transform: scale(1.08);
       text-shadow:
         0 1px 0 rgba(255, 255, 255, 0.9),
         0 0 14px rgba(255, 190, 60, 0.75);
@@ -1367,7 +1376,7 @@
       background: radial-gradient(90% 120% at 50% 0%, #6b2fa0 0%, #241038 75%);
       box-shadow: inset 0 0 0 2px rgba(255, 140, 0, 0.6), inset 0 0 22px rgba(0, 0, 0, 0.5);
     }
-    .season-halloween #slotContainer {
+    .season-halloween #slotContainer, .season-halloween #wheelContainer {
       --slot-bulb-on: #ff9a2e; --slot-bulb-glow: rgba(255, 120, 0, 0.85);
       --slot-tone-b: #b77bff; --slot-tone-b-glow: rgba(160, 90, 255, 0.85); --slot-tone-b-rim: #4c1d85;
       --slot-tone-c: #9dff6e; --slot-tone-c-glow: rgba(120, 255, 80, 0.8); --slot-tone-c-rim: #2f7a12;
@@ -1409,7 +1418,7 @@
       filter: drop-shadow(0 1px 1.5px rgba(20, 40, 80, 0.35));
       z-index: 2;
     }
-    .season-winter #slotContainer {
+    .season-winter #slotContainer, .season-winter #wheelContainer {
       --slot-bulb-on: #e6f3ff; --slot-bulb-glow: rgba(170, 215, 255, 0.9); --slot-bulb-off: #3c5570; --slot-bulb-rim: #7fa6cc;
       --slot-tone-b: #8fd0ff; --slot-tone-b-glow: rgba(110, 185, 255, 0.9); --slot-tone-b-rim: #2f6fae;
       --slot-tone-c: #ffffff; --slot-tone-c-glow: rgba(230, 244, 255, 0.95); --slot-tone-c-rim: #a8c3dd;
@@ -1562,18 +1571,72 @@
       color: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 27%);
       text-align: center;
     }
-    .wheel-stage {
+    /* The wheel as a show-floor machine, built to match the slot cabinet: a
+       chrome-rimmed light ring in the brand hue with the same bulb programs, a
+       chrome bezel, a shaded disc with chrome pegs, a fixed glass dome
+       reflection, a chrome hub, a 3D flapper that the pegs really push aside
+       (runWheelFlapper()) and a pedestal. */
+    .wheel-machine {
       position: relative;
       width: 360px;
       max-width: 100%;
       margin: 0 auto;
+    }
+    .wheel-stage {
+      position: relative;
+      z-index: 1;
+      width: 100%;
       aspect-ratio: 1 / 1;
+    }
+    .wheel-frame {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: var(--slot-chrome);
+      box-shadow:
+        0 26px 44px hsla(var(--brand-h), calc(60% * var(--brand-sat)), 10%, 0.34),
+        0 6px 14px rgba(0, 0, 0, 0.18);
+    }
+    .wheel-frame::before {
+      /* Light ring body, same lacquer as the slot cabinet. */
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border-radius: 50%;
+      background:
+        radial-gradient(120% 70% at 50% 0%, hsla(var(--brand-h), calc(90% * var(--brand-sat)), 60%, 0.35) 0%, transparent 60%),
+        radial-gradient(circle at 50% 50%,
+          hsl(var(--brand-h), calc(82% * var(--brand-sat)), 11%) 78%,
+          hsl(var(--brand-h), calc(78% * var(--brand-sat)), 22%) 90%,
+          hsl(var(--brand-h), calc(82% * var(--brand-sat)), 12%) 100%);
+      box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.22),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.35),
+        inset 0 -12px 22px rgba(0, 0, 0, 0.4);
+    }
+    .wheel-bulbs {
+      position: absolute;
+      inset: 0;
+    }
+    .wheel-bulbs .slot-bulb {
+      position: absolute;
+      width: 11px;
+      height: 11px;
+      margin: -5.5px 0 0 -5.5px;
+    }
+    /* Chrome bezel the disc sits in. */
+    .wheel-well {
+      position: absolute;
+      inset: 7.6%;
+      border-radius: 50%;
+      background: var(--slot-chrome);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.7);
     }
     /* Spinner = the rotating disc. The transition is set inline from JS so the
        spin duration and easing can drive a long, decelerating turn. */
     .wheel-spinner {
       position: absolute;
-      inset: 0;
+      inset: 9.2%;
       will-change: transform;
       transform: rotate(0deg);
     }
@@ -1582,58 +1645,164 @@
       height: 100%;
       display: block;
       border-radius: 50%;
-      box-shadow:
-        0 14px 30px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.18),
-        0 0 0 6px #ffffff,
-        0 0 0 8px hsla(var(--brand-h), calc(100% * var(--brand-sat)), 24%, 0.12);
+      overflow: visible;
     }
-    /* The current speaker's slice: bright white rim + soft glow, full colour. */
-    #wheelSvg path.wheel-current,
-    #wheelSvg circle.wheel-current {
-      stroke: #ffffff;
-      stroke-width: 4;
-      filter: brightness(1.1) drop-shadow(0 0 5px rgba(255,255,255,0.75));
+    /* The current speaker's slice: gold rim, a touch brighter, glowing. */
+    #wheelSvg .wheel-current {
+      stroke: #ffe08a;
+      stroke-width: 3.5;
+      filter: brightness(1.12) drop-shadow(0 0 6px rgba(255, 200, 80, 0.85));
+    }
+    /* Already drawn: desaturated instead of transparent, so the disc keeps its depth. */
+    #wheelSvg .wheel-used { filter: grayscale(0.9) brightness(0.82); }
+    #wheelSvg text.wheel-used { opacity: 0.45; filter: none; }
+    /* Fixed glass dome over the disc: the reflection stays put while the disc
+       turns underneath, which is what makes it read as a curved 3D surface. */
+    .wheel-gloss {
+      position: absolute;
+      inset: 9.2%;
+      z-index: 4;
+      border-radius: 50%;
+      overflow: hidden;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 62% 40% at 38% 20%, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.12) 55%, rgba(255, 255, 255, 0) 72%),
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0) 62%, rgba(0, 0, 0, 0.2) 100%);
+      box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.35), inset 0 -2px 6px rgba(255, 255, 255, 0.15);
+    }
+    .wheel-gloss::after {
+      /* Light beam sweeping once around the dome on a win. */
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      opacity: 0;
+      background: conic-gradient(from 0deg, rgba(255, 255, 255, 0) 0deg, rgba(255, 246, 214, 0.55) 16deg, rgba(255, 255, 255, 0) 34deg, rgba(255, 255, 255, 0) 360deg);
+    }
+    .wheel-stage.is-win .wheel-gloss::after { animation: wheel-sweep 1.1s ease-out 1; }
+    @keyframes wheel-sweep {
+      0%   { transform: rotate(-20deg); opacity: 1; }
+      85%  { opacity: 1; }
+      100% { transform: rotate(340deg); opacity: 0; }
     }
 
-    /* Small fixed hub cap in the centre, sitting above the spinning disc. */
+    /* Chrome hub cap with a lacquered star medallion, above the disc. */
     .wheel-center {
       position: absolute;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%);
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 30%, #ffffff 0%, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 96%) 55%, hsl(var(--brand-h), calc(100% * var(--brand-sat)), 91%) 100%);
-      box-shadow: 0 3px 8px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.25), 0 0 0 3px hsla(var(--brand-h), calc(100% * var(--brand-sat)), 24%, 0.10) inset;
       z-index: 5;
+      width: 19%;
+      height: 19%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 28%, #ffffff 0%, #dfe3ea 28%, #9aa0ab 62%, #5e636d 100%);
+      box-shadow:
+        0 5px 12px rgba(0, 0, 0, 0.45),
+        inset 0 0 0 2px rgba(255, 255, 255, 0.5),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.35);
       pointer-events: none;
     }
-    /* Pointer mounted at the top, aiming down into the winning segment. */
+    .wheel-center span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 68%;
+      height: 68%;
+      border-radius: 50%;
+      font-size: 22px;
+      line-height: 1;
+      color: #ffd66b;
+      text-shadow: 0 0 8px rgba(255, 196, 60, 0.8), 0 1px 0 rgba(0, 0, 0, 0.5);
+      background: radial-gradient(circle at 38% 30%,
+        hsl(var(--brand-h), calc(95% * var(--brand-sat)), 52%) 0%,
+        hsl(var(--brand-h), calc(85% * var(--brand-sat)), 24%) 70%,
+        hsl(var(--brand-h), calc(85% * var(--brand-sat)), 14%) 100%);
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.55), 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+    .wheel-stage.is-win .wheel-center span { animation: wheel-hub-pulse 0.42s ease-in-out 4; }
+    @keyframes wheel-hub-pulse {
+      50% { color: #fff6c4; text-shadow: 0 0 16px rgba(255, 210, 90, 1), 0 0 4px #fff; }
+    }
+
+    /* Flapper on top of the ring: a lacquered teardrop on a chrome pivot. JS
+       sets its rotation every frame from the pegs passing underneath. */
     .wheel-pointer {
       position: absolute;
-      top: -10px;
+      top: -4px;
       left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 15px solid transparent;
-      border-right: 15px solid transparent;
-      border-top: 26px solid var(--accent-deep);
-      filter: drop-shadow(0 3px 3px hsla(var(--brand-h), calc(90% * var(--brand-sat)), 12%, 0.35));
       z-index: 7;
+      width: 30px;
+      height: 46px;
+      margin-left: -15px;
+      transform-origin: 15px 11px;
+      transition: transform 40ms ease-out;
+      filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.45));
+      --wp-mid: #e3101e;
+      --wp-hi: color-mix(in srgb, var(--wp-mid) 50%, #ffffff);
+      --wp-lo: color-mix(in srgb, var(--wp-mid) 55%, #000000);
+    }
+    .wheel-pointer svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    /* Pedestal the wheel stands on. */
+    .wheel-base {
+      position: relative;
+      z-index: 0;
+      width: 56%;
+      height: 60px;
+      margin: -40px auto 0;
+    }
+    .wheel-base::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 12px;
+      clip-path: polygon(33% 0, 67% 0, 93% 100%, 7% 100%);
+      background: linear-gradient(90deg,
+        hsl(var(--brand-h), calc(82% * var(--brand-sat)), 10%) 0%,
+        hsl(var(--brand-h), calc(72% * var(--brand-sat)), 30%) 38%,
+        hsl(var(--brand-h), calc(78% * var(--brand-sat)), 19%) 62%,
+        hsl(var(--brand-h), calc(82% * var(--brand-sat)), 9%) 100%);
+    }
+    .wheel-base::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 13px;
+      border-radius: 7px;
+      background: var(--slot-chrome);
+      box-shadow: 0 10px 16px hsla(var(--brand-h), calc(60% * var(--brand-sat)), 10%, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.7);
     }
     @media (max-width: 520px) {
-      .wheel-stage { width: 100%; max-width: 360px; }
+      .wheel-machine { width: 100%; max-width: 360px; }
     }
 
     /* --- Seasonal themes for the wheel --- */
-    .season-halloween .wheel-pointer { border-top-color: #ff8c1a; }
-    .season-winter .wheel-pointer { border-top-color: #2f6fd6; }
+    .season-halloween .wheel-pointer { --wp-mid: #ff7a00; }
+    .season-halloween .wheel-frame::before {
+      background:
+        radial-gradient(120% 70% at 50% 0%, rgba(255, 140, 0, 0.22) 0%, transparent 60%),
+        radial-gradient(circle at 50% 50%, #140a22 78%, #3d1f5c 90%, #1c0f2e 100%);
+    }
+    .season-halloween .wheel-base::before { background: linear-gradient(90deg, #140a22 0%, #4a2670 38%, #2a1540 62%, #120820 100%); }
+    .season-halloween .wheel-center span { background: radial-gradient(circle at 38% 30%, #6b2fa0 0%, #24123a 70%, #140a22 100%); color: #ff9a2e; }
+    .season-winter .wheel-pointer { --wp-mid: #2f6fd6; }
     .season-winter .wheel-stage::after {
       content: '';
       position: absolute;
-      inset: 0;
+      inset: 9.2%;
       pointer-events: none;
       border-radius: 50%;
       z-index: 6;
@@ -1815,7 +1984,7 @@
     /* --- Season: Carnival (February) – confetti & party colours --- */
     .season-carnival #teamList li.active-participant::before { content: '🎉 '; }
     .season-carnival .slot-history-title::before { content: '🎊 '; }
-    .season-carnival .wheel-pointer { border-top-color: #e0249a; }
+    .season-carnival .wheel-pointer { --wp-mid: #e0249a; }
     .season-carnival .play-card .pc-inner {
       box-shadow: 0 10px 22px rgba(224,36,154,0.26), 0 0 0 1px rgba(0,0,0,0.06);
     }
@@ -1839,7 +2008,7 @@
     /* --- Season: Easter (April) – pastel eggs --- */
     .season-easter #teamList li.active-participant::before { content: '🐰 '; }
     .season-easter .slot-history-title::before { content: '🥚 '; }
-    .season-easter .wheel-pointer { border-top-color: #8bcf72; }
+    .season-easter .wheel-pointer { --wp-mid: #6cbf52; }
     .season-easter .play-card .pc-inner {
       box-shadow: 0 10px 22px rgba(140,200,120,0.30), 0 0 0 1px rgba(0,0,0,0.06);
     }
@@ -2716,7 +2885,7 @@
     <div class="slot-machine-row">
       <div id="slotCabinet" class="slot-cabinet lights-chase">
         <div class="slot-cabinet-body">
-          <!-- Decoration only: bulbs are filled in by initSlotCabinet(). -->
+          <!-- Decoration only: bulbs are filled in by initMachineLights(). -->
           <div class="slot-marquee" aria-hidden="true">
             <div class="slot-bulbs slot-bulbs-top" data-count="13" data-tones="ab"></div>
             <div class="slot-bulbs slot-bulbs-top" data-count="13" data-tones="ca" data-reverse="1"></div>
@@ -2764,12 +2933,41 @@
 
   <div id="wheelContainer" data-view="wheel">
     <div id="wheelStatus"></div>
-    <div class="wheel-stage">
-      <div class="wheel-pointer"></div>
+    <div class="wheel-machine">
+    <div id="wheelStage" class="wheel-stage lights-chase">
+      <!-- Decoration only: the ring bulbs are filled in by initMachineLights(). -->
+      <div class="wheel-frame" aria-hidden="true">
+        <div class="wheel-bulbs" data-count="24" data-tones="abac"></div>
+      </div>
+      <div class="wheel-well" aria-hidden="true"></div>
+      <div id="wheelPointer" class="wheel-pointer" aria-hidden="true">
+        <svg viewBox="0 0 30 46">
+          <defs>
+            <linearGradient id="wheelPointerFill" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" style="stop-color: var(--wp-hi)"/>
+              <stop offset="0.45" style="stop-color: var(--wp-mid)"/>
+              <stop offset="1" style="stop-color: var(--wp-lo)"/>
+            </linearGradient>
+            <radialGradient id="wheelPointerPivot" cx="0.35" cy="0.3" r="0.75">
+              <stop offset="0" stop-color="#ffffff"/>
+              <stop offset="0.45" stop-color="#c3c8d2"/>
+              <stop offset="1" stop-color="#5e636d"/>
+            </radialGradient>
+          </defs>
+          <path d="M15 1.5 C24 1.5 28 8 27 14 L16.4 43.4 Q15 46 13.6 43.4 L3 14 C2 8 6 1.5 15 1.5 Z"
+                fill="url(#wheelPointerFill)" stroke="rgba(0,0,0,0.35)" stroke-width="0.8"/>
+          <path d="M9 7 C11 4.5 13 4 15 4" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.6" stroke-linecap="round"/>
+          <circle cx="15" cy="11" r="5.6" fill="url(#wheelPointerPivot)" stroke="rgba(0,0,0,0.35)" stroke-width="0.6"/>
+          <circle cx="15" cy="11" r="1.6" fill="#4a4f58"/>
+        </svg>
+      </div>
       <div id="wheelSpinner" class="wheel-spinner">
         <svg id="wheelSvg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" aria-label="Glücksrad"></svg>
       </div>
-      <div class="wheel-center"></div>
+      <div class="wheel-gloss" aria-hidden="true"></div>
+      <div class="wheel-center" aria-hidden="true"><span>★</span></div>
+    </div>
+    <div class="wheel-base" aria-hidden="true"></div>
     </div>
     <div class="slot-controls">
       <button id="wheelSpinButton" class="app-button slot-spin-button" data-i18n="btnSpin">Drehen</button>
@@ -3726,6 +3924,8 @@
     const slotHistoryList = document.getElementById('slotHistoryList');
     const wheelContainer = document.getElementById('wheelContainer');
     const wheelSpinner = document.getElementById('wheelSpinner');
+    const wheelStage = document.getElementById('wheelStage');
+    const wheelPointer = document.getElementById('wheelPointer');
     const wheelStatus = document.getElementById('wheelStatus');
     const wheelSpinButton = document.getElementById('wheelSpinButton');
     const wheelRestartButton = document.getElementById('wheelRestartButton');
@@ -4717,21 +4917,29 @@
     let slotWinTimer = null;
 
     /**
-     * Cuts a name into the three parts the reels carry, as evenly as possible;
-     * spare letters go to the middle reel (BA·STI·AN, J·OOS·T, CA·ROLI·NE).
-     * The outer parts hug the reel gaps while the middle one is centred, so a
-     * wide middle part keeps the name from falling apart on the payline.
-     * Works on code points, so umlauts and emoji are never split in half.
+     * Lays every name out on one letter grid that spans all three reels: each
+     * reel gets `cols` equal cells, a name sits centred on the 3·cols cells and
+     * each reel shows its own cells. That keeps the letter pitch identical
+     * across the reels and never puts a reel gap through a letter – the name
+     * reads as one evenly spaced word instead of made-up syllables. Works on
+     * code points, so umlauts and emoji are never split in half.
+     *
+     * @param {string[]} list - Names.
+     * @returns {{cols: number, rows: string[][][]}} rows[name][reel] = cells.
      */
-    function splitSlotName(name) {
-      const chars = Array.from(name.trim().toUpperCase());
-      const base = Math.floor(chars.length / 3);
-      const rem = chars.length % 3;
-      const lens = [base, base + rem, base];
-      const parts = [];
-      let at = 0;
-      lens.forEach(len => { parts.push(chars.slice(at, at + len).join('')); at += len; });
-      return parts;
+    function layoutSlotNames(list) {
+      const chars = list.map(name => Array.from(name.trim().toUpperCase()));
+      const longest = Math.max(1, ...chars.map(c => c.length));
+      const cols = Math.ceil(longest / 3);
+      const total = cols * 3;
+      const rows = chars.map(c => {
+        const cells = new Array(total).fill('');
+        // With an odd number of spare cells the extra one goes to the right.
+        const start = Math.floor((total - c.length) / 2);
+        c.forEach((ch, i) => { cells[start + i] = ch; });
+        return [0, 1, 2].map(k => cells.slice(k * cols, (k + 1) * cols));
+      });
+      return { cols, rows };
     }
 
     /** Translation that puts strip row `pos` dead-centre on the payline. */
@@ -4742,24 +4950,24 @@
 
     let slotMeasureCtx = null;
     /**
-     * Picks the largest letter size at which the longest name part still fits
-     * its reel, so short teams get big letters and long names never get cut.
+     * Picks the largest letter size at which the widest letter in play still
+     * fits one grid cell, so short teams get big letters and long names are
+     * never cut.
      */
     function fitSlotFont() {
       if (!slotTrackWrapper || !slotReels.length || !slotLayout) return;
-      const avail = slotReels[0].clientWidth - 8;
+      const avail = slotReels[0].clientWidth / slotLayout.cols;
       if (avail <= 0) return; // view hidden – measured again when it is built
       if (!slotMeasureCtx) slotMeasureCtx = document.createElement('canvas').getContext('2d');
       const ctx = slotMeasureCtx;
       ctx.font = "900 100px 'Arial Black', 'Helvetica Neue', Helvetica, Arial, sans-serif";
       let widest = 0;
-      slotLayout.parts.forEach(parts => parts.forEach(part => {
-        const chars = Array.from(part).length;
-        widest = Math.max(widest, ctx.measureText(part).width + chars * 2); // + 0.02em spacing
-      }));
-      // 0.92: leave room for the 1.08 winner scale.
-      const size = widest ? Math.floor((avail * 0.92 / widest) * 100) : 34;
-      slotTrackWrapper.style.setProperty('--slot-font', `${Math.max(12, Math.min(34, size))}px`);
+      slotLayout.rows.forEach(reels => reels.forEach(cells => cells.forEach(ch => {
+        if (ch) widest = Math.max(widest, ctx.measureText(ch).width);
+      })));
+      // 0.86: a little air between letters plus room for the 1.08 winner scale.
+      const size = widest ? Math.floor((avail * 0.86 / widest) * 100) : 36;
+      slotTrackWrapper.style.setProperty('--slot-font', `${Math.max(12, Math.min(38, size))}px`);
     }
 
     function clearSlotEmpty() {
@@ -4770,7 +4978,7 @@
 
     /**
      * Fills the three strips for the names still in the round. Each strip holds
-     * the same sequence of names many times over (reel k shows part k), long
+     * the same sequence of names many times over (reel k shows its cells), long
      * enough for every reel to travel its passes in its own direction.
      *
      * @param {string[]} list - Names still in the round.
@@ -4780,7 +4988,7 @@
       if (!slotStrips.length) return null;
       clearSlotEmpty();
       const L = list.length;
-      const parts = list.map(splitSlotName);
+      const { cols, rows } = layoutSlotNames(list);
       // Full passes per reel: later reels run longer, and short lists get more
       // passes so even two names still whirl past properly.
       const passes = SLOT_REEL_STOP_MS.map((_, k) => Math.max(3 + k, Math.ceil((30 + 10 * k) / L)));
@@ -4795,18 +5003,23 @@
         strip.style.transition = 'none';
         const frag = document.createDocumentFragment();
         for (let r = 0; r < reps; r++) {
-          parts.forEach(p => {
+          rows.forEach(reels => {
             const item = document.createElement('div');
             item.className = 'slot-item';
-            item.textContent = p[k];
             item.style.height = `${SLOT_ROW_HEIGHT}px`;
+            reels[k].forEach(ch => {
+              const cell = document.createElement('span');
+              cell.className = 'slot-cell';
+              cell.textContent = ch;
+              item.appendChild(cell);
+            });
             frag.appendChild(item);
           });
         }
         strip.appendChild(frag);
       });
 
-      slotLayout = { listLength: L, reps, passes, rest, parts };
+      slotLayout = { listLength: L, reps, passes, rest, cols, rows };
       fitSlotFont();
       slotStrips.forEach((strip, k) => {
         strip.style.transform = `translateY(${slotOffset(rest[k], SLOT_ROW_HEIGHT)}px)`;
@@ -4817,50 +5030,66 @@
     // --- Slot cabinet effects (pure decoration, no influence on the draw) ---
     const slotCabinet = document.getElementById('slotCabinet');
     const slotTray = document.getElementById('slotTray');
-    let slotLightProgram = 'chase';
-    let slotIdleStep = 0;
+    let lightIdleStep = 0;
+
+    /** Gives every bulb in a row or ring its programme parameters and colour. */
+    function fillBulbs(group, ring) {
+      if (group.childElementCount) return;
+      const count = Number(group.dataset.count) || 0;
+      const tones = group.dataset.tones || 'a';
+      for (let i = 0; i < count; i++) {
+        const bulb = document.createElement('span');
+        const tone = tones[i % tones.length];
+        bulb.className = 'slot-bulb' + (tone === 'a' ? '' : ` tone-${tone}`);
+        const idx = group.dataset.reverse ? count - 1 - i : i;
+        bulb.style.setProperty('--i', String(idx));
+        bulb.style.setProperty('--p', String(i % 2));
+        bulb.style.setProperty('--n', String(count));
+        bulb.style.setProperty('--sd', `${(0.7 + Math.random() * 1.3).toFixed(2)}s`);
+        bulb.style.setProperty('--sr', `${(-Math.random() * 2).toFixed(2)}s`);
+        if (ring) {
+          // Evenly round the light ring, midway between rim and bezel.
+          const a = (i / count) * 2 * Math.PI;
+          bulb.style.left = `${(50 + 45.9 * Math.sin(a)).toFixed(2)}%`;
+          bulb.style.top = `${(50 - 45.9 * Math.cos(a)).toFixed(2)}%`;
+        }
+        group.appendChild(bulb);
+      }
+    }
 
     /**
-     * Fills the bulb rows once. Each bulb gets its position (--i, chase/wave
-     * phase), parity (--p, alternation), the row length (--n, fill), a random
-     * rhythm (--sd/--sr, sparkle) and a colour from the row's data-tones
-     * pattern. Then the idle light programs start cycling.
+     * Fills the bulbs of both machines once – the slot cabinet's rows and the
+     * wheel's light ring. Each bulb gets its position (--i, chase/wave phase),
+     * parity (--p, alternation), the row length (--n, fill), a random rhythm
+     * (--sd/--sr, sparkle) and a colour from the data-tones pattern. Then the
+     * idle light programmes start cycling.
      */
-    function initSlotCabinet() {
-      document.querySelectorAll('#slotContainer .slot-bulbs').forEach(row => {
-        if (row.childElementCount) return;
-        const count = Number(row.dataset.count) || 0;
-        const tones = row.dataset.tones || 'a';
-        for (let i = 0; i < count; i++) {
-          const bulb = document.createElement('span');
-          const tone = tones[i % tones.length];
-          bulb.className = 'slot-bulb' + (tone === 'a' ? '' : ` tone-${tone}`);
-          const idx = row.dataset.reverse ? count - 1 - i : i;
-          bulb.style.setProperty('--i', String(idx));
-          bulb.style.setProperty('--p', String(i % 2));
-          bulb.style.setProperty('--n', String(count));
-          bulb.style.setProperty('--sd', `${(0.7 + Math.random() * 1.3).toFixed(2)}s`);
-          bulb.style.setProperty('--sr', `${(-Math.random() * 2).toFixed(2)}s`);
-          row.appendChild(bulb);
-        }
-      });
-      setInterval(cycleSlotLights, SLOT_IDLE_PROGRAM_MS);
+    function initMachineLights() {
+      document.querySelectorAll('#slotContainer .slot-bulbs').forEach(row => fillBulbs(row, false));
+      document.querySelectorAll('#wheelContainer .wheel-bulbs').forEach(ring => fillBulbs(ring, true));
+      setInterval(cycleLights, SLOT_IDLE_PROGRAM_MS);
     }
 
-    /** Switches the bulbs to one light program (see the lights-* CSS). */
-    function setSlotLights(program) {
-      if (!slotCabinet || program === slotLightProgram) return;
-      slotCabinet.classList.remove(`lights-${slotLightProgram}`);
-      slotLightProgram = program;
-      slotCabinet.classList.add(`lights-${program}`);
+    /** Switches one machine's bulbs to a light programme (see the lights-* CSS). */
+    function setRigLights(rig, program) {
+      if (!rig) return;
+      const current = rig.dataset.lights || 'chase';
+      if (current === program) return;
+      rig.classList.remove(`lights-${current}`);
+      rig.classList.add(`lights-${program}`);
+      rig.dataset.lights = program;
     }
+    function setSlotLights(program) { setRigLights(slotCabinet, program); }
 
-    /** Idle: move on to the next light program – only while nobody watches a spin. */
-    function cycleSlotLights() {
-      if (!slotCabinet || slotAnimating || slotCabinet.classList.contains('is-win')) return;
-      if (viewMode !== VIEW_MODE_SLOT || document.hidden || prefersReducedMotion()) return;
-      slotIdleStep = (slotIdleStep + 1) % SLOT_IDLE_PROGRAMS.length;
-      setSlotLights(SLOT_IDLE_PROGRAMS[slotIdleStep]);
+    /** Idle: move the visible machine on to its next light programme. */
+    function cycleLights() {
+      if (document.hidden || prefersReducedMotion()) return;
+      let rig = null;
+      if (viewMode === VIEW_MODE_SLOT && !slotAnimating) rig = slotCabinet;
+      if (viewMode === VIEW_MODE_WHEEL && !wheelAnimating) rig = wheelStage;
+      if (!rig || rig.classList.contains('is-win')) return;
+      lightIdleStep = (lightIdleStep + 1) % SLOT_IDLE_PROGRAMS.length;
+      setRigLights(rig, SLOT_IDLE_PROGRAMS[lightIdleStep]);
     }
 
     /** Reels at speed: racing lights and motion blur until each one slows down. */
@@ -4909,7 +5138,7 @@
       setSlotLights('jackpot');
       slotWinTimer = setTimeout(() => {
         slotCabinet.classList.remove('is-win');
-        setSlotLights(SLOT_IDLE_PROGRAMS[slotIdleStep]);
+        setSlotLights(SLOT_IDLE_PROGRAMS[lightIdleStep]);
       }, 1700);
       slotPayoutCoins();
     }
@@ -5115,6 +5344,73 @@
       const cx = 150, cy = 150, r = 148;
       const n = list.length;
       const seg = 360 / n;
+      const mk = (tag, attrs) => {
+        const el = document.createElementNS(NS, tag);
+        Object.keys(attrs).forEach(k => el.setAttribute(k, attrs[k]));
+        return el;
+      };
+
+      // Pegs around the rim. A small team means huge slices, so each one gets
+      // several pegs – about sixteen around the disc turn a lonely knock into a
+      // ratchet. The count per slice is odd so a slice centre (where the disc
+      // stops) always sits halfway between two pegs and the flapper rests free.
+      let pegsPerSlice = Math.max(1, Math.round(16 / n));
+      if (pegsPerSlice % 2 === 0) pegsPerSlice -= 1;
+      wheelPegStep = seg / pegsPerSlice;
+
+      // --- Depth: every slice colour as a radial gradient, light at the hub
+      // and darker towards the rim, plus a chrome gradient for the pegs. ---
+      const shade = (hex, t) => {
+        const v = parseInt(hex.slice(1), 16);
+        const ch = [v >> 16, (v >> 8) & 255, v & 255]
+          .map(c => Math.round(t < 0 ? c * (1 + t) : c + (255 - c) * t));
+        return `rgb(${ch.join(',')})`;
+      };
+      const defs = mk('defs', {});
+      const colorCount = Math.min(n, WHEEL_COLORS.length);
+      for (let c = 0; c < colorCount; c++) {
+        const g = mk('radialGradient', { id: `wheelSeg${c}`, gradientUnits: 'userSpaceOnUse', cx, cy, r });
+        [[0, 0.32], [0.42, 0.06], [0.8, 0], [1, -0.3]].forEach(([off, t]) => {
+          g.appendChild(mk('stop', { offset: off, 'stop-color': shade(WHEEL_COLORS[c], t) }));
+        });
+        defs.appendChild(g);
+      }
+      const peg = mk('radialGradient', { id: 'wheelPeg', cx: 0.35, cy: 0.3, r: 0.75 });
+      [[0, '#ffffff'], [0.4, '#d5d9e0'], [1, '#5e636d']].forEach(([off, col]) => {
+        peg.appendChild(mk('stop', { offset: off, 'stop-color': col }));
+      });
+      defs.appendChild(peg);
+      // Hub shadow and rim falloff over the whole disc.
+      const depth = mk('radialGradient', { id: 'wheelDepth', gradientUnits: 'userSpaceOnUse', cx, cy, r });
+      [[0, 0.32], [0.17, 0], [0.74, 0], [0.93, 0.12], [1, 0.34]].forEach(([off, a]) => {
+        depth.appendChild(mk('stop', { offset: off, 'stop-color': '#000', 'stop-opacity': a }));
+      });
+      defs.appendChild(depth);
+      const textShadow = mk('filter', { id: 'wheelTextShadow', x: '-20%', y: '-40%', width: '140%', height: '180%' });
+      textShadow.appendChild(mk('feDropShadow', { dx: 0, dy: 1, stdDeviation: 0.9, 'flood-color': '#000', 'flood-opacity': 0.5 }));
+      defs.appendChild(textShadow);
+      svg.appendChild(defs);
+
+      const slices = mk('g', {});
+      const labels = mk('g', { filter: 'url(#wheelTextShadow)' });
+      svg.appendChild(slices);
+
+      // Shade, labels, pegs and rim go on top of the slices once they exist.
+      const finishDisc = () => {
+        svg.appendChild(mk('circle', { cx, cy, r, fill: 'url(#wheelDepth)', 'pointer-events': 'none' }));
+        svg.appendChild(labels);
+        const pegs = mk('g', {});
+        const pegCount = Math.round(360 / wheelPegStep);
+        for (let j = 0; j < pegCount; j++) {
+          const [px, py] = toXY(j * wheelPegStep, 139.5);
+          pegs.appendChild(mk('circle', {
+            cx: px.toFixed(2), cy: py.toFixed(2), r: 4.2,
+            fill: 'url(#wheelPeg)', stroke: 'rgba(0,0,0,0.4)', 'stroke-width': 0.6
+          }));
+        }
+        svg.appendChild(pegs);
+        svg.appendChild(mk('circle', { cx, cy, r: r - 0.8, fill: 'none', stroke: 'rgba(255,255,255,0.35)', 'stroke-width': 1.4 }));
+      };
 
       // Point on the rim at a clockwise angle (degrees) measured from the top.
       const toXY = (angleDeg, radius) => {
@@ -5142,10 +5438,10 @@
         circle.setAttribute('cx', cx);
         circle.setAttribute('cy', cy);
         circle.setAttribute('r', r);
-        circle.setAttribute('fill', WHEEL_COLORS[0]);
+        circle.setAttribute('fill', 'url(#wheelSeg0)');
         circle.dataset.name = upper;
         circle.dataset.slot = '0';
-        svg.appendChild(circle);
+        slices.appendChild(circle);
 
         // Largest font that fits the diameter (with a small margin).
         const soloFont = Math.max(12, Math.min(48, (r * 1.7) / widthPerPx));
@@ -5163,14 +5459,15 @@
         text.dataset.name = upper;
         text.dataset.slot = '0';
         text.textContent = upper;
-        svg.appendChild(text);
+        labels.appendChild(text);
+        finishDisc();
         return;
       }
 
       // Uniform label size for all slices: the largest font bounded by both the
       // radial room (length of the longest name) and the slice's angular width.
       // Labels sit in an outer band so they stay clear of the hub and the tip.
-      const rInner = 0.34, rOuter = 0.95;
+      const rInner = 0.3, rOuter = 0.9; // clear of the hub cap and the peg ring
       const midRadius = (rInner + rOuter) / 2 * r;
       const lengthBudget = (rOuter - rInner) * r * 0.94;
       const segRad = seg * Math.PI / 180;
@@ -5190,12 +5487,13 @@
         path.setAttribute('d',
           `M ${cx} ${cy} L ${x1.toFixed(2)} ${y1.toFixed(2)} ` +
           `A ${r} ${r} 0 ${largeArc} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`);
-        path.setAttribute('fill', WHEEL_COLORS[i % WHEEL_COLORS.length]);
-        path.setAttribute('stroke', 'rgba(255,255,255,0.85)');
-        path.setAttribute('stroke-width', '2');
+        path.setAttribute('fill', `url(#wheelSeg${i % WHEEL_COLORS.length})`);
+        path.setAttribute('stroke', 'rgba(255,244,214,0.9)');
+        path.setAttribute('stroke-width', '1.6');
+        path.setAttribute('stroke-linejoin', 'round');
         path.dataset.name = upper;
         path.dataset.slot = String(i);
-        svg.appendChild(path);
+        slices.appendChild(path);
 
         const mid = start + seg / 2;
         const [tx, ty] = toXY(mid, midRadius);
@@ -5219,8 +5517,77 @@
         text.dataset.name = upper;
         text.dataset.slot = String(i);
         text.textContent = upper;
-        svg.appendChild(text);
+        labels.appendChild(text);
       });
+      finishDisc();
+    }
+
+    // --- Wheel flapper and light show (pure decoration) ---
+    let wheelPegStep = 36;   // degrees between two pegs, set by buildWheel()
+    let wheelFlapRaf = null;
+    let wheelWinTimer = null;
+
+    /** Current angle of the disc, read from the running transition. */
+    function wheelAngleNow() {
+      const m = getComputedStyle(wheelSpinner).transform;
+      const v = m && m.match(/matrix\(([^)]+)\)/);
+      if (!v) return 0;
+      const [a, b] = v[1].split(',').map(Number);
+      return ((Math.atan2(b, a) * 180 / Math.PI) + 360) % 360;
+    }
+
+    /**
+     * Lets the pegs push the flapper: each frame reads the disc angle, and when
+     * a peg is within a few degrees of the tip it bends the flapper aside in
+     * proportion; once the peg has slipped past, the flapper snaps back. That
+     * gives the real ratchet look – fast flutter at speed, single clear flicks
+     * as the wheel runs out.
+     */
+    function runWheelFlapper() {
+      stopWheelFlapper();
+      if (!wheelPointer || prefersReducedMotion()) return;
+      const step = wheelPegStep;
+      const reach = Math.min(step * 0.6, 9); // degrees of disc travel a peg holds the tip
+      const frame = () => {
+        const angle = wheelAngleNow();
+        // Degrees until the next peg reaches the tip (pegs come from the left).
+        const ahead = (step - (angle % step)) % step;
+        const bend = ahead < reach ? -26 * (1 - ahead / reach) : 0;
+        wheelPointer.style.transform = `rotate(${bend.toFixed(2)}deg)`;
+        wheelFlapRaf = requestAnimationFrame(frame);
+      };
+      wheelFlapRaf = requestAnimationFrame(frame);
+    }
+
+    function stopWheelFlapper() {
+      if (wheelFlapRaf !== null) cancelAnimationFrame(wheelFlapRaf);
+      wheelFlapRaf = null;
+      if (wheelPointer) wheelPointer.style.transform = '';
+    }
+
+    /** Disc running: racing ring lights and a fluttering flapper. */
+    function wheelSpinEffectsStart() {
+      clearTimeout(wheelWinTimer);
+      if (wheelStage) {
+        wheelStage.classList.remove('is-win');
+        wheelStage.classList.add('is-spinning');
+      }
+      setRigLights(wheelStage, 'race');
+      runWheelFlapper();
+    }
+
+    /** Disc stands: jackpot lights, a beam round the dome, glowing hub star. */
+    function wheelSpinEffectsEnd() {
+      stopWheelFlapper();
+      if (!wheelStage) return;
+      wheelStage.classList.remove('is-spinning', 'is-win');
+      void wheelStage.offsetWidth;
+      wheelStage.classList.add('is-win');
+      setRigLights(wheelStage, 'jackpot');
+      wheelWinTimer = setTimeout(() => {
+        wheelStage.classList.remove('is-win');
+        setRigLights(wheelStage, SLOT_IDLE_PROGRAMS[lightIdleStep]);
+      }, 1700);
     }
 
     function updateWheelHistory() {
@@ -5241,12 +5608,12 @@
     function updateWheelSegmentStates() {
       const svg = document.getElementById('wheelSvg');
       if (!svg) return;
-      svg.querySelectorAll('path, text, circle').forEach(el => {
+      svg.querySelectorAll('[data-slot]').forEach(el => {
         const slot = Number(el.dataset.slot);
         const used = usedWheelSlots.has(slot);
         const isCurrent = currentWheelSlot !== null && slot === currentWheelSlot;
         const isText = el.tagName === 'text';
-        el.style.opacity = used ? (isText ? '0.4' : '0.25') : '1';
+        el.classList.toggle('wheel-used', used);
         if (!isText) el.classList.toggle('wheel-current', !!isCurrent);
       });
     }
@@ -5288,9 +5655,8 @@
 
       // The flapper ticks off the pegs as they pass, following the same easing
       // curve as the disc – so the clicks slow down exactly as the wheel does.
-      // A small team means huge slices, so each one carries several pegs: about
-      // sixteen around the disc is what turns a lonely knock into a ratchet.
-      const pegStep = seg / Math.max(1, Math.round(16 / currentWheelList.length));
+      // One click per peg (see buildWheel() for how many there are).
+      const pegStep = wheelPegStep;
       const pegTicks = prefersReducedMotion() ? null : notchTicks({
         from: startRotation, to: target, step: pegStep,
         dur: WHEEL_SPIN_DURATION_MS, ease: [0.22, 0.0, 0.22, 1.0],
@@ -5304,6 +5670,7 @@
         wheelAnimating = false;
         stopCue(pegTicks);
         playSound('win');
+        wheelSpinEffectsEnd();
 
         // The previously highlighted speaker now becomes a greyed-out slice;
         // the freshly drawn name takes over as the highlighted current speaker.
@@ -5340,6 +5707,7 @@
       // Fallback in case transitionend never fires (e.g. background tab).
       const transitionTimeout = setTimeout(finalize, WHEEL_SPIN_DURATION_MS + 300);
       wheelSpinner.addEventListener('transitionend', finalize);
+      wheelSpinEffectsStart();
 
       requestAnimationFrame(() => {
         // Gentle ease-in (slow start), moderate middle, long roll-out to a soft
@@ -5373,6 +5741,8 @@
       if (wheelSpinButton) wheelSpinButton.style.display = '';
 
       // Reset the disc to its start position without animation.
+      stopWheelFlapper();
+      if (wheelStage) wheelStage.classList.remove('is-spinning', 'is-win');
       wheelSpinner.style.transition = 'none';
       wheelSpinner.style.transform = 'rotate(0deg)';
 
@@ -5402,6 +5772,7 @@
     /** Restarts the wheel round: back to the participant selection. */
     function resetWheel() {
       wheelSessionActive = false;
+      stopWheelFlapper();
       wheelAwaitingFinish = false;
       if (wheelSpinButton) {
         wheelSpinButton.disabled = true;
@@ -6692,6 +7063,7 @@
 
     function hideResults() {
       showView(null);
+      stopWheelFlapper();
       setNextButtonVisible(false);
       slotStrips.forEach(strip => { strip.style.transition = 'none'; });
       if (slotSpinButton) {
@@ -7305,7 +7677,7 @@
     editButton.addEventListener('click', openConfig);
     helpButton.addEventListener('click', openHelp);
     
-    initSlotCabinet();
+    initMachineLights();
     // The letter size depends on the reel width – refit when the window changes.
     window.addEventListener('resize', () => {
       if (viewMode === VIEW_MODE_SLOT) fitSlotFont();

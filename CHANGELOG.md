@@ -10,6 +10,27 @@ den Cache-Namen und löst im laufenden Betrieb das „Neue Version verfügbar“
 aus. **Merkregel:** Bei jeder Änderung, die ausgeliefert wird, `CACHE_VERSION`
 hochzählen *und* hier einen Eintrag ergänzen.
 
+## [v20] – 2026-11-13
+
+### Geändert
+- **Slotmaschine – Name als ein Wort:** Statt den Namen in Silben zu
+  zerschneiden (BA·STI·AN), liegt über allen drei Walzen ein gemeinsames
+  Buchstabenraster mit gleichem Abstand. Jede Walze hat gleich viele Zellen,
+  die Walzengrenzen fallen immer zwischen zwei Buchstaben und der Name steht
+  zentriert – er liest sich als ein gleichmäßig gesetztes Wort. Die
+  Schriftgröße richtet sich nach dem breitesten Buchstaben im Spiel.
+- **Glücksrad – aufgewertet auf Automaten-Niveau:** Leuchtring im
+  Markenfarbton mit Chromrand und 24 Glühbirnen, die dieselben
+  Lichtprogramme wie die Slotmaschine fahren (Rasen beim Drehen,
+  Jackpot-Blinken beim Gewinn). Die Scheibe sitzt in einer Chromfassung, die
+  Segmente sind plastisch schattiert (hell an der Nabe, dunkler zum Rand),
+  Chrom-Pins am Rand, Beschriftung mit leichtem Schatten. Darüber liegt eine
+  feststehende Glaskuppel-Spiegelung, beim Gewinn läuft ein Lichtstrahl
+  einmal herum und der Stern in der Chrom-Nabe glüht. Der Zeiger ist ein
+  3D-Tropfen auf Chromlager, der von den Pins tatsächlich ausgelenkt wird und
+  zurückschnappt. Dazu ein Standfuß. Bereits gezogene Segmente werden
+  entsättigt statt durchsichtig. Saisonale Farben für Zeiger, Ring und Nabe.
+
 ## [v19] – 2026-11-13
 
 ### Geändert

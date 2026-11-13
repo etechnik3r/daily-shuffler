@@ -129,9 +129,9 @@ Jede Ansicht ist ein eigenes View-Modul mit gleichem Vertrag und wird über die
 | Konstante | Ansicht | Kurzbeschreibung |
 |-----------|---------|------------------|
 | `classic` | Klassisch | Reihenfolge als Liste, aktuelle Person hervorgehoben. |
-| `slot` | Slotmaschine | Spielautomat mit drei gegenläufigen Walzen, die den Namen in drei Teilen zusammensetzen (nacheinander einrastend), wechselnden Lichtprogrammen, Hebel (klickbar) und Münzschale; lost den nächsten Sprecher aus. |
+| `slot` | Slotmaschine | Spielautomat mit drei gegenläufigen Walzen, die den Namen auf einem gemeinsamen Buchstabenraster als ein Wort zusammensetzen (nacheinander einrastend), wechselnden Lichtprogrammen, Hebel (klickbar) und Münzschale; lost den nächsten Sprecher aus. |
 | `ev` | Roadtrip (E-Auto) | E-Auto fährt über eine feste Landstraße zur Ladesäule, Batterie = Redezeit, Schildkröte = knapp/vorbei. |
-| `wheel` | Glücksrad | Buntes Rad dreht sich, per Klick wird gezogen. |
+| `wheel` | Glücksrad | Show-Rad mit Leuchtring (gleiche Lichtprogramme wie die Slotmaschine), schattierter Scheibe mit Chrom-Pins, Glaskuppel, Chrom-Nabe, von den Pins ausgelenktem Zeiger und Standfuß; per Klick wird gezogen. |
 | `card` | Kartenspiel | Namenskarten fliegen auf den Stapel, mit Sonderkarten. |
 | `flap` | Abfahrtstafel | Fallblatt-Tafel wie am Bahnhof; die ganze Reihenfolge bleibt sichtbar. |
 | `line` | Linienplan | Bunter Stadtplan: die Linie schlängelt sich durch die Stadt, der Zug fährt während der Redezeit zur nächsten Station; Schild mit „Nächster Halt“, Uhr, Verspätung. |
