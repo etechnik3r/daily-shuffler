@@ -337,12 +337,14 @@
     }
 
     /* --- Slot Machine View (cabinet) ---
-       A real one-reel machine: chrome-trimmed cabinet in the brand hue, a
-       marquee with chasing bulbs, a curved ivory reel behind glass, a payline,
-       a side lever that swings towards the viewer and a coin tray. Only the
-       look lives here – the draw itself is still animateSlotToWinner(). The
-       bulbs and chrome are deliberately NOT themed: warm light and metal read
-       as "machine" in every colour. --- */
+       A real three-reel machine: chrome-trimmed cabinet in the brand hue, a
+       marquee and a footer row of bulbs running changing light programs, three
+       curved ivory reels behind glass (the outer two run downwards, the middle
+       one upwards) that each carry one third of every name, a payline, a side
+       lever that swings towards the viewer and a coin tray. Only the look lives
+       here – the draw itself is animateSlotToWinner(). The bulbs and chrome
+       are deliberately NOT themed: warm light and metal read as "machine" in
+       every colour. --- */
     #slotContainer {
       width: 100%;
       max-width: var(--col-width);
@@ -354,7 +356,16 @@
       --slot-bulb-on: #ffd66b;
       --slot-bulb-glow: rgba(255, 196, 60, 0.85);
       --slot-bulb-off: #6b4a1e;
-      --slot-pivot: 164px;      /* lever pivot, measured from the cabinet top */
+      --slot-bulb-rim: #c98a12;
+      /* Second and third bulb colour (red and warm white), so the rows are not
+         one flat yellow. Seasons override all three. */
+      --slot-tone-b: #ff5a45;
+      --slot-tone-b-glow: rgba(255, 70, 40, 0.85);
+      --slot-tone-b-rim: #a8140c;
+      --slot-tone-c: #fff3d6;
+      --slot-tone-c-glow: rgba(255, 236, 200, 0.9);
+      --slot-tone-c-rim: #d2ae6a;
+      --slot-pivot: 182px;      /* lever pivot, measured from the cabinet top */
       --slot-lever-len: 96px;
     }
     /* Positioning context for the cabinet + the absolutely placed lever, so the
@@ -416,27 +427,63 @@
       align-self: stretch;
       padding: 10px 0;
     }
+    .slot-bulbs-bottom { margin-top: 12px; padding: 0 6px; }
+    /* A bulb is unlit glass; the lit filament is its ::before layer. Every
+       light program below only animates that layer's opacity, so programs can
+       be swapped at any time (class lights-* on the cabinet, see
+       setSlotLights()) and fades stay smooth. */
     .slot-bulb {
+      position: relative;
       width: 9px;
       height: 9px;
       border-radius: 50%;
       flex: 0 0 auto;
-      background: radial-gradient(circle at 35% 30%, #fffbe6 0%, var(--slot-bulb-on) 45%, #c98a12 100%);
-      box-shadow: 0 0 6px 1px var(--slot-bulb-glow), 0 0 0 1px rgba(0, 0, 0, 0.35);
-      animation: slot-bulb-chase 1.4s linear infinite;
+      background: radial-gradient(circle at 35% 30%, #a88a4e 0%, var(--slot-bulb-off) 60%, #3a2508 100%);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45);
+    }
+    .slot-bulb::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(circle at 35% 30%, #fffbe6 0%, var(--slot-bulb-on) 45%, var(--slot-bulb-rim) 100%);
+      box-shadow: 0 0 7px 2px var(--slot-bulb-glow), 0 0 0 1px rgba(0, 0, 0, 0.35);
+      animation: slot-blink-third 1.4s linear infinite;
       animation-delay: calc(var(--i, 0) * -0.14s);
     }
-    @keyframes slot-bulb-chase {
-      0%, 34%   { background: radial-gradient(circle at 35% 30%, #fffbe6 0%, var(--slot-bulb-on) 45%, #c98a12 100%);
-                  box-shadow: 0 0 7px 2px var(--slot-bulb-glow), 0 0 0 1px rgba(0, 0, 0, 0.35); }
-      35%, 100% { background: radial-gradient(circle at 35% 30%, #a88a4e 0%, var(--slot-bulb-off) 60%, #3a2508 100%);
-                  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45); }
+    .slot-bulb.tone-b { --slot-bulb-on: var(--slot-tone-b); --slot-bulb-glow: var(--slot-tone-b-glow); --slot-bulb-rim: var(--slot-tone-b-rim); }
+    .slot-bulb.tone-c { --slot-bulb-on: var(--slot-tone-c); --slot-bulb-glow: var(--slot-tone-c-glow); --slot-bulb-rim: var(--slot-tone-c-rim); }
+    @keyframes slot-blink-third { 0%, 34% { opacity: 1; } 35%, 100% { opacity: 0; } }
+    @keyframes slot-blink-half  { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+    @keyframes slot-glow-sine   { 0%, 100% { opacity: 0.06; } 50% { opacity: 1; } }
+    @keyframes slot-sparkle     { 0%, 7% { opacity: 1; } 16%, 100% { opacity: 0.08; } }
+    /* Idle programs, cycled every few seconds: chase (default), a soft wave,
+       even/odd alternation, rows filling up and draining, random sparkle. */
+    .slot-cabinet.lights-wave .slot-bulb::before {
+      animation: slot-glow-sine 1.8s ease-in-out infinite;
+      animation-delay: calc(var(--i, 0) * -0.15s);
     }
-    /* While the reel runs the lights race; on a win they all flash together. */
-    .slot-cabinet.is-spinning .slot-bulb { animation-duration: 0.42s; }
-    .slot-cabinet.is-win .slot-bulb {
-      animation: slot-bulb-chase 0.24s steps(1, end) infinite;
-      animation-delay: 0s;
+    .slot-cabinet.lights-alternate .slot-bulb::before {
+      animation: slot-blink-half 0.9s linear infinite;
+      animation-delay: calc(var(--p, 0) * -0.45s);
+    }
+    .slot-cabinet.lights-fill .slot-bulb::before {
+      animation: slot-blink-half 2.4s linear infinite;
+      animation-delay: calc(var(--i, 0) * -1.2s / var(--n, 10));
+    }
+    .slot-cabinet.lights-sparkle .slot-bulb::before {
+      animation: slot-sparkle var(--sd, 1.2s) linear infinite;
+      animation-delay: var(--sr, 0s);
+    }
+    /* While the reels run the lights race; on a win they flash in jackpot
+       alternation. */
+    .slot-cabinet.lights-race .slot-bulb::before {
+      animation: slot-blink-third 0.42s linear infinite;
+      animation-delay: calc(var(--i, 0) * -0.14s);
+    }
+    .slot-cabinet.lights-jackpot .slot-bulb::before {
+      animation: slot-blink-half 0.24s linear infinite;
+      animation-delay: calc(var(--p, 0) * -0.12s);
     }
     /* Reel window: bulb columns left and right of a chrome bezel. */
     .slot-window {
@@ -469,24 +516,34 @@
     }
     .slot-payline-arrow.is-left  { left: -3px;  border-left: 9px solid #e0101e; }
     .slot-payline-arrow.is-right { right: -3px; border-right: 9px solid #e0101e; }
+    /* Reel housing: three drums side by side, dark gaps between them. */
     #slotTrackWrapper {
       position: relative;
+      display: flex;
+      gap: 4px;
       width: 100%;
-      height: 168px;            /* exactly three rows of 56 px */
+      height: 192px;            /* exactly three rows of 64 px */
       margin: 0 auto;
       overflow: hidden;
       border-radius: 9px;
-      /* Ivory reel strip; the sides fall off as the drum curves away. */
-      background: linear-gradient(90deg, #cfc6b4 0%, #f6efdf 14%, #fffdf6 50%, #f6efdf 86%, #cfc6b4 100%);
+      background: linear-gradient(180deg, #050407 0%, #1d1b22 50%, #050407 100%);
       box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);
+      --slot-font: 28px;        /* fitted to the longest name part, fitSlotFont() */
     }
-    #slotTrack {
+    .slot-reel {
+      position: relative;
+      flex: 1 1 0;
+      min-width: 0;
+      overflow: hidden;
+      /* Ivory strip; its sides fall off a little as each drum curves away. */
+      background: linear-gradient(90deg, #d6cdb9 0%, #f6efdf 16%, #fffdf6 50%, #f6efdf 84%, #d6cdb9 100%);
+      box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.6), inset -1px 0 0 rgba(0, 0, 0, 0.2);
+    }
+    .slot-strip {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
-      z-index: 1;
-      transition: transform 1.7s cubic-bezier(0.22, 0.9, 0.28, 1);
       will-change: transform;
     }
     .slot-item {
@@ -494,45 +551,66 @@
       align-items: center;
       justify-content: center;
       width: 100%;
-      padding: 0 14px;
+      padding: 0 3px;
       background: transparent;
       border-bottom: 1px solid rgba(60, 40, 10, 0.08);
       box-sizing: border-box;
       font-family: 'Arial Black', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      font-size: 1.32em;
+      font-size: var(--slot-font);
       font-weight: 900;
       color: #1d1b24;
       text-transform: uppercase;
-      text-align: center;
-      letter-spacing: 0.06em;
-      white-space: nowrap;
+      letter-spacing: 0.02em;
+      white-space: pre;
       overflow: hidden;
-      text-overflow: ellipsis;
       text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
       transition: color 0.25s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), text-shadow 0.25s ease;
     }
+    /* The three parts of a name hug the reel gaps, so on the payline they read
+       as one word: left part right-aligned, right part left-aligned. */
+    .slot-reel.is-left .slot-item  { justify-content: flex-end;   transform-origin: 100% 50%; }
+    .slot-reel.is-right .slot-item { justify-content: flex-start; transform-origin: 0 50%; }
     .slot-item.used-participant {
       color: rgba(29, 27, 36, 0.35);
       opacity: 0.6;
     }
-    /* Motion blur while the drum is at speed: ghost copies above and below. */
-    #slotTrack.is-spinning .slot-item {
+    /* Motion blur while a drum is at speed: ghost copies above and below. */
+    .slot-strip.is-spinning .slot-item {
       color: rgba(29, 27, 36, 0.72);
       text-shadow:
-        0 -9px 0 rgba(29, 27, 36, 0.2),
-        0 9px 0 rgba(29, 27, 36, 0.2),
-        0 -18px 0 rgba(29, 27, 36, 0.08),
-        0 18px 0 rgba(29, 27, 36, 0.08);
+        0 -10px 0 rgba(29, 27, 36, 0.2),
+        0 10px 0 rgba(29, 27, 36, 0.2),
+        0 -20px 0 rgba(29, 27, 36, 0.08),
+        0 20px 0 rgba(29, 27, 36, 0.08);
       transition: none;
     }
-    #slotTrack.is-spinning { filter: blur(0.5px); }
-    /* The name that just landed on the payline. */
+    .slot-strip.is-spinning { filter: blur(0.5px); }
+    /* The part that just landed on the payline – lit reel by reel. */
     .slot-item.is-winner {
       color: hsl(var(--brand-h), calc(95% * var(--brand-sat)), 26%);
-      transform: scale(1.1);
+      transform: scale(1.08);
       text-shadow:
         0 1px 0 rgba(255, 255, 255, 0.9),
         0 0 14px rgba(255, 190, 60, 0.75);
+    }
+    /* A drum dropping into its detent: a short warm flash on its payline cell. */
+    .slot-reel::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 64px;
+      margin-top: -32px;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0;
+      background: radial-gradient(70% 60% at 50% 50%, rgba(255, 214, 107, 0.55) 0%, rgba(255, 214, 107, 0) 100%);
+    }
+    .slot-reel.is-locked::after { animation: slot-reel-lock 0.5s ease-out 1; }
+    @keyframes slot-reel-lock {
+      0%   { opacity: 1; }
+      100% { opacity: 0; }
     }
     /* Drum curvature: rows darken towards the top and bottom edge. */
     .slot-reel-shade {
@@ -554,7 +632,7 @@
       top: 50%;
       left: 0;
       width: 100%;
-      height: 56px;
+      height: 64px;
       z-index: 3;
       transform: translateY(-50%);
       background: linear-gradient(180deg, rgba(255, 214, 107, 0.16), rgba(255, 214, 107, 0.04) 50%, rgba(255, 214, 107, 0.16));
@@ -603,7 +681,7 @@
     .slot-tray {
       position: relative;
       height: 40px;
-      margin-top: 14px;
+      margin-top: 12px;
       border-radius: 8px 8px 18px 18px;
       overflow: hidden;
       background: linear-gradient(180deg, #0d0d12 0%, #22222a 55%, #34343e 100%);
@@ -796,11 +874,13 @@
       background: linear-gradient(180deg, hsl(var(--brand-h), calc(70% * var(--brand-sat)), 59%) 0%, hsl(var(--brand-h), calc(51% * var(--brand-sat)), 33%) 100%);
     }
     .slot-empty {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100%;
-      min-height: 168px;
+      background: #fffdf6;
       box-sizing: border-box;
       color: #666;
       font-size: 0.95em;
@@ -1287,14 +1367,18 @@
       background: radial-gradient(90% 120% at 50% 0%, #6b2fa0 0%, #241038 75%);
       box-shadow: inset 0 0 0 2px rgba(255, 140, 0, 0.6), inset 0 0 22px rgba(0, 0, 0, 0.5);
     }
-    .season-halloween #slotContainer { --slot-bulb-on: #ff9a2e; --slot-bulb-glow: rgba(255, 120, 0, 0.85); }
-    .season-halloween #slotTrackWrapper {
+    .season-halloween #slotContainer {
+      --slot-bulb-on: #ff9a2e; --slot-bulb-glow: rgba(255, 120, 0, 0.85);
+      --slot-tone-b: #b77bff; --slot-tone-b-glow: rgba(160, 90, 255, 0.85); --slot-tone-b-rim: #4c1d85;
+      --slot-tone-c: #9dff6e; --slot-tone-c-glow: rgba(120, 255, 80, 0.8); --slot-tone-c-rim: #2f7a12;
+    }
+    .season-halloween .slot-reel {
       background: linear-gradient(90deg, #1c1029 0%, #2f1b45 14%, #3a2156 50%, #2f1b45 86%, #1c1029 100%);
     }
-    .season-halloween .slot-item { color: #f0c489; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6); }
+    .season-halloween .slot-item, .season-halloween .slot-empty { color: #f0c489; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6); }
     .season-halloween .slot-item.used-participant { color: rgba(240,196,137,0.4); }
     .season-halloween .slot-item.is-winner { color: #ffb347; text-shadow: 0 0 14px rgba(255, 140, 0, 0.9); }
-    .season-halloween #slotTrack.is-spinning .slot-item {
+    .season-halloween .slot-strip.is-spinning .slot-item {
       color: rgba(240, 196, 137, 0.75);
       text-shadow: 0 -9px 0 rgba(240, 196, 137, 0.2), 0 9px 0 rgba(240, 196, 137, 0.2);
     }
@@ -1325,7 +1409,11 @@
       filter: drop-shadow(0 1px 1.5px rgba(20, 40, 80, 0.35));
       z-index: 2;
     }
-    .season-winter #slotContainer { --slot-bulb-on: #e6f3ff; --slot-bulb-glow: rgba(170, 215, 255, 0.9); --slot-bulb-off: #3c5570; }
+    .season-winter #slotContainer {
+      --slot-bulb-on: #e6f3ff; --slot-bulb-glow: rgba(170, 215, 255, 0.9); --slot-bulb-off: #3c5570; --slot-bulb-rim: #7fa6cc;
+      --slot-tone-b: #8fd0ff; --slot-tone-b-glow: rgba(110, 185, 255, 0.9); --slot-tone-b-rim: #2f6fae;
+      --slot-tone-c: #ffffff; --slot-tone-c-glow: rgba(230, 244, 255, 0.95); --slot-tone-c-rim: #a8c3dd;
+    }
     .season-winter .slot-history-title::before { content: '❄️ '; }
     /* Carnival and Easter: party / pastel bulbs. */
     .season-carnival .slot-bulb:nth-child(4n+1) { --slot-bulb-on: #ff4fb3; --slot-bulb-glow: rgba(255, 79, 179, 0.85); }
@@ -1451,7 +1539,6 @@
       /* Narrow screens: let the column use the full width, but keep every
          element measuring against the same variable so they stay flush. */
       :root { --col-width: 100%; }
-      .slot-item { font-size: 1.08em; padding: 0 8px; }
       /* Keep the lever on screen: reserve its width inside the column. */
       .slot-machine-row { padding-right: 30px; }
       .slot-handle-container { right: 0; }
@@ -2489,7 +2576,7 @@
         scroll-behavior: auto !important;
       }
       /* Decorative loops carry no information at all – stop them outright. */
-      #evSnow, .ev-wheel, .focus-stream, .slot-bulb, .line-clock .line-colon, .line-head::after, .line-delay, .ln-river-shine, .ln-flow,
+      #evSnow, .ev-wheel, .focus-stream, .slot-bulb::before, .line-clock .line-colon, .line-head::after, .line-delay, .ln-river-shine, .ln-flow,
       .ln-stn .ln-ring, .ln-stn.is-pop, .line-map.is-late .ln-train-glow, .ev-cloud, .ev-hills, #evRoad::before,
       .ev-body, .ev-speedlines, #evBatteryFill::before { animation: none !important; }
       .slot-coin { display: none; }
@@ -2627,27 +2714,31 @@
   <div id="slotContainer" data-view="slot" style="display: none; position: relative;">
     <div id="slotStatus" data-i18n="slotStatusInitial">Drücke Starten für Zufall.</div>
     <div class="slot-machine-row">
-      <div id="slotCabinet" class="slot-cabinet">
+      <div id="slotCabinet" class="slot-cabinet lights-chase">
         <div class="slot-cabinet-body">
           <!-- Decoration only: bulbs are filled in by initSlotCabinet(). -->
           <div class="slot-marquee" aria-hidden="true">
-            <div class="slot-bulbs slot-bulbs-top" data-count="13"></div>
-            <div class="slot-bulbs slot-bulbs-top" data-count="13" data-reverse="1"></div>
+            <div class="slot-bulbs slot-bulbs-top" data-count="13" data-tones="ab"></div>
+            <div class="slot-bulbs slot-bulbs-top" data-count="13" data-tones="ca" data-reverse="1"></div>
           </div>
           <div class="slot-window">
-            <div class="slot-bulbs slot-bulbs-side" data-count="5" aria-hidden="true"></div>
+            <div class="slot-bulbs slot-bulbs-side" data-count="5" data-tones="cb" aria-hidden="true"></div>
             <div class="slot-window-bezel">
               <span class="slot-payline-arrow is-left" aria-hidden="true"></span>
               <div id="slotTrackWrapper">
-                <div id="slotTrack"></div>
+                <!-- Three reels, each carrying one third of every name. -->
+                <div class="slot-reel is-left" aria-hidden="true"><div class="slot-strip"></div></div>
+                <div class="slot-reel" aria-hidden="true"><div class="slot-strip"></div></div>
+                <div class="slot-reel is-right" aria-hidden="true"><div class="slot-strip"></div></div>
                 <div class="slot-reel-shade" aria-hidden="true"></div>
                 <div id="slotIndicator"></div>
                 <div class="slot-glass" aria-hidden="true"></div>
               </div>
               <span class="slot-payline-arrow is-right" aria-hidden="true"></span>
             </div>
-            <div class="slot-bulbs slot-bulbs-side" data-count="5" aria-hidden="true"></div>
+            <div class="slot-bulbs slot-bulbs-side" data-count="5" data-tones="cb" data-reverse="1" aria-hidden="true"></div>
           </div>
+          <div class="slot-bulbs slot-bulbs-bottom" data-count="13" data-tones="ba" data-reverse="1" aria-hidden="true"></div>
           <div id="slotTray" class="slot-tray" aria-hidden="true"></div>
         </div>
       </div>
@@ -3534,7 +3625,16 @@
       "Bastian", "Carolin", "Dennis", "Jan", "Joost", "Lea", "Niklas", "Philipp", "Stefan", "Ugur"
     ];
     const DEFAULT_TOTAL_TIME_MINUTES = 15;
-    const SLOT_SPIN_DURATION_MS = 2000; // spin length – long enough for a smooth decelerate
+    // Slot machine: three reels, each with its own run time – the left one drops
+    // first, the right one last (that is when the round is decided). The outer
+    // reels run downwards, the middle one upwards (+1 = strip moves up).
+    const SLOT_REEL_STOP_MS = [1500, 2050, 2600];
+    const SLOT_REEL_DIRS = [-1, 1, -1];
+    const SLOT_ROW_HEIGHT = 64;
+    // Strong decelerate with a tiny overshoot (y2 > 1) for a satisfying settle.
+    const SLOT_EASE = [0.18, 0.86, 0.26, 1.04];
+    const SLOT_IDLE_PROGRAMS = ['chase', 'wave', 'alternate', 'fill', 'sparkle'];
+    const SLOT_IDLE_PROGRAM_MS = 6000;
     const WHEEL_SPIN_DURATION_MS = 3000; // capped spin length (eases in, long roll-out)
     // Bright segment palette for the wheel – cycles if there are more names.
     const WHEEL_COLORS = [
@@ -3618,8 +3718,9 @@
     
     const participantSelection = document.getElementById('participantSelection');
     const slotContainer = document.getElementById('slotContainer');
-    const slotTrack = document.getElementById('slotTrack');
     const slotTrackWrapper = document.getElementById('slotTrackWrapper');
+    const slotReels = slotTrackWrapper ? Array.from(slotTrackWrapper.querySelectorAll('.slot-reel')) : [];
+    const slotStrips = slotReels.map(reel => reel.querySelector('.slot-strip'));
     const slotStatus = document.getElementById('slotStatus');
     const slotSpinButton = document.getElementById('slotSpinButton');
     const slotHistoryList = document.getElementById('slotHistoryList');
@@ -4311,12 +4412,12 @@
     }
 
     function updateSlotUsedState() {
-      if (!slotTrack) return;
+      if (!slotTrackWrapper) return;
 
       // The reel is rebuilt from remainingSlotParticipants before every spin, so
       // whatever is on it is still in the round. Marking by name would grey out a
       // second team member who happens to share a name with someone already drawn.
-      slotTrack.querySelectorAll('.slot-item').forEach(item => {
+      slotTrackWrapper.querySelectorAll('.slot-item').forEach(item => {
         item.classList.remove('used-participant');
       });
     }
@@ -4609,88 +4710,207 @@
       }, 300);
     }
 
-    function buildSlotMachine(list) {
-      if (!slotTrack) return null;
-      slotTrack.innerHTML = '';
-      slotTrack.style.transition = 'none';
-      slotTrack.style.transform = 'translateY(0)';
+    // --- Slot reels ---
+    // Geometry of the strips currently on screen (set by buildSlotMachine()).
+    let slotLayout = null;
+    let slotBlurTimers = [];
+    let slotWinTimer = null;
 
-      const itemHeight = 56;
-      const repetitions = 8;
-      const payload = [];
-
-      for (let rep = 0; rep < repetitions; rep++) {
-        list.forEach(name => payload.push(name));
-      }
-
-      payload.forEach(name => {
-        const item = document.createElement('div');
-        item.className = 'slot-item';
-        const upperName = name.trim().toUpperCase();
-        item.textContent = upperName;
-        item.dataset.name = upperName;
-        item.style.height = `${itemHeight}px`;
-        slotTrack.appendChild(item);
-      });
-
-      // Park the reel with a name on the payline (second pass, so names fill
-      // the window above it too) instead of leaving the strip's top edge in view.
-      slotTrack.style.transform = `translateY(${slotRestOffset(list.length, itemHeight)}px)`;
-      return itemHeight;
+    /**
+     * Cuts a name into the three parts the reels carry, as evenly as possible;
+     * spare letters go to the middle reel (BA·STI·AN, J·OOS·T, CA·ROLI·NE).
+     * The outer parts hug the reel gaps while the middle one is centred, so a
+     * wide middle part keeps the name from falling apart on the payline.
+     * Works on code points, so umlauts and emoji are never split in half.
+     */
+    function splitSlotName(name) {
+      const chars = Array.from(name.trim().toUpperCase());
+      const base = Math.floor(chars.length / 3);
+      const rem = chars.length % 3;
+      const lens = [base, base + rem, base];
+      const parts = [];
+      let at = 0;
+      lens.forEach(len => { parts.push(chars.slice(at, at + len).join('')); at += len; });
+      return parts;
     }
 
-    /** Reel offset that puts the first name of the second pass on the payline. */
-    function slotRestOffset(listLength, itemHeight) {
-      const wrapperHeight = (slotTrackWrapper && slotTrackWrapper.clientHeight) || 168;
-      return -(listLength * itemHeight + itemHeight / 2 - wrapperHeight / 2);
+    /** Translation that puts strip row `pos` dead-centre on the payline. */
+    function slotOffset(pos, rowHeight) {
+      const windowHeight = (slotTrackWrapper && slotTrackWrapper.clientHeight) || rowHeight * 3;
+      return -(pos * rowHeight + rowHeight / 2 - windowHeight / 2);
+    }
+
+    let slotMeasureCtx = null;
+    /**
+     * Picks the largest letter size at which the longest name part still fits
+     * its reel, so short teams get big letters and long names never get cut.
+     */
+    function fitSlotFont() {
+      if (!slotTrackWrapper || !slotReels.length || !slotLayout) return;
+      const avail = slotReels[0].clientWidth - 8;
+      if (avail <= 0) return; // view hidden – measured again when it is built
+      if (!slotMeasureCtx) slotMeasureCtx = document.createElement('canvas').getContext('2d');
+      const ctx = slotMeasureCtx;
+      ctx.font = "900 100px 'Arial Black', 'Helvetica Neue', Helvetica, Arial, sans-serif";
+      let widest = 0;
+      slotLayout.parts.forEach(parts => parts.forEach(part => {
+        const chars = Array.from(part).length;
+        widest = Math.max(widest, ctx.measureText(part).width + chars * 2); // + 0.02em spacing
+      }));
+      // 0.92: leave room for the 1.08 winner scale.
+      const size = widest ? Math.floor((avail * 0.92 / widest) * 100) : 34;
+      slotTrackWrapper.style.setProperty('--slot-font', `${Math.max(12, Math.min(34, size))}px`);
+    }
+
+    function clearSlotEmpty() {
+      if (!slotTrackWrapper) return;
+      const empty = slotTrackWrapper.querySelector('.slot-empty');
+      if (empty) empty.remove();
+    }
+
+    /**
+     * Fills the three strips for the names still in the round. Each strip holds
+     * the same sequence of names many times over (reel k shows part k), long
+     * enough for every reel to travel its passes in its own direction.
+     *
+     * @param {string[]} list - Names still in the round.
+     * @returns {number|null} Row height in px.
+     */
+    function buildSlotMachine(list) {
+      if (!slotStrips.length) return null;
+      clearSlotEmpty();
+      const L = list.length;
+      const parts = list.map(splitSlotName);
+      // Full passes per reel: later reels run longer, and short lists get more
+      // passes so even two names still whirl past properly.
+      const passes = SLOT_REEL_STOP_MS.map((_, k) => Math.max(3 + k, Math.ceil((30 + 10 * k) / L)));
+      const reps = Math.max.apply(null, passes) + 3;
+      // At rest every reel shows a different name, so the payline reads as a
+      // scramble until a spin lines one name up.
+      const rest = SLOT_REEL_DIRS.map((dir, k) => (dir > 0 ? L : (reps - 2) * L) + (k % L));
+
+      slotStrips.forEach((strip, k) => {
+        strip.innerHTML = '';
+        strip.classList.remove('is-spinning');
+        strip.style.transition = 'none';
+        const frag = document.createDocumentFragment();
+        for (let r = 0; r < reps; r++) {
+          parts.forEach(p => {
+            const item = document.createElement('div');
+            item.className = 'slot-item';
+            item.textContent = p[k];
+            item.style.height = `${SLOT_ROW_HEIGHT}px`;
+            frag.appendChild(item);
+          });
+        }
+        strip.appendChild(frag);
+      });
+
+      slotLayout = { listLength: L, reps, passes, rest, parts };
+      fitSlotFont();
+      slotStrips.forEach((strip, k) => {
+        strip.style.transform = `translateY(${slotOffset(rest[k], SLOT_ROW_HEIGHT)}px)`;
+      });
+      return SLOT_ROW_HEIGHT;
     }
 
     // --- Slot cabinet effects (pure decoration, no influence on the draw) ---
     const slotCabinet = document.getElementById('slotCabinet');
     const slotTray = document.getElementById('slotTray');
-    let slotBlurTimer = null;
-    let slotWinTimer = null;
+    let slotLightProgram = 'chase';
+    let slotIdleStep = 0;
 
-    /** Fills the bulb rows once; each bulb gets its index for the chase. */
+    /**
+     * Fills the bulb rows once. Each bulb gets its position (--i, chase/wave
+     * phase), parity (--p, alternation), the row length (--n, fill), a random
+     * rhythm (--sd/--sr, sparkle) and a colour from the row's data-tones
+     * pattern. Then the idle light programs start cycling.
+     */
     function initSlotCabinet() {
       document.querySelectorAll('#slotContainer .slot-bulbs').forEach(row => {
         if (row.childElementCount) return;
         const count = Number(row.dataset.count) || 0;
+        const tones = row.dataset.tones || 'a';
         for (let i = 0; i < count; i++) {
           const bulb = document.createElement('span');
-          bulb.className = 'slot-bulb';
-          bulb.style.setProperty('--i', String(row.dataset.reverse ? count - 1 - i : i));
+          const tone = tones[i % tones.length];
+          bulb.className = 'slot-bulb' + (tone === 'a' ? '' : ` tone-${tone}`);
+          const idx = row.dataset.reverse ? count - 1 - i : i;
+          bulb.style.setProperty('--i', String(idx));
+          bulb.style.setProperty('--p', String(i % 2));
+          bulb.style.setProperty('--n', String(count));
+          bulb.style.setProperty('--sd', `${(0.7 + Math.random() * 1.3).toFixed(2)}s`);
+          bulb.style.setProperty('--sr', `${(-Math.random() * 2).toFixed(2)}s`);
           row.appendChild(bulb);
         }
       });
+      setInterval(cycleSlotLights, SLOT_IDLE_PROGRAM_MS);
     }
 
-    /** Reel at speed: racing lights and motion blur until the final slow-down. */
+    /** Switches the bulbs to one light program (see the lights-* CSS). */
+    function setSlotLights(program) {
+      if (!slotCabinet || program === slotLightProgram) return;
+      slotCabinet.classList.remove(`lights-${slotLightProgram}`);
+      slotLightProgram = program;
+      slotCabinet.classList.add(`lights-${program}`);
+    }
+
+    /** Idle: move on to the next light program – only while nobody watches a spin. */
+    function cycleSlotLights() {
+      if (!slotCabinet || slotAnimating || slotCabinet.classList.contains('is-win')) return;
+      if (viewMode !== VIEW_MODE_SLOT || document.hidden || prefersReducedMotion()) return;
+      slotIdleStep = (slotIdleStep + 1) % SLOT_IDLE_PROGRAMS.length;
+      setSlotLights(SLOT_IDLE_PROGRAMS[slotIdleStep]);
+    }
+
+    /** Reels at speed: racing lights and motion blur until each one slows down. */
     function slotSpinEffectsStart() {
       clearTimeout(slotWinTimer);
-      clearTimeout(slotBlurTimer);
-      if (slotCabinet) slotCabinet.classList.remove('is-win');
-      if (slotCabinet) slotCabinet.classList.add('is-spinning');
+      slotBlurTimers.forEach(clearTimeout);
+      slotBlurTimers = [];
+      if (slotCabinet) {
+        slotCabinet.classList.remove('is-win');
+        slotCabinet.classList.add('is-spinning');
+      }
+      setSlotLights('race');
       if (prefersReducedMotion()) return;
-      slotTrack.classList.add('is-spinning');
-      // Drop the blur while the drum decelerates, so the last names that pass
-      // are readable – just like a real reel coming to rest.
-      slotBlurTimer = setTimeout(() => slotTrack.classList.remove('is-spinning'),
-        SLOT_SPIN_DURATION_MS * 0.6);
+      slotStrips.forEach((strip, k) => {
+        strip.classList.add('is-spinning');
+        // Drop the blur while the drum decelerates, so the last parts that pass
+        // are readable – just like a real reel coming to rest.
+        slotBlurTimers.push(setTimeout(() => strip.classList.remove('is-spinning'),
+          SLOT_REEL_STOP_MS[k] * 0.6));
+      });
     }
 
-    /** Reel has stopped: flash the cabinet, light the name, pay out coins. */
-    function slotSpinEffectsEnd(winnerEl) {
-      clearTimeout(slotBlurTimer);
-      slotTrack.classList.remove('is-spinning');
-      if (slotCabinet) slotCabinet.classList.remove('is-spinning');
-      if (winnerEl) winnerEl.classList.add('is-winner');
+    /** One reel has dropped into its detent: clunk, light its part, flash. */
+    function slotReelStopped(k, partEl) {
+      const strip = slotStrips[k];
+      strip.classList.remove('is-spinning');
+      if (partEl) partEl.classList.add('is-winner');
+      playSound('slotStop');
+      const reel = slotReels[k];
+      reel.classList.remove('is-locked');
+      void reel.offsetWidth;
+      reel.classList.add('is-locked');
+    }
+
+    /** All reels stand: flash the cabinet, jackpot lights, pay out coins. */
+    function slotSpinEffectsEnd() {
+      slotBlurTimers.forEach(clearTimeout);
+      slotBlurTimers = [];
+      slotStrips.forEach(strip => strip.classList.remove('is-spinning'));
       if (!slotCabinet) return;
+      slotCabinet.classList.remove('is-spinning');
       // Restart the win animations even on two quick wins in a row.
       slotCabinet.classList.remove('is-win');
       void slotCabinet.offsetWidth;
       slotCabinet.classList.add('is-win');
-      slotWinTimer = setTimeout(() => slotCabinet.classList.remove('is-win'), 1700);
+      setSlotLights('jackpot');
+      slotWinTimer = setTimeout(() => {
+        slotCabinet.classList.remove('is-win');
+        setSlotLights(SLOT_IDLE_PROGRAMS[slotIdleStep]);
+      }, 1700);
       slotPayoutCoins();
     }
 
@@ -4730,45 +4950,43 @@
       animateSlotToWinner(nextIndex, itemHeight);
     }
 
+    /**
+     * Spins all three reels and lands each on its part of the winner's name.
+     * Reels start together, run in opposite directions and stop one after the
+     * other (SLOT_REEL_STOP_MS); the round is decided when the last one stands.
+     */
     function animateSlotToWinner(index, itemHeight) {
-      if (!slotTrack || slotAnimating || remainingSlotParticipants.length === 0) return;
+      if (!slotLayout || slotAnimating || remainingSlotParticipants.length === 0) return;
 
       slotAnimating = true;
-      const listLength = remainingSlotParticipants.length;
+      const { listLength: L, reps, passes, rest } = slotLayout;
 
-      // Measure the real geometry so the winner always lands dead-centre in the
-      // indicator frame, regardless of font size or responsive breakpoints.
-      const wrapperHeight = slotTrackWrapper ? slotTrackWrapper.clientHeight : 200;
-      const firstItem = slotTrack.querySelector('.slot-item');
+      // Measure the real row height so every part lands dead-centre on the
+      // payline, regardless of responsive breakpoints.
+      const firstItem = slotStrips[0].querySelector('.slot-item');
       const ih = firstItem ? firstItem.offsetHeight : itemHeight;
-
-      // Land several full passes in so the reel really "spins" before settling.
-      const fullPasses = 5;
-      const winnerPosition = listLength * fullPasses + index;
-      const finalTranslate = -(winnerPosition * ih + ih / 2 - wrapperHeight / 2);
+      const targets = SLOT_REEL_DIRS.map((dir, k) =>
+        dir > 0 ? (1 + passes[k]) * L + index : (reps - 2 - passes[k]) * L + index);
 
       // Start from the parked position without animation, then force a reflow
       // so the browser registers the starting point before the transition begins.
-      const startTranslate = slotRestOffset(listLength, ih);
       slotSpinEffectsStart();
-      slotTrack.style.transition = 'none';
-      slotTrack.style.transform = `translateY(${startTranslate}px)`;
-      slotTrack.getBoundingClientRect();
+      slotStrips.forEach((strip, k) => {
+        strip.style.transition = 'none';
+        strip.style.transform = `translateY(${slotOffset(rest[k], ih)}px)`;
+      });
+      slotTrackWrapper.getBoundingClientRect();
 
-      // Set once the reel starts moving (see the requestAnimationFrame below),
-      // so the end handler can silence the ticking wherever it comes from.
-      let reelTicks = null;
+      const ticks = [];
+      const fallbacks = [];
+      const listeners = [];
+      const stopped = slotStrips.map(() => false);
+      let stoppedCount = 0;
 
-      const onSlotEnd = (event) => {
-        if (event && event.propertyName !== 'transform') return;
-        clearTimeout(transitionTimeout);
-        slotTrack.removeEventListener('transitionend', onSlotEnd);
-        slotTrack.style.transition = 'none';
+      const finishSpin = () => {
         slotAnimating = false;
-        stopCue(reelTicks);
-        playSound('slotStop');
         playSound('win', 0.1);
-        slotSpinEffectsEnd(slotTrack.children[winnerPosition]);
+        slotSpinEffectsEnd();
 
         const winnerName = remainingSlotParticipants[index];
         // Append winner at the end so history reads oldest→newest top→bottom
@@ -4791,29 +5009,51 @@
         }
       };
 
-      // Fallback in case transitionend never fires (e.g. tab in background).
-      const transitionTimeout = setTimeout(onSlotEnd, SLOT_SPIN_DURATION_MS + 250);
+      const reelDone = (k) => {
+        if (stopped[k]) return;
+        stopped[k] = true;
+        clearTimeout(fallbacks[k]);
+        slotStrips[k].removeEventListener('transitionend', listeners[k]);
+        slotStrips[k].style.transition = 'none';
+        stopCue(ticks[k]);
+        slotReelStopped(k, slotStrips[k].children[targets[k]]);
+        stoppedCount += 1;
+        if (stoppedCount === slotStrips.length) finishSpin();
+      };
+
+      slotStrips.forEach((strip, k) => {
+        // Only the strip's own transform counts – the parts' scale transition
+        // bubbles up as transitionend too.
+        listeners[k] = (event) => {
+          if (event.target !== strip || event.propertyName !== 'transform') return;
+          reelDone(k);
+        };
+        strip.addEventListener('transitionend', listeners[k]);
+        // Fallback in case transitionend never fires (e.g. tab in background).
+        fallbacks[k] = setTimeout(() => reelDone(k), SLOT_REEL_STOP_MS[k] + 250);
+      });
 
       // pull the handle in sync with the spin
       const handle = document.getElementById('slotHandle');
       if (handle) handle.classList.add('pulled');
       playSound('slotLever');
-      slotTrack.addEventListener('transitionend', onSlotEnd);
 
       // requestAnimationFrame guarantees the reset above is painted first, so the
       // transition runs smoothly instead of being collapsed into a single frame.
       requestAnimationFrame(() => {
-        // Strong decelerate with a tiny overshoot (y2 > 1) for a satisfying
-        // "settle" – starts fast, eases to a soft stop instead of a sluggish
-        // ease-in/ease-out slide.
-        slotTrack.style.transition =
-          `transform ${SLOT_SPIN_DURATION_MS / 1000}s cubic-bezier(0.18, 0.86, 0.26, 1.04)`;
-        slotTrack.style.transform = `translateY(${finalTranslate}px)`;
-        // One click per name passing the window, on the reel's own easing curve.
-        reelTicks = notchTicks({
-          from: Math.abs(startTranslate), to: Math.abs(finalTranslate), step: ih,
-          dur: SLOT_SPIN_DURATION_MS, ease: [0.18, 0.86, 0.26, 1.04],
-          cue: 'reelTick', maxPerFrame: 3
+        slotStrips.forEach((strip, k) => {
+          const from = slotOffset(rest[k], ih);
+          const to = slotOffset(targets[k], ih);
+          strip.style.transition =
+            `transform ${SLOT_REEL_STOP_MS[k] / 1000}s cubic-bezier(${SLOT_EASE.join(', ')})`;
+          strip.style.transform = `translateY(${to}px)`;
+          // One click per part passing the window, on the reel's own easing
+          // curve; one per reel and frame, so three reels whirr, not roar.
+          ticks[k] = notchTicks({
+            from: Math.min(from, to), to: Math.max(from, to), step: ih,
+            dur: SLOT_REEL_STOP_MS[k], ease: SLOT_EASE,
+            cue: 'reelTick', maxPerFrame: 1
+          });
         });
       });
     }
@@ -4843,7 +5083,11 @@
       clearText(slotStatus);
 
       if (currentShuffledList.length === 0) {
-        slotTrack.innerHTML = '<div class="slot-empty" data-i18n="noActiveParticipants">' + t('noActiveParticipants') + '</div>';
+        slotStrips.forEach(strip => { strip.innerHTML = ''; });
+        slotLayout = null;
+        clearSlotEmpty();
+        slotTrackWrapper.insertAdjacentHTML('beforeend',
+          '<div class="slot-empty" data-i18n="noActiveParticipants">' + t('noActiveParticipants') + '</div>');
         setText(slotStatus, 'slotStatusNoSelection');
         activeIndex = -1;
         slotSpinButton.disabled = true;
@@ -6449,9 +6693,7 @@
     function hideResults() {
       showView(null);
       setNextButtonVisible(false);
-      if (slotTrack) {
-        slotTrack.style.transition = 'none';
-      }
+      slotStrips.forEach(strip => { strip.style.transition = 'none'; });
       if (slotSpinButton) {
         slotSpinButton.disabled = true;
       }
@@ -7064,6 +7306,10 @@
     helpButton.addEventListener('click', openHelp);
     
     initSlotCabinet();
+    // The letter size depends on the reel width – refit when the window changes.
+    window.addEventListener('resize', () => {
+      if (viewMode === VIEW_MODE_SLOT) fitSlotFont();
+    });
     if (slotSpinButton) {
       slotSpinButton.addEventListener('click', spinSlotMachine);
     }

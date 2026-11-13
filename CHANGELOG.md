@@ -10,6 +10,26 @@ den Cache-Namen und löst im laufenden Betrieb das „Neue Version verfügbar“
 aus. **Merkregel:** Bei jeder Änderung, die ausgeliefert wird, `CACHE_VERSION`
 hochzählen *und* hier einen Eintrag ergänzen.
 
+## [v19] – 2026-11-13
+
+### Geändert
+- **Slotmaschine – drei Walzen statt einer:** Jeder Name wird in drei Teile
+  zerlegt (z. B. BA·STI·AN), jede Walze trägt einen Teil. Die äußeren Walzen
+  laufen nach unten, die mittlere nach oben; sie rasten nacheinander von links
+  nach rechts ein, jede mit eigenem „Klonk“ und Aufleuchten ihres Teils – erst
+  mit der dritten Walze steht der Name. In Ruhe zeigt die Gewinnlinie einen
+  bunten Mix aus verschiedenen Namen.
+- **Größere Buchstaben:** Die Schriftgröße wird automatisch an den längsten
+  Namensteil angepasst (bis 34 px) und bei Größenänderung des Fensters neu
+  berechnet – kurze Teams bekommen große Lettern, lange Namen werden nie
+  abgeschnitten. Die Walzen sind etwas höher (3 × 64 px).
+- **Lichter mit mehr Abwechslung:** Glühbirnen in drei Farben (Gold, Rot,
+  Warmweiß, saisonal angepasst) und eine zusätzliche Lichterreihe unter den
+  Walzen. Im Leerlauf wechseln alle sechs Sekunden die Programme Lauflicht,
+  Welle, Wechselblinken, Auffüllen und Funkeln; beim Drehen rasen die Lichter,
+  beim Gewinn blinken sie im Jackpot-Takt.
+  Die Bewegungsanimation (Abbremsen mit leichtem Nachfedern) ist unverändert.
+
 ## [v18] – 2026-11-12
 
 ### Geändert
