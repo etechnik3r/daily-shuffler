@@ -579,6 +579,12 @@
       text-align: center;
       transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
+    /* Symbol row (only on very small teams): a lone lucky seven or star. */
+    .slot-symbol {
+      color: #d4101e;
+      font-size: calc(var(--slot-font) * 1.05);
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 6px rgba(255, 190, 60, 0.35);
+    }
     .slot-item.used-participant {
       color: rgba(29, 27, 36, 0.35);
       opacity: 0.6;
@@ -1558,7 +1564,7 @@
        so it stays a perfect circle on every breakpoint. */
     #wheelContainer {
       width: 100%;
-      max-width: var(--col-width);
+      max-width: 420px;
       margin: 8px auto 0;
       position: relative;
       display: none;
@@ -1571,72 +1577,67 @@
       color: hsl(var(--brand-h), calc(100% * var(--brand-sat)), 27%);
       text-align: center;
     }
-    /* The wheel as a show-floor machine, built to match the slot cabinet: a
-       chrome-rimmed light ring in the brand hue with the same bulb programs, a
-       chrome bezel, a shaded disc with chrome pegs, a fixed glass dome
-       reflection, a chrome hub, a 3D flapper that the pegs really push aside
-       (runWheelFlapper()) and a pedestal. */
+    /* A classic, static wheel of fortune on a stand, drawn in an oblique
+       (cavalier) projection: the front stays a true circle (so it can spin
+       freely), the depth axis runs up and to the right at half scale. The
+       disc's edge is a stack of hard shadows, the stand is an SVG prism.
+       1 drawing unit = 0.25cqw of the 400-unit-wide machine. --- */
     .wheel-machine {
       position: relative;
-      width: 360px;
-      max-width: 100%;
+      container-type: inline-size;
+      width: 100%;
+      max-width: 420px;
       margin: 0 auto;
+      aspect-ratio: 400 / 540;
+      --wh-edge: hsl(var(--brand-h), calc(58% * var(--brand-sat)), 40%);
+      --wh-edge-dk: hsl(var(--brand-h), calc(68% * var(--brand-sat)), 17%);
+      --wh-lacquer-hi: hsl(var(--brand-h), calc(72% * var(--brand-sat)), 38%);
+      --wh-lacquer: hsl(var(--brand-h), calc(78% * var(--brand-sat)), 21%);
+      --wh-lacquer-lo: hsl(var(--brand-h), calc(82% * var(--brand-sat)), 10%);
+    }
+    .wheel-holder {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
     }
     .wheel-stage {
-      position: relative;
+      position: absolute;
+      left: 0;
+      top: 6cqw;
       z-index: 1;
       width: 100%;
       aspect-ratio: 1 / 1;
     }
-    .wheel-frame {
+    /* Chrome rim = front face of the wheel; its shadows build the edge. */
+    .wheel-rim {
       position: absolute;
       inset: 0;
       border-radius: 50%;
-      background: var(--slot-chrome);
+      background: radial-gradient(circle at 50% 50%, #7c828d 92.6%, #fbfcfd 94.6%, #c3c8d2 96.6%, #8d939f 98.6%, #5e636d 100%);
       box-shadow:
-        0 26px 44px hsla(var(--brand-h), calc(60% * var(--brand-sat)), 10%, 0.34),
-        0 6px 14px rgba(0, 0, 0, 0.18);
-    }
-    .wheel-frame::before {
-      /* Light ring body, same lacquer as the slot cabinet. */
-      content: '';
-      position: absolute;
-      inset: 4px;
-      border-radius: 50%;
-      background:
-        radial-gradient(120% 70% at 50% 0%, hsla(var(--brand-h), calc(90% * var(--brand-sat)), 60%, 0.35) 0%, transparent 60%),
-        radial-gradient(circle at 50% 50%,
-          hsl(var(--brand-h), calc(82% * var(--brand-sat)), 11%) 78%,
-          hsl(var(--brand-h), calc(78% * var(--brand-sat)), 22%) 90%,
-          hsl(var(--brand-h), calc(82% * var(--brand-sat)), 12%) 100%);
-      box-shadow:
-        inset 0 2px 0 rgba(255, 255, 255, 0.22),
-        inset 0 0 0 1px rgba(0, 0, 0, 0.35),
-        inset 0 -12px 22px rgba(0, 0, 0, 0.4);
-    }
-    .wheel-bulbs {
-      position: absolute;
-      inset: 0;
-    }
-    .wheel-bulbs .slot-bulb {
-      position: absolute;
-      width: 11px;
-      height: 11px;
-      margin: -5.5px 0 0 -5.5px;
-    }
-    /* Chrome bezel the disc sits in. */
-    .wheel-well {
-      position: absolute;
-      inset: 7.6%;
-      border-radius: 50%;
-      background: var(--slot-chrome);
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+        calc(1 * 0.125cqw) calc(1 * -0.125cqw) 0 #b9bec8,
+        calc(2 * 0.125cqw) calc(2 * -0.125cqw) 0 #b9bec8,
+        calc(3 * 0.125cqw) calc(3 * -0.125cqw) 0 color-mix(in srgb, var(--wh-edge-dk) 0%, var(--wh-edge)),
+        calc(4 * 0.125cqw) calc(4 * -0.125cqw) 0 color-mix(in srgb, var(--wh-edge-dk) 11%, var(--wh-edge)),
+        calc(5 * 0.125cqw) calc(5 * -0.125cqw) 0 color-mix(in srgb, var(--wh-edge-dk) 22%, var(--wh-edge)),
+        calc(6 * 0.125cqw) calc(6 * -0.125cqw) 0 color-mix(in srgb, var(--wh-edge-dk) 33%, var(--wh-edge)),
+        calc(7 * 0.125cqw) calc(7 * -0.125cqw) 0 color-mix(in srgb, var(--wh-edge-dk) 44%, var(--wh-edge)),
+        calc(8 * 0.125cqw) calc(8 * -0.125cqw) 0 color-mix(in srgb, var(--wh-edge-dk) 56%, var(--wh-edge)),
+        calc(9 * 0.125cqw) calc(9 * -0.125cqw) 0 color-mix(in srgb, var(--wh-edge-dk) 67%, var(--wh-edge)),
+        calc(10 * 0.125cqw) calc(10 * -0.125cqw) 0 color-mix(in srgb, var(--wh-edge-dk) 78%, var(--wh-edge)),
+        calc(11 * 0.125cqw) calc(11 * -0.125cqw) 0 color-mix(in srgb, var(--wh-edge-dk) 89%, var(--wh-edge)),
+        calc(12 * 0.125cqw) calc(12 * -0.125cqw) 0 color-mix(in srgb, var(--wh-edge-dk) 100%, var(--wh-edge)),
+        calc(13 * 0.125cqw) calc(13 * -0.125cqw) 0 #7c828d,
+        calc(14 * 0.125cqw) calc(14 * -0.125cqw) 0 #7c828d,
+        calc(4cqw) calc(3cqw) 6cqw rgba(0, 0, 0, 0.22);
     }
     /* Spinner = the rotating disc. The transition is set inline from JS so the
        spin duration and easing can drive a long, decelerating turn. */
     .wheel-spinner {
       position: absolute;
-      inset: 9.2%;
+      inset: 3.4%;
       will-change: transform;
       transform: rotate(0deg);
     }
@@ -1656,44 +1657,28 @@
     /* Already drawn: desaturated instead of transparent, so the disc keeps its depth. */
     #wheelSvg .wheel-used { filter: grayscale(0.9) brightness(0.82); }
     #wheelSvg text.wheel-used { opacity: 0.45; filter: none; }
-    /* Fixed glass dome over the disc: the reflection stays put while the disc
-       turns underneath, which is what makes it read as a curved 3D surface. */
+    /* Fixed glass reflection over the disc: it stays put while the disc turns
+       underneath, which makes the face read as a curved surface. */
     .wheel-gloss {
       position: absolute;
-      inset: 9.2%;
+      inset: 3.4%;
       z-index: 4;
       border-radius: 50%;
-      overflow: hidden;
       pointer-events: none;
       background:
-        radial-gradient(ellipse 62% 40% at 38% 20%, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.12) 55%, rgba(255, 255, 255, 0) 72%),
-        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0) 62%, rgba(0, 0, 0, 0.2) 100%);
+        radial-gradient(ellipse 62% 40% at 38% 20%, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.1) 55%, rgba(255, 255, 255, 0) 72%),
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0) 64%, rgba(0, 0, 0, 0.18) 100%);
       box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.35), inset 0 -2px 6px rgba(255, 255, 255, 0.15);
     }
-    .wheel-gloss::after {
-      /* Light beam sweeping once around the dome on a win. */
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      opacity: 0;
-      background: conic-gradient(from 0deg, rgba(255, 255, 255, 0) 0deg, rgba(255, 246, 214, 0.55) 16deg, rgba(255, 255, 255, 0) 34deg, rgba(255, 255, 255, 0) 360deg);
-    }
-    .wheel-stage.is-win .wheel-gloss::after { animation: wheel-sweep 1.1s ease-out 1; }
-    @keyframes wheel-sweep {
-      0%   { transform: rotate(-20deg); opacity: 1; }
-      85%  { opacity: 1; }
-      100% { transform: rotate(340deg); opacity: 0; }
-    }
 
-    /* Chrome hub cap with a lacquered star medallion, above the disc. */
+    /* Chrome hub cap with a lacquered star medallion and its own little depth. */
     .wheel-center {
       position: absolute;
       top: 50%;
       left: 50%;
       z-index: 5;
-      width: 19%;
-      height: 19%;
+      width: 17%;
+      height: 17%;
       transform: translate(-50%, -50%);
       display: flex;
       align-items: center;
@@ -1701,7 +1686,10 @@
       border-radius: 50%;
       background: radial-gradient(circle at 35% 28%, #ffffff 0%, #dfe3ea 28%, #9aa0ab 62%, #5e636d 100%);
       box-shadow:
-        0 5px 12px rgba(0, 0, 0, 0.45),
+        0.25cqw -0.25cqw 0 #8d939f,
+        0.5cqw -0.5cqw 0 #6f7580,
+        0.75cqw -0.75cqw 0 #5e636d,
+        1.5cqw 1.5cqw 3cqw rgba(0, 0, 0, 0.4),
         inset 0 0 0 2px rgba(255, 255, 255, 0.5),
         inset 0 -3px 6px rgba(0, 0, 0, 0.35);
       pointer-events: none;
@@ -1713,7 +1701,7 @@
       width: 68%;
       height: 68%;
       border-radius: 50%;
-      font-size: 22px;
+      font-size: 6cqw;
       line-height: 1;
       color: #ffd66b;
       text-shadow: 0 0 8px rgba(255, 196, 60, 0.8), 0 1px 0 rgba(0, 0, 0, 0.5);
@@ -1728,19 +1716,37 @@
       50% { color: #fff6c4; text-shadow: 0 0 16px rgba(255, 210, 90, 1), 0 0 4px #fff; }
     }
 
-    /* Flapper on top of the ring: a lacquered teardrop on a chrome pivot. JS
-       sets its rotation every frame from the pegs passing underneath. */
+    /* Chrome bracket on top of the rim that carries the flapper. */
+    .wheel-pointer-mount {
+      position: absolute;
+      top: -4.2cqw;
+      left: 50%;
+      z-index: 6;
+      width: 8cqw;
+      height: 5.6cqw;
+      margin-left: -4cqw;
+      border-radius: 2cqw 2cqw 0.8cqw 0.8cqw;
+      background: var(--slot-chrome);
+      box-shadow:
+        0.25cqw -0.25cqw 0 #9aa0ab,
+        0.5cqw -0.5cqw 0 #7c828d,
+        0.75cqw -0.75cqw 0 #6f7580,
+        1cqw -1cqw 0 #5e636d,
+        0 2px 4px rgba(0, 0, 0, 0.35);
+    }
+    /* Flapper: a lacquered teardrop on a chrome pivot. JS sets its rotation
+       every frame from the pegs passing underneath. */
     .wheel-pointer {
       position: absolute;
-      top: -4px;
+      top: -4.5cqw;
       left: 50%;
       z-index: 7;
-      width: 30px;
-      height: 46px;
-      margin-left: -15px;
-      transform-origin: 15px 11px;
+      width: 7.5cqw;
+      height: 11.5cqw;
+      margin-left: -3.75cqw;
+      transform-origin: 50% 23.9%;
       transition: transform 40ms ease-out;
-      filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.45));
+      filter: drop-shadow(0.6cqw 0.8cqw 0.6cqw rgba(0, 0, 0, 0.45));
       --wp-mid: #e3101e;
       --wp-hi: color-mix(in srgb, var(--wp-mid) 50%, #ffffff);
       --wp-lo: color-mix(in srgb, var(--wp-mid) 55%, #000000);
@@ -1752,57 +1758,15 @@
       overflow: visible;
     }
 
-    /* Pedestal the wheel stands on. */
-    .wheel-base {
-      position: relative;
-      z-index: 0;
-      width: 56%;
-      height: 60px;
-      margin: -40px auto 0;
-    }
-    .wheel-base::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 12px;
-      clip-path: polygon(33% 0, 67% 0, 93% 100%, 7% 100%);
-      background: linear-gradient(90deg,
-        hsl(var(--brand-h), calc(82% * var(--brand-sat)), 10%) 0%,
-        hsl(var(--brand-h), calc(72% * var(--brand-sat)), 30%) 38%,
-        hsl(var(--brand-h), calc(78% * var(--brand-sat)), 19%) 62%,
-        hsl(var(--brand-h), calc(82% * var(--brand-sat)), 9%) 100%);
-    }
-    .wheel-base::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 13px;
-      border-radius: 7px;
-      background: var(--slot-chrome);
-      box-shadow: 0 10px 16px hsla(var(--brand-h), calc(60% * var(--brand-sat)), 10%, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.7);
-    }
-    @media (max-width: 520px) {
-      .wheel-machine { width: 100%; max-width: 360px; }
-    }
-
     /* --- Seasonal themes for the wheel --- */
     .season-halloween .wheel-pointer { --wp-mid: #ff7a00; }
-    .season-halloween .wheel-frame::before {
-      background:
-        radial-gradient(120% 70% at 50% 0%, rgba(255, 140, 0, 0.22) 0%, transparent 60%),
-        radial-gradient(circle at 50% 50%, #140a22 78%, #3d1f5c 90%, #1c0f2e 100%);
-    }
-    .season-halloween .wheel-base::before { background: linear-gradient(90deg, #140a22 0%, #4a2670 38%, #2a1540 62%, #120820 100%); }
+    .season-halloween .wheel-machine { --wh-edge: #4a2670; --wh-edge-dk: #140a22; --wh-lacquer-hi: #5d3290; --wh-lacquer: #2f1849; --wh-lacquer-lo: #12081f; }
     .season-halloween .wheel-center span { background: radial-gradient(circle at 38% 30%, #6b2fa0 0%, #24123a 70%, #140a22 100%); color: #ff9a2e; }
     .season-winter .wheel-pointer { --wp-mid: #2f6fd6; }
     .season-winter .wheel-stage::after {
       content: '';
       position: absolute;
-      inset: 9.2%;
+      inset: 3.4%;
       pointer-events: none;
       border-radius: 50%;
       z-index: 6;
@@ -2934,12 +2898,62 @@
   <div id="wheelContainer" data-view="wheel">
     <div id="wheelStatus"></div>
     <div class="wheel-machine">
-    <div id="wheelStage" class="wheel-stage lights-chase">
-      <!-- Decoration only: the ring bulbs are filled in by initMachineLights(). -->
-      <div class="wheel-frame" aria-hidden="true">
-        <div class="wheel-bulbs" data-count="24" data-tones="abac"></div>
-      </div>
-      <div class="wheel-well" aria-hidden="true"></div>
+    <!-- Stand behind the wheel, same oblique projection (depth = up-right,
+         half scale): post on a plinth, front faces lit from the left. -->
+    <svg class="wheel-holder" viewBox="0 0 400 540" aria-hidden="true">
+      <defs>
+        <linearGradient id="whFront" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" style="stop-color: var(--wh-lacquer-hi)"/>
+          <stop offset="0.55" style="stop-color: var(--wh-lacquer)"/>
+          <stop offset="1" style="stop-color: var(--wh-lacquer-lo)"/>
+        </linearGradient>
+        <linearGradient id="whBaseFront" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" style="stop-color: var(--wh-lacquer-hi)"/>
+          <stop offset="1" style="stop-color: var(--wh-lacquer-lo)"/>
+        </linearGradient>
+        <linearGradient id="whTop" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0" style="stop-color: var(--wh-lacquer-hi)"/>
+          <stop offset="1" style="stop-color: var(--wh-lacquer)"/>
+        </linearGradient>
+        <linearGradient id="whChrome" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f7f8fb"/>
+          <stop offset="0.45" stop-color="#9aa0ab"/>
+          <stop offset="0.7" stop-color="#e4e7ed"/>
+          <stop offset="1" stop-color="#6f7580"/>
+        </linearGradient>
+        <linearGradient id="whChromeH" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#e4e7ed"/>
+          <stop offset="0.4" stop-color="#f7f8fb"/>
+          <stop offset="1" stop-color="#7c828d"/>
+        </linearGradient>
+        <radialGradient id="whFloor" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stop-color="#000" stop-opacity="0.3"/>
+          <stop offset="1" stop-color="#000" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <!-- floor shadow -->
+      <ellipse cx="222" cy="522" rx="150" ry="14" fill="url(#whFloor)"/>
+      <!-- post: right side face, then front face (z = 16..36) -->
+      <polygon points="228,216 238,206 238,470 228,480" style="fill: var(--wh-lacquer-lo)"/>
+      <rect x="188" y="216" width="40" height="264" fill="url(#whFront)"/>
+      <rect x="194" y="216" width="3" height="264" fill="rgba(255,255,255,0.18)"/>
+      <!-- chrome collar where the post meets the plinth -->
+      <polygon points="232,466 240,458 240,470 232,478" fill="#7c828d"/>
+      <rect x="184" y="466" width="48" height="12" rx="2" fill="url(#whChromeH)"/>
+      <!-- plinth: top face, right face, front face (z = 0..44) -->
+      <polygon points="96,488 304,488 326,466 118,466" fill="url(#whTop)"/>
+      <polygon points="118,466 326,466 322,470 122,470" fill="rgba(255,255,255,0.12)"/>
+      <polygon points="304,488 326,466 326,496 304,518" style="fill: var(--wh-lacquer-lo)"/>
+      <rect x="96" y="488" width="208" height="30" fill="url(#whBaseFront)"/>
+      <!-- chrome trim along the plinth's front edges -->
+      <rect x="96" y="486" width="208" height="5" fill="url(#whChrome)"/>
+      <polygon points="304,486 326,464 326,469 304,491" fill="#9aa0ab"/>
+      <rect x="96" y="514" width="208" height="4" fill="url(#whChrome)"/>
+      <polygon points="304,514 326,492 326,496 304,518" fill="#6f7580"/>
+    </svg>
+    <div id="wheelStage" class="wheel-stage">
+      <div class="wheel-rim" aria-hidden="true"></div>
+      <div class="wheel-pointer-mount" aria-hidden="true"></div>
       <div id="wheelPointer" class="wheel-pointer" aria-hidden="true">
         <svg viewBox="0 0 30 46">
           <defs>
@@ -2967,7 +2981,6 @@
       <div class="wheel-gloss" aria-hidden="true"></div>
       <div class="wheel-center" aria-hidden="true"><span>★</span></div>
     </div>
-    <div class="wheel-base" aria-hidden="true"></div>
     </div>
     <div class="slot-controls">
       <button id="wheelSpinButton" class="app-button slot-spin-button" data-i18n="btnSpin">Drehen</button>
@@ -3856,6 +3869,7 @@
     let activeIndex = -1;
     let currentShuffledList = [];
     let remainingSlotParticipants = [];
+    let remainingSlotIdx = [];   // position of each remaining name in currentShuffledList
     let previousSlotWinners = [];
     let slotSessionActive = false;
 
@@ -4614,9 +4628,8 @@
     function updateSlotUsedState() {
       if (!slotTrackWrapper) return;
 
-      // The reel is rebuilt from remainingSlotParticipants before every spin, so
-      // whatever is on it is still in the round. Marking by name would grey out a
-      // second team member who happens to share a name with someone already drawn.
+      // The reels always carry the whole team (drawn names keep turning up as
+      // fragments), so nothing on them is marked as used.
       slotTrackWrapper.querySelectorAll('.slot-item').forEach(item => {
         item.classList.remove('used-participant');
       });
@@ -4911,8 +4924,15 @@
     }
 
     // --- Slot reels ---
-    // Geometry of the strips currently on screen (set by buildSlotMachine()).
+    // Letter grid of the whole team (set by buildSlotMachine()) and, per reel,
+    // the three entries in the window (above, payline, below). An entry is a
+    // name's index in currentShuffledList or SLOT_FILLER for a symbol row.
     let slotLayout = null;
+    let slotVisible = [];
+    const SLOT_FILLER = -1;
+    const SLOT_SYMBOLS = ['★', '7'];
+    const SLOT_TRAVEL_ROWS = [28, 38, 48]; // rows each reel runs past before stopping
+    const SLOT_MARGIN_ROWS = 4;            // spare rows beyond the window and the overshoot
     let slotBlurTimers = [];
     let slotWinTimer = null;
 
@@ -4976,55 +4996,131 @@
       if (empty) empty.remove();
     }
 
+    /** One strip row: a name's cells for reel k, or a lone symbol. */
+    function slotRowEl(entry, k) {
+      const item = document.createElement('div');
+      item.className = 'slot-item';
+      item.style.height = `${SLOT_ROW_HEIGHT}px`;
+      if (entry < 0) {
+        item.classList.add('is-symbol');
+        const sym = document.createElement('span');
+        sym.className = 'slot-symbol';
+        sym.textContent = SLOT_SYMBOLS[(-entry - 1) % SLOT_SYMBOLS.length];
+        item.appendChild(sym);
+        return item;
+      }
+      slotLayout.rows[entry][k].forEach(ch => {
+        const cell = document.createElement('span');
+        cell.className = 'slot-cell';
+        cell.textContent = ch;
+        item.appendChild(cell);
+      });
+      return item;
+    }
+
     /**
-     * Fills the three strips for the names still in the round. Each strip holds
-     * the same sequence of names many times over (reel k shows its cells), long
-     * enough for every reel to travel its passes in its own direction.
+     * Random sequence of strip entries for one reel. Every name of the team can
+     * show up (drawn ones too, so the reels never thin out); a tiny team also
+     * gets symbol rows. Neighbours always differ, `fixed` pins entries (the
+     * window the reel starts from, the winner it lands on) and `avoid` keeps
+     * given entries out of given rows (the winner next to itself).
+     */
+    function randomSlotStrip(length, fixed, avoid) {
+      const L = currentShuffledList.length;
+      const pool = [];
+      for (let i = 0; i < L; i++) pool.push(i);
+      // Up to three people: mix in symbols, otherwise two names would just
+      // alternate and the rows around the payline would spell whole names.
+      if (L < 4) pool.push(-1, -2);
+      const out = new Array(length);
+      for (let i = 0; i < length; i++) {
+        if (fixed[i] !== undefined) { out[i] = fixed[i]; continue; }
+        const bad = new Set([out[i - 1], fixed[i + 1]]);
+        (avoid[i] || []).forEach(v => bad.add(v));
+        const options = pool.filter(v => !bad.has(v));
+        const from = options.length ? options : pool;
+        out[i] = from[Math.floor(Math.random() * from.length)];
+      }
+      return out;
+    }
+
+    /** True if a row reads as one complete name across all three reels. */
+    function slotRowSpellsName(a, b, c) {
+      return a >= 0 && a === b && b === c;
+    }
+
+    /**
+     * Lays out the whole team on the letter grid and parks the reels on a
+     * random scramble. Called once per round: the reels always carry every
+     * name, so they look the same with ten people left as with one.
      *
-     * @param {string[]} list - Names still in the round.
+     * @param {string[]} list - The whole team for this round.
      * @returns {number|null} Row height in px.
      */
     function buildSlotMachine(list) {
       if (!slotStrips.length) return null;
       clearSlotEmpty();
-      const L = list.length;
-      const { cols, rows } = layoutSlotNames(list);
-      // Full passes per reel: later reels run longer, and short lists get more
-      // passes so even two names still whirl past properly.
-      const passes = SLOT_REEL_STOP_MS.map((_, k) => Math.max(3 + k, Math.ceil((30 + 10 * k) / L)));
-      const reps = Math.max.apply(null, passes) + 3;
-      // At rest every reel shows a different name, so the payline reads as a
-      // scramble until a spin lines one name up.
-      const rest = SLOT_REEL_DIRS.map((dir, k) => (dir > 0 ? L : (reps - 2) * L) + (k % L));
-
+      slotLayout = layoutSlotNames(list);
+      fitSlotFont();
+      // Random window per reel, re-rolled until no row spells a whole name.
+      for (let tries = 0; tries < 60; tries++) {
+        slotVisible = slotStrips.map(() => randomSlotStrip(3, {}, {}));
+        const clean = [0, 1, 2].every(r =>
+          !slotRowSpellsName(slotVisible[0][r], slotVisible[1][r], slotVisible[2][r]));
+        if (clean) break;
+      }
       slotStrips.forEach((strip, k) => {
         strip.innerHTML = '';
         strip.classList.remove('is-spinning');
         strip.style.transition = 'none';
-        const frag = document.createDocumentFragment();
-        for (let r = 0; r < reps; r++) {
-          rows.forEach(reels => {
-            const item = document.createElement('div');
-            item.className = 'slot-item';
-            item.style.height = `${SLOT_ROW_HEIGHT}px`;
-            reels[k].forEach(ch => {
-              const cell = document.createElement('span');
-              cell.className = 'slot-cell';
-              cell.textContent = ch;
-              item.appendChild(cell);
-            });
-            frag.appendChild(item);
-          });
-        }
-        strip.appendChild(frag);
-      });
-
-      slotLayout = { listLength: L, reps, passes, rest, cols, rows };
-      fitSlotFont();
-      slotStrips.forEach((strip, k) => {
-        strip.style.transform = `translateY(${slotOffset(rest[k], SLOT_ROW_HEIGHT)}px)`;
+        slotVisible[k].forEach(entry => strip.appendChild(slotRowEl(entry, k)));
+        strip.style.transform = `translateY(${slotOffset(1, SLOT_ROW_HEIGHT)}px)`;
       });
       return SLOT_ROW_HEIGHT;
+    }
+
+    /**
+     * Builds the strips for one spin. Each reel gets its own random order, so
+     * the rows above and below the payline only ever show cryptic fragments;
+     * only the payline spells the winner. The strip starts with exactly the
+     * window on screen (no jump when the spin begins) and lands on the winner.
+     *
+     * @param {number} winner - Index of the winner in currentShuffledList.
+     * @returns {{start: number[], target: number[]}} Strip rows per reel.
+     */
+    function prepareSlotSpin(winner) {
+      const plan = { start: [], target: [], entries: [] };
+      SLOT_REEL_DIRS.forEach((dir, k) => {
+        const travel = SLOT_TRAVEL_ROWS[k] + Math.floor(Math.random() * 4);
+        const length = travel + 2 * SLOT_MARGIN_ROWS + 1;
+        // Strip moving up runs towards higher rows, moving down towards lower.
+        const start = dir > 0 ? SLOT_MARGIN_ROWS : length - 1 - SLOT_MARGIN_ROWS;
+        const target = start + dir * travel;
+        plan.start.push(start);
+        plan.target.push(target);
+      });
+      // Re-roll reel by reel until neither neighbour row spells a whole name.
+      let entries = [];
+      for (let tries = 0; tries < 60; tries++) {
+        entries = SLOT_REEL_DIRS.map((_, k) => {
+          const st = plan.start[k];
+          const tg = plan.target[k];
+          const fixed = {};
+          const window = slotVisible[k] || [];
+          if (window.length === 3) {
+            fixed[st - 1] = window[0];
+            fixed[st] = window[1];
+            fixed[st + 1] = window[2];
+          }
+          fixed[tg] = winner;
+          return randomSlotStrip(tg > st ? tg + SLOT_MARGIN_ROWS + 1 : st + SLOT_MARGIN_ROWS + 1,
+            fixed, { [tg - 1]: [winner], [tg + 1]: [winner] });
+        });
+        const row = (d) => entries.map((e, k) => e[plan.target[k] + d]);
+        if (!slotRowSpellsName(...row(-1)) && !slotRowSpellsName(...row(1))) break;
+      }
+      plan.entries = entries;
+      return plan;
     }
 
     // --- Slot cabinet effects (pure decoration, no influence on the draw) ---
@@ -5032,8 +5128,8 @@
     const slotTray = document.getElementById('slotTray');
     let lightIdleStep = 0;
 
-    /** Gives every bulb in a row or ring its programme parameters and colour. */
-    function fillBulbs(group, ring) {
+    /** Gives every bulb in a row its programme parameters and colour. */
+    function fillBulbs(group) {
       if (group.childElementCount) return;
       const count = Number(group.dataset.count) || 0;
       const tones = group.dataset.tones || 'a';
@@ -5047,30 +5143,22 @@
         bulb.style.setProperty('--n', String(count));
         bulb.style.setProperty('--sd', `${(0.7 + Math.random() * 1.3).toFixed(2)}s`);
         bulb.style.setProperty('--sr', `${(-Math.random() * 2).toFixed(2)}s`);
-        if (ring) {
-          // Evenly round the light ring, midway between rim and bezel.
-          const a = (i / count) * 2 * Math.PI;
-          bulb.style.left = `${(50 + 45.9 * Math.sin(a)).toFixed(2)}%`;
-          bulb.style.top = `${(50 - 45.9 * Math.cos(a)).toFixed(2)}%`;
-        }
         group.appendChild(bulb);
       }
     }
 
     /**
-     * Fills the bulbs of both machines once – the slot cabinet's rows and the
-     * wheel's light ring. Each bulb gets its position (--i, chase/wave phase),
+     * Fills the slot cabinet's bulb rows once. Each bulb gets its position (--i, chase/wave phase),
      * parity (--p, alternation), the row length (--n, fill), a random rhythm
      * (--sd/--sr, sparkle) and a colour from the data-tones pattern. Then the
      * idle light programmes start cycling.
      */
     function initMachineLights() {
-      document.querySelectorAll('#slotContainer .slot-bulbs').forEach(row => fillBulbs(row, false));
-      document.querySelectorAll('#wheelContainer .wheel-bulbs').forEach(ring => fillBulbs(ring, true));
+      document.querySelectorAll('#slotContainer .slot-bulbs').forEach(row => fillBulbs(row));
       setInterval(cycleLights, SLOT_IDLE_PROGRAM_MS);
     }
 
-    /** Switches one machine's bulbs to a light programme (see the lights-* CSS). */
+    /** Switches a machine's bulbs to a light programme (see the lights-* CSS). */
     function setRigLights(rig, program) {
       if (!rig) return;
       const current = rig.dataset.lights || 'chase';
@@ -5086,7 +5174,6 @@
       if (document.hidden || prefersReducedMotion()) return;
       let rig = null;
       if (viewMode === VIEW_MODE_SLOT && !slotAnimating) rig = slotCabinet;
-      if (viewMode === VIEW_MODE_WHEEL && !wheelAnimating) rig = wheelStage;
       if (!rig || rig.classList.contains('is-win')) return;
       lightIdleStep = (lightIdleStep + 1) % SLOT_IDLE_PROGRAMS.length;
       setRigLights(rig, SLOT_IDLE_PROGRAMS[lightIdleStep]);
@@ -5174,9 +5261,7 @@
 
     function spinSlotMachine() {
       if (!slotSessionActive || slotAnimating || remainingSlotParticipants.length === 0) return;
-      const itemHeight = buildSlotMachine(remainingSlotParticipants);
-      const nextIndex = chooseRandomSlotIndex();
-      animateSlotToWinner(nextIndex, itemHeight);
+      animateSlotToWinner(chooseRandomSlotIndex(), SLOT_ROW_HEIGHT);
     }
 
     /**
@@ -5188,22 +5273,32 @@
       if (!slotLayout || slotAnimating || remainingSlotParticipants.length === 0) return;
 
       slotAnimating = true;
-      const { listLength: L, reps, passes, rest } = slotLayout;
+      const winner = remainingSlotIdx[index];
+      const plan = prepareSlotSpin(winner);
+      const rest = plan.start;
+      const targets = plan.target;
 
-      // Measure the real row height so every part lands dead-centre on the
+      // Fill the strips; the window on screen stays exactly as it was. Then
+      // measure the real row height so every part lands dead-centre on the
       // payline, regardless of responsive breakpoints.
+      slotStrips.forEach((strip, k) => {
+        strip.style.transition = 'none';
+        strip.innerHTML = '';
+        const frag = document.createDocumentFragment();
+        plan.entries[k].forEach(entry => frag.appendChild(slotRowEl(entry, k)));
+        strip.appendChild(frag);
+      });
       const firstItem = slotStrips[0].querySelector('.slot-item');
       const ih = firstItem ? firstItem.offsetHeight : itemHeight;
-      const targets = SLOT_REEL_DIRS.map((dir, k) =>
-        dir > 0 ? (1 + passes[k]) * L + index : (reps - 2 - passes[k]) * L + index);
 
       // Start from the parked position without animation, then force a reflow
       // so the browser registers the starting point before the transition begins.
       slotSpinEffectsStart();
       slotStrips.forEach((strip, k) => {
-        strip.style.transition = 'none';
         strip.style.transform = `translateY(${slotOffset(rest[k], ih)}px)`;
       });
+      // Remember the landing window – the next spin starts from it.
+      slotVisible = plan.entries.map((e, k) => [e[targets[k] - 1], e[targets[k]], e[targets[k] + 1]]);
       slotTrackWrapper.getBoundingClientRect();
 
       const ticks = [];
@@ -5222,6 +5317,7 @@
         previousSlotWinners.push(winnerName);
         announceSpeaker(winnerName, previousSlotWinners.length - 1, currentShuffledList.length);
         remainingSlotParticipants.splice(index, 1);
+        remainingSlotIdx.splice(index, 1);
         updateSlotHistory();
 
         // release the handle
@@ -5290,6 +5386,7 @@
     function displaySlotTeam(list) {
       currentShuffledList = list.filter(name => name.trim() !== '');
       remainingSlotParticipants = currentShuffledList.map(name => name.trim());
+      remainingSlotIdx = currentShuffledList.map((_, i) => i);
       previousSlotWinners = [];
       slotSessionActive = true;
 
@@ -5323,7 +5420,7 @@
         return;
       }
 
-      buildSlotMachine(remainingSlotParticipants);
+      buildSlotMachine(currentShuffledList);
       slotSpinButton.disabled = false;
       setText(slotSpinButton, 'btnSpin');
     }
@@ -5565,29 +5662,24 @@
       if (wheelPointer) wheelPointer.style.transform = '';
     }
 
-    /** Disc running: racing ring lights and a fluttering flapper. */
+    /** Disc running: the flapper flutters over the pegs. */
     function wheelSpinEffectsStart() {
       clearTimeout(wheelWinTimer);
       if (wheelStage) {
         wheelStage.classList.remove('is-win');
         wheelStage.classList.add('is-spinning');
       }
-      setRigLights(wheelStage, 'race');
       runWheelFlapper();
     }
 
-    /** Disc stands: jackpot lights, a beam round the dome, glowing hub star. */
+    /** Disc stands: the hub star glows for a moment. */
     function wheelSpinEffectsEnd() {
       stopWheelFlapper();
       if (!wheelStage) return;
       wheelStage.classList.remove('is-spinning', 'is-win');
       void wheelStage.offsetWidth;
       wheelStage.classList.add('is-win');
-      setRigLights(wheelStage, 'jackpot');
-      wheelWinTimer = setTimeout(() => {
-        wheelStage.classList.remove('is-win');
-        setRigLights(wheelStage, SLOT_IDLE_PROGRAMS[lightIdleStep]);
-      }, 1700);
+      wheelWinTimer = setTimeout(() => wheelStage.classList.remove('is-win'), 1700);
     }
 
     function updateWheelHistory() {
@@ -7631,9 +7723,7 @@
 
                 if (slotAnimating) return;
 
-                const itemHeight = buildSlotMachine(remainingSlotParticipants);
-                const nextIndex = chooseRandomSlotIndex();
-                animateSlotToWinner(nextIndex, itemHeight);
+                animateSlotToWinner(chooseRandomSlotIndex(), SLOT_ROW_HEIGHT);
             } else {
                 startTimer();
             }

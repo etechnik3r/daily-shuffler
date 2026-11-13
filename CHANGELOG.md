@@ -10,6 +10,26 @@ den Cache-Namen und löst im laufenden Betrieb das „Neue Version verfügbar“
 aus. **Merkregel:** Bei jeder Änderung, die ausgeliefert wird, `CACHE_VERSION`
 hochzählen *und* hier einen Eintrag ergänzen.
 
+## [v21] – 2026-11-13
+
+### Geändert
+- **Slotmaschine – alle Namen bleiben drauf:** Gezogene Namen verschwinden
+  nicht mehr von den Walzen. Gegen Ende der Runde zeigt der Automat deshalb
+  nicht mehr dreimal denselben Namen.
+- **Slotmaschine – nur die Gewinnlinie ist lesbar:** Jede Walze bekommt für
+  jede Drehung ihre eigene Zufallsfolge. Über und unter der Gewinnlinie
+  stehen nur noch Bruchstücke verschiedener Namen; es wird geprüft, dass
+  dort nie zufällig ein ganzer Name entsteht. Sehr kleine Teams (bis drei
+  Personen) bekommen zusätzlich Symbolfelder (★, 7). Die Walzen starten
+  genau mit dem Bild, das gerade zu sehen ist – kein Sprung beim Drehen.
+- **Glücksrad – klassisch und größer:** Der Lampenring und der umlaufende
+  Lichtstrahl nach dem Gewinn sind entfernt. Das Rad ist deutlich größer
+  (bis 420 px). Es steht jetzt in Schrägprojektion auf einem Ständer: Die
+  Raddicke ist als Kante nach hinten sichtbar (Chromlippen, lackierter
+  Mantel), die Säule hat eine Seitenfläche, der Sockel Deck- und
+  Seitenfläche mit Chromkanten und Bodenschatten. Der Zeiger sitzt auf
+  einem Chrom-Halter, die Nabe hat ebenfalls Tiefe.
+
 ## [v20] – 2026-11-13
 
 ### Geändert
