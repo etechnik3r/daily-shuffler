@@ -10,6 +10,14 @@ den Cache-Namen und löst im laufenden Betrieb das „Neue Version verfügbar“
 aus. **Merkregel:** Bei jeder Änderung, die ausgeliefert wird, `CACHE_VERSION`
 hochzählen *und* hier einen Eintrag ergänzen.
 
+## [v24] – 2026-11-25
+
+### Behoben
+- **„Daily beendet“ bricht nicht mehr um:** Die Schlussmeldung in der
+  Timer-Pille war in der großen Ziffernschrift zweizeilig und lief aus dem
+  Kasten. Sie nutzt jetzt eine kleinere, mitskalierende Schrift ohne
+  Zeilenumbruch und bleibt in allen Ansichten und Sprachen einzeilig.
+
 ## [v23] – 2026-11-25
 
 ### Geändert
