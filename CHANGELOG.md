@@ -10,6 +10,19 @@ den Cache-Namen und löst im laufenden Betrieb das „Neue Version verfügbar“
 aus. **Merkregel:** Bei jeder Änderung, die ausgeliefert wird, `CACHE_VERSION`
 hochzählen *und* hier einen Eintrag ergänzen.
 
+## [v23] – 2026-11-25
+
+### Geändert
+- **Saugroboter – realistischerer Roboter:** Draufsicht statt Kugel, mit
+  Stoßstange, Lidar-Turm, Tasten und Seitenbürste vorne rechts. Der Roboter
+  dreht sich in Fahrtrichtung und schwenkt an den Bahnenden und Türen sanft
+  um; die Seitenbürste dreht sich dabei mit.
+- **Saugroboter – kein Rauschen mehr:** Beim Teilnehmerwechsel gibt es nur
+  noch die beiden Piepstöne, kein Puffgeräusch.
+- **Saugroboter – keine Umrandung des nächsten Raums:** Der nächste Raum ist
+  weiter am orangen Namensschild, den Türpfeilen und in der Kopfzeile zu
+  erkennen.
+
 ## [v22] – 2026-11-25
 
 ### Hinzugefügt
