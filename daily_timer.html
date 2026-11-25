@@ -286,6 +286,15 @@
         transition: color 0.3s ease;
     }
 
+    /* The closing message is text, not digits: smaller type, no wrapping, so it
+       stays on one line inside the pill (also on narrow phones). */
+    #timerDisplay[data-i18n="dailyFinished"] {
+        font-size: clamp(1.2rem, 6.4vw, 1.9rem);
+        letter-spacing: -0.5px;
+        white-space: nowrap;
+        padding: 0 20px;
+    }
+
     /* Timer State Colors */
     .color-20s { color: #FFD700 !important; } /* Threshold: 20s remaining */
     .color-15s { color: #FF8C00 !important; } /* Threshold: 15s remaining */
