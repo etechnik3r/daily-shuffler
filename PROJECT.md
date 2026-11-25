@@ -82,7 +82,7 @@ und `<script>` (Logik). Innerhalb jedes Abschnitts trennen Kommentarbanner
   sodass ein Themenwechsel nur zwei Variablen ändert.
 - **UI-Komponenten:** Buttons, Teilnehmerauswahl, Timer-Pille, Teamliste.
 - **Ansichts-CSS:** je ein Block pro Anzeigemodus (Slotmaschine, EV-Roadtrip,
-  Glücksrad, Kartenspiel, Abfahrtstafel, Linienplan, Fokus).
+  Glücksrad, Kartenspiel, Abfahrtstafel, Linienplan, Saugroboter, Fokus).
 - **Saisonale Themes:** Karneval, Ostern, Halloween, Winter – jeweils pro
   Ansicht ergänzt.
 - **Modale Dialoge, PWA-Banner, Einstellungs-Overlay.**
@@ -135,6 +135,7 @@ Jede Ansicht ist ein eigenes View-Modul mit gleichem Vertrag und wird über die
 | `card` | Kartenspiel | Namenskarten fliegen auf den Stapel, mit Sonderkarten. |
 | `flap` | Abfahrtstafel | Fallblatt-Tafel wie am Bahnhof; die ganze Reihenfolge bleibt sichtbar. |
 | `line` | Linienplan | Bunter Stadtplan: die Linie schlängelt sich durch die Stadt, der Zug fährt während der Redezeit zur nächsten Station; Schild mit „Nächster Halt“, Uhr, Verspätung. |
+| `vacuum` | Saugroboter | Büro-Grundriss, ein Raum pro Person; der Roboter saugt Serpentinenbahnen (Fortschritt = Redezeit), fährt durch die Tür zum nächsten Raum, am Ende zur Ladestation. |
 | `focus` | Fokus | Ruhig: großer Name plus ablaufende Sanduhr. |
 
 Zwei Ablauf-Familien:

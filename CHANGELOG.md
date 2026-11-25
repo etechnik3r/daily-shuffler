@@ -10,6 +10,21 @@ den Cache-Namen und löst im laufenden Betrieb das „Neue Version verfügbar“
 aus. **Merkregel:** Bei jeder Änderung, die ausgeliefert wird, `CACHE_VERSION`
 hochzählen *und* hier einen Eintrag ergänzen.
 
+## [v22] – 2026-11-25
+
+### Hinzugefügt
+- **Neue Ansicht „Saugroboter“:** Das Team als Büro-Grundriss – jede Person
+  ist ein Raum mit ihrem Namen (alle Namen bleiben sichtbar, lange Namen
+  werden gestaucht). Ein Saugroboter saugt pro Sprecher einen Raum in
+  S-förmigen Bahnen wie bei Roborock; die Position in den Bahnen ist die
+  verbrauchte Redezeit. Die geplante Strecke ist gestrichelt eingezeichnet,
+  der gesaugte Bereich färbt sich, der Staub verschwindet hinter dem
+  Roboter. Der nächste Raum ist orange markiert, Pfeile an den Türen zeigen
+  den Weg; Kopfzeile mit „Saugt gerade“, „Als Nächstes“, Fortschritt in
+  Prozent und Verspätungs-Chip. Am Ende fährt der Roboter zur Ladestation.
+  Mit eigenem Sound, Überzieh-Symbolen, Anleitung und Einstellungsoption
+  (de/en).
+
 ## [v21] – 2026-11-13
 
 ### Geändert
