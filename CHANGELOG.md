@@ -10,6 +10,13 @@ den Cache-Namen und löst im laufenden Betrieb das „Neue Version verfügbar“
 aus. **Merkregel:** Bei jeder Änderung, die ausgeliefert wird, `CACHE_VERSION`
 hochzählen *und* hier einen Eintrag ergänzen.
 
+## [v26] – 2026-11-26
+
+### Geändert
+- **Saugroboter – Route erst beim Abfahren:** Die gestrichelte Route eines
+  Raums erscheint erst, wenn der Roboter dort losfährt; noch nicht gesaugte
+  Räume bleiben sauber ohne Linien.
+
 ## [v25] – 2026-11-26
 
 ### Geändert
