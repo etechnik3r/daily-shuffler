@@ -252,6 +252,11 @@
         margin: 20px 0;
         width: 100%;
         max-width: var(--col-width);
+        /* The countdown is the point of the app: it stays on screen while a
+           tall view (floor plan, departure board …) scrolls underneath. */
+        position: sticky;
+        top: 8px;
+        z-index: 30;
     }
 
     .timer-icon {
@@ -2389,6 +2394,11 @@
        Mechanics unchanged: one stop per speaker plus a terminus, the train
        covers the leg to the next stop during the speaker's time.
        =================================================================== */
+    #vacContainer { --vac-width: var(--col-width); }
+    @media (min-width: 760px)  { #vacContainer { --vac-width: 520px; } }
+    @media (min-width: 1100px) { #vacContainer { --vac-width: 680px; } }
+    @media (min-width: 1600px) { #vacContainer { --vac-width: 760px; } }
+    #vacContainer { max-width: var(--vac-width) !important; }
     #lineContainer, #vacContainer {
       width: 100%;
       max-width: var(--col-width);
@@ -6786,6 +6796,11 @@
     // covered with lanes, cells are linked by shortest paths around the furniture
     // (visibility graph). Stepping on drives through the door.
 
+    /** Width of the floor plan in drawing units: wider on big screens, so it needs fewer rows. */
+    function vacWidthUnits() {
+      const w = window.innerWidth;
+      return w >= 1600 ? 680 : w >= 1100 ? 600 : w >= 760 ? 460 : 340;
+    }
     const VAC = {
       W: 340, M: 8,
       WT: 3,         // wall thickness
@@ -6801,6 +6816,18 @@
     let vacGeo = null;       // everything the update functions need
     let vacShownLen = 0;     // where the robot is drawn right now
     let vacTweenRaf = null;
+    let vacDocked = false;
+    let vacResizeTimer = null;
+    // A different screen width means a different floor plan: redraw it.
+    window.addEventListener('resize', () => {
+      clearTimeout(vacResizeTimer);
+      vacResizeTimer = setTimeout(() => {
+        if (viewMode === VIEW_MODE_VAC && vacGeo && vacWidthUnits() !== VAC.W) {
+          buildVacMap();
+          updateVacView(vacDocked);
+        }
+      }, 250);
+    });
 
     /** Small seeded generator so a floor plan stays put across redraws. */
     function vacRandom(seed) {
@@ -7036,13 +7063,15 @@
       const n = entries.length;
       const W = VAC.W, M = VAC.M, inner = W - 2 * M;
       const sizes = [];
+      const wide = W >= 500;          // up to four rooms side by side
       let rem = n;
       while (rem > 0) {
         let take;
-        if (rem <= 3) take = rem;
+        if (rem <= (wide ? 4 : 3)) take = rem;
         else {
-          take = rnd() < 0.4 ? 3 : 2;
-          if (rem - take === 1) take = take === 2 ? 3 : 2;
+          const r = rnd();
+          take = wide ? (r < 0.3 ? 4 : r < 0.75 ? 3 : 2) : (r < 0.4 ? 3 : 2);
+          if (rem - take === 1) take = take === 2 ? 3 : take - 1;
         }
         sizes.push(take);
         rem -= take;
@@ -7319,6 +7348,7 @@
       svg.innerHTML = '';
       if (vacTweenRaf !== null) { cancelAnimationFrame(vacTweenRaf); vacTweenRaf = null; }
 
+      VAC.W = vacWidthUnits();
       const entries = currentShuffledList.concat([t('vacDock')]);
       const n = entries.length;
       const rnd = vacRandom(vacHash(currentShuffledList.join('|')) % 100000 + n);
@@ -7707,6 +7737,7 @@
      */
     function updateVacView(atDock) {
       if (viewMode !== VIEW_MODE_VAC || !vacGeo) return;
+      vacDocked = !!atDock;
       const g = vacGeo;
       const last = g.cells.length - 1;   // the dock
       if (last < 1) return;

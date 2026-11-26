@@ -10,6 +10,17 @@ den Cache-Namen und löst im laufenden Betrieb das „Neue Version verfügbar“
 aus. **Merkregel:** Bei jeder Änderung, die ausgeliefert wird, `CACHE_VERSION`
 hochzählen *und* hier einen Eintrag ergänzen.
 
+## [v27] – 2026-11-26
+
+### Geändert
+- **Uhr bleibt immer sichtbar:** Der Countdown klebt jetzt oben am Bildschirm
+  (in allen Ansichten), auch wenn eine Ansicht wie der Saugroboter-Grundriss
+  höher ist als das Fenster.
+- **Saugroboter – nutzt die Breite am Rechner:** Auf Tablets und großen
+  Bildschirmen wird der Grundriss breiter (bis zu vier Räume pro Reihe) und
+  dadurch deutlich niedriger; beim Ändern der Fenstergröße wird er neu
+  aufgebaut.
+
 ## [v26] – 2026-11-26
 
 ### Geändert
