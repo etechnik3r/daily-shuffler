@@ -2563,11 +2563,12 @@
 
     /* ===================================================================
        Robot vacuum (view: vacuum)
-       A floor plan of the office: every room carries a colleague's name. The
-       robot vacuums one room per speaker in the classic boustrophedon lanes
-       (like a Roborock map), then rolls through the door into the next room.
-       The planned route is drawn dashed from the start, the swept part turns
-       into a coloured swath, the dust specks vanish behind the robot. Station
+       A floor plan of the office: rooms of different sizes, every one with a
+       colleague's name, furnished with desks, tables, sofas … The robot vacuums
+       one room per speaker in lanes (like a Roborock map), drives around the
+       furniture and rolls through the door into the next room. The planned
+       route is drawn dashed, the swept part turns into a glossy, coloured
+       swath, the dirt film and the dust vanish behind the robot. Station
        sign, delay chip and the head styles are shared with the line map.
        =================================================================== */
     .vac-next {
@@ -2598,13 +2599,100 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
+    /* Cleaned area: m² counter, progress bar, share */
+    .vac-stats {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 14px 10px;
+      color: var(--ln-ink);
+      background: linear-gradient(180deg, #ffffff, #f2f5f9);
+      border-bottom: 1px solid rgba(28, 34, 48, 0.1);
+    }
+    .vac-stat-main, .vac-stat-side { flex: 0 0 auto; display: flex; flex-direction: column; line-height: 1.05; }
+    .vac-stat-main { min-width: 78px; }
+    .vac-stat-side { align-items: flex-end; min-width: 64px; }
+    .vac-stat-of { text-transform: none !important; letter-spacing: 0.04em !important; }
+    .vac-stat-label, .vac-stat-of {
+      font-size: 0.62em;
+      font-weight: 800;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: #6d7584;
+      white-space: nowrap;
+    }
+    .vac-stat-num {
+      font-size: 1.5em;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      color: var(--ln-colour-deep);
+    }
+    .vac-stat-num small { font-size: 0.55em; font-weight: 800; margin-left: 3px; color: #6d7584; }
+    .vac-stat-pct { font-size: 1.5em; font-weight: 900; font-variant-numeric: tabular-nums; color: var(--ln-ink); }
+    .vac-bar {
+      position: relative;
+      flex: 1 1 auto;
+      min-width: 40px;
+      height: 14px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #e3e8ef;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.22);
+    }
+    .vac-bar-fill {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      border-radius: 8px;
+      background:
+        repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0 6px, rgba(255, 255, 255, 0) 6px 12px),
+        linear-gradient(90deg, var(--ln-colour-hi), var(--ln-colour));
+      box-shadow: 0 0 8px var(--ln-colour-hi);
+    }
+    .vac-bar-fill::after {
+      /* a shine gliding over the filled part */
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: -40%;
+      width: 40%;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0));
+      animation: vac-bar-shine 2.4s ease-in-out infinite;
+    }
+    @keyframes vac-bar-shine { 0% { left: -40%; } 100% { left: 110%; } }
+
     #vacSvg { display: block; width: 100%; height: auto; font-family: inherit; }
-    .vac-floor { stroke: #4a5366; stroke-width: 3; stroke-linejoin: round; }
-    .vac-outline { fill: none; stroke: transparent; stroke-width: 3.5; stroke-linejoin: round; }
+    .vac-bg { fill: #cfd7e1; }
+    .vac-wall { fill: none; stroke: #394255; stroke-width: 3; stroke-linejoin: miter; }
+    .vac-inner { fill: none; stroke: rgba(60, 40, 10, 0.11); stroke-width: 9; }
+    .vac-outline { fill: none; stroke: transparent; stroke-width: 3.5; stroke-linejoin: round; transition: stroke 0.4s ease; }
     .vac-room.is-current .vac-outline { stroke: var(--ln-colour-hi); }
-    .vac-dust { transition: opacity 0.5s ease; }
+    .vac-dirt { fill: #8a7448; opacity: 0.15; }
+    .vac-dust { transition: opacity 0.6s ease; }
     .vac-room.is-done .vac-dust { opacity: 0; }
-    .vac-tag-bg { fill: #ffffff; stroke: #4a5366; stroke-width: 1.2; }
+    .vac-shine { opacity: 0; transition: opacity 1.2s ease; pointer-events: none; }
+    .vac-room.is-done .vac-shine { opacity: 1; }
+    .vac-fshadow { fill: rgba(30, 25, 10, 0.2); }
+    .vac-spark {
+      fill: #ffd447;
+      stroke: #ffffff;
+      stroke-width: 0.8;
+      stroke-linejoin: round;
+      opacity: 0;
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+    .vac-room.is-done .vac-spark { animation: vac-spark 1.5s ease-out both; animation-delay: var(--d, 0s); }
+    @keyframes vac-spark {
+      0%   { opacity: 0; transform: scale(0) rotate(0deg); }
+      35%  { opacity: 1; transform: scale(1.5) rotate(40deg); }
+      100% { opacity: 0; transform: scale(0.4) rotate(90deg); }
+    }
+    .vac-tag-bg { fill: #ffffff; stroke: #4a5366; stroke-width: 1.2; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25)); }
     .vac-room.is-current .vac-tag-bg { fill: var(--ln-colour-deep); stroke: #ffffff; }
     .vac-room.is-next .vac-tag-bg { stroke: #ff8a00; stroke-width: 1.8; }
     .vac-name { font-size: 11px; font-weight: 800; fill: var(--ln-ink); text-anchor: start; dominant-baseline: central; }
@@ -2616,18 +2704,43 @@
     .vac-room.is-current .vac-num { fill: #ffffff; }
     .vac-num-t { font-size: 8.5px; font-weight: 900; fill: #ffffff; text-anchor: middle; dominant-baseline: central; }
     .vac-room.is-current .vac-num-t { fill: var(--ln-colour-deep); }
-    .vac-plan { stroke: var(--ln-colour-deep); stroke-width: 1.6; stroke-dasharray: 3 4.5; opacity: 0.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-    .vac-swath { stroke: var(--ln-colour); opacity: 0.3; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-    .vac-trail { stroke: var(--ln-colour); stroke-width: 2.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+    .vac-plan { stroke: var(--ln-colour-deep); stroke-width: 1.2; stroke-dasharray: 2.5 4.5; opacity: 0.5; fill: none; stroke-linecap: round; stroke-linejoin: round; transition: opacity 0.9s ease; }
+    .vac-swath { stroke: var(--ln-colour); opacity: 0.22; fill: none; stroke-linecap: round; stroke-linejoin: round; transition: opacity 1.2s ease; }
+    .vac-gloss { stroke: #ffffff; opacity: 0.6; fill: none; stroke-linecap: round; stroke-linejoin: round; transition: opacity 1.2s ease; }
+    .vac-trail { stroke: var(--ln-colour); stroke-width: 1.4; opacity: 0.9; fill: none; stroke-linecap: round; stroke-linejoin: round; transition: opacity 0.9s ease; }
+    .vac-room.is-done .vac-plan, .vac-room.is-done .vac-trail { opacity: 0; }
+    .vac-room.is-done .vac-swath { opacity: 0.07; }
+    .vac-room.is-done .vac-gloss { opacity: 0.16; }
     .vac-arrow { fill: var(--ln-colour-deep); stroke: #ffffff; stroke-width: 1.3; stroke-linejoin: round; transform-box: fill-box; transform-origin: center; }
     .vac-arrow.is-next { fill: #ff8a00; animation: vac-arrow 1s ease-in-out infinite; }
     @keyframes vac-arrow { 50% { transform: scale(1.5); } }
-    .vac-door { fill: #f6f1e6; }
-    .vac-dock-body { fill: #5b6578; stroke: #ffffff; stroke-width: 1.2; }
+
+    /* Doors: opening in the wall, swing arc, a leaf that really opens */
+    .vac-gap { fill: #d8c7a2; }
+    .vac-jamb { fill: #394255; }
+    .vac-swing { fill: none; stroke: rgba(57, 66, 85, 0.4); stroke-width: 0.8; stroke-dasharray: 2 2; }
+    .vac-leaf-g { transition: transform 0.7s cubic-bezier(0.3, 1.35, 0.5, 1); }
+    .vac-door.is-open .vac-leaf-g { transform: rotate(var(--open)); }
+    .vac-door.is-ajar .vac-leaf-g { transform: rotate(calc(var(--open) * 0.3)); }
+    .vac-leaf { stroke: #8b5a2b; stroke-width: 2.6; stroke-linecap: round; }
+    .vac-leaf-knob { fill: #f0dca4; }
+    .vac-door.is-ajar .vac-gap { fill: #ffb347; animation: vac-gap 1s ease-in-out infinite; }
+    @keyframes vac-gap { 50% { fill: #ffe0b0; } }
+
+    /* Charging dock against the wall */
+    .vac-dock-zone { fill: rgba(61, 220, 132, 0.1); stroke: #5faa7a; stroke-width: 1.1; stroke-dasharray: 3 3; }
+    .vac-dock-body { fill: #5b6578; stroke: #ffffff; stroke-width: 1; }
+    .vac-dock-ramp { fill: #7a859a; stroke: #ffffff; stroke-width: 0.8; stroke-linejoin: round; }
+    .vac-dock-pin { stroke: #ffd447; stroke-width: 1.2; stroke-linecap: round; }
     .vac-dock-bolt { fill: #ffd447; }
-    .vac-dock-ring { fill: none; stroke: #8a93a3; stroke-width: 1.2; stroke-dasharray: 3 3; }
+    .vac-dock-led { fill: #8a93a3; }
     .vac-room.is-current .vac-dock-bolt { filter: drop-shadow(0 0 3px #ffd447); animation: vac-charge 1s ease-in-out infinite; }
+    .line-map.is-docked .vac-dock-led { fill: #3ddc84; filter: drop-shadow(0 0 3px #3ddc84); }
+    .line-map.is-docked .vac-dock-zone { fill: rgba(61, 220, 132, 0.22); }
     @keyframes vac-charge { 50% { opacity: 0.35; } }
+
+    /* The robot */
     .vac-robot-glow { fill: var(--ln-colour-hi); opacity: 0.5; }
     .vac-shadow { fill: rgba(0, 0, 0, 0.3); }
     .vac-body { fill: #2f3644; stroke: #171b23; stroke-width: 1; }
@@ -2639,9 +2752,23 @@
     .vac-hub { fill: #1d222c; }
     .vac-brush { stroke: #3b4252; stroke-width: 1.3; stroke-linecap: round; transform-box: view-box; transform-origin: 0 0; animation: vac-spin 0.45s linear infinite; }
     .vac-tip { fill: #ff8a00; }
+    .vac-twinkle {
+      fill: #ffffff;
+      stroke: var(--ln-colour-hi);
+      stroke-width: 0.6;
+      opacity: 0;
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: vac-twinkle 1.1s ease-in-out infinite;
+    }
+    @keyframes vac-twinkle {
+      0%, 100% { opacity: 0; transform: scale(0.2); }
+      50%      { opacity: 1; transform: scale(1); }
+    }
     @keyframes vac-spin { to { transform: rotate(360deg); } }
     .line-map.is-docked .vac-led { fill: #3ddc84; }
     .line-map.is-docked .vac-brush { animation: none; }
+    .line-map.is-docked .vac-twinkle { display: none; }
     .line-map.is-late .vac-robot-glow { fill: #ff3b3b; animation: ln-late 0.8s ease-in-out infinite; }
     .line-map.is-late .vac-led { fill: #ff3b3b; }
 
@@ -2803,7 +2930,7 @@
       }
       /* Decorative loops carry no information at all – stop them outright. */
       #evSnow, .ev-wheel, .focus-stream, .slot-bulb::before, .line-clock .line-colon, .line-head::after, .line-delay, .ln-river-shine, .ln-flow,
-      .ln-stn .ln-ring, .ln-stn.is-pop, .line-map.is-late .ln-train-glow, .vac-brush, .vac-arrow.is-next, .vac-next-arrow, .line-map.is-late .vac-robot-glow, .vac-room.is-current .vac-dock-bolt, .ev-cloud, .ev-hills, #evRoad::before,
+      .ln-stn .ln-ring, .ln-stn.is-pop, .line-map.is-late .ln-train-glow, .vac-brush, .vac-arrow.is-next, .vac-next-arrow, .line-map.is-late .vac-robot-glow, .vac-room.is-current .vac-dock-bolt, .vac-twinkle, .vac-bar-fill::after, .vac-door.is-ajar .vac-gap, .ev-cloud, .ev-hills, #evRoad::before,
       .ev-body, .ev-speedlines, #evBatteryFill::before { animation: none !important; }
       .slot-coin { display: none; }
     }
@@ -3315,6 +3442,17 @@
           <span class="vac-next-arrow" aria-hidden="true">➜</span>
           <span id="vacNextName" class="vac-next-name"></span>
         </div>
+        <div class="vac-stats">
+          <div class="vac-stat-main">
+            <span class="vac-stat-label" data-i18n="vacCleaned">Gesaugt</span>
+            <span class="vac-stat-num"><span id="vacArea">0,0</span><small>m²</small></span>
+          </div>
+          <div class="vac-bar" aria-hidden="true"><i class="vac-bar-fill" id="vacBarFill"></i></div>
+          <div class="vac-stat-side">
+            <span class="vac-stat-pct" id="vacPct">0 %</span>
+            <span class="vac-stat-of" id="vacAreaOf"></span>
+          </div>
+        </div>
         <div class="line-map" id="vacMap">
           <svg id="vacSvg" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true"></svg>
         </div>
@@ -3731,6 +3869,8 @@
         vacNext: 'Als Nächstes',
         vacDock: 'Ladestation',
         vacDocked: 'Fertig gesaugt',
+        vacCleaned: 'Gesaugt',
+        vacOf: 'von {total} m²',
         viewFocus: 'Fokus-Ansicht (Sanduhr)',
         flapColPos: 'Pos',
         flapColName: 'Sprecher',
@@ -3799,7 +3939,7 @@
         helpTitle: 'So funktioniert es',
         helpIntro: 'Lege in Sekunden eine faire, zufällige Reihenfolge für die Wortbeiträge in deinem Daily fest – mit einem Timer, der die Zeit gleichmäßig auf alle verteilt.',
         helpUsageTitle: 'Auf einen Blick',
-        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Anwesenheit</b>Hake oben ab, wer heute dabei ist. Abgewählte Personen (Urlaub, krank) werden übersprungen.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Reihenfolge würfeln</b>Tippe auf „Würfeln": Die App erstellt eine zufällige Reihenfolge der aktiven Personen und startet den Timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>Die Gesamtdauer wird gleichmäßig aufgeteilt. Wird die Zeit knapp, färbt sich der Timer – erst gelb, dann rot.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Weiter zur nächsten Person</b>Tippe auf „Nächster Teilnehmer" oder drücke die Leertaste.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Einen Schritt zurück</b>Strg oder Umschalt + Leertaste springt zur vorherigen Person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slotmaschinen-Ansicht</b>Lust auf Show? In den Einstellungen schaltest du auf die animierte Slotmaschine um.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip-Ansicht</b>Ein E-Auto fährt die Daily-Strecke ab, die Batterie zeigt die Redezeit. Ist sie leer, kommt die Schildkröte.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Glücksrad-Ansicht</b>Ein buntes Rad mit allen Namen dreht sich und lost nacheinander aus, wer dran ist.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Kartenspiel-Ansicht</b>Für jeden Sprecher fliegt eine bunte Namenskarte auf den Stapel. Sonderkarten sorgen für Spaß – „Aussetzen" verschiebt jemanden ans Ende, der Rest ist nur Show.</div></li><li><span class="help-ico">🚉</span><div class="help-text"><b>Abfahrtstafel-Ansicht</b>Wie am Bahnhof: Pro Klick klappert eine Zeile durch und rastet auf dem nächsten Sprecher ein – die ganze Reihenfolge bleibt dabei sichtbar.</div></li><li><span class="help-ico">🚇</span><div class="help-text"><b>Linienplan-Ansicht</b>Die Reihenfolge als Strecke: Jede Person ist eine Haltestelle, der Zug fährt während der Redezeit zur nächsten. So sieht man immer, wie weit das Daily ist.</div></li><li><span class="help-ico">🤖</span><div class="help-text"><b>Saugroboter-Ansicht</b>Jede Person ist ein Raum im Büro. Der Roboter saugt den Raum in Bahnen ab – so lange, wie die Person Redezeit hat – und fährt dann durch die Tür in den nächsten Raum. Die geplante Strecke ist gestrichelt eingezeichnet.</div></li><li><span class="help-ico">⏳</span><div class="help-text"><b>Fokus-Ansicht</b>Bewusst ruhig: ein großer Name und eine Sanduhr, die abläuft. Kein Bunt, keine Animation nebenbei.</div></li><li><span class="help-ico">🔊</span><div class="help-text"><b>Sounds</b>Jede Ansicht hat ihren eigenen Klang – Glücksrad-Klackern, Slotmaschine, Kartenwurf, Fallblatt-Tafel. In den Einstellungen einschaltbar, ab Werk aus.</div></li><li><span class="help-ico">🎨</span><div class="help-text"><b>Farbthema</b>In den Einstellungen wählst du einen Grundton – klassisch Blau, eine der Voreinstellungen oder eine eigene Farbe. Alle Flächen, Verläufe und Schatten werden daraus berechnet.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Einstellungen</b>Namen, Dauer, Ansicht, Farbe und Sprache jederzeit anpassen. Mit <b>Esc</b> schließt du die Dialoge.</div></li>',
+        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Anwesenheit</b>Hake oben ab, wer heute dabei ist. Abgewählte Personen (Urlaub, krank) werden übersprungen.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Reihenfolge würfeln</b>Tippe auf „Würfeln": Die App erstellt eine zufällige Reihenfolge der aktiven Personen und startet den Timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>Die Gesamtdauer wird gleichmäßig aufgeteilt. Wird die Zeit knapp, färbt sich der Timer – erst gelb, dann rot.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Weiter zur nächsten Person</b>Tippe auf „Nächster Teilnehmer" oder drücke die Leertaste.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Einen Schritt zurück</b>Strg oder Umschalt + Leertaste springt zur vorherigen Person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slotmaschinen-Ansicht</b>Lust auf Show? In den Einstellungen schaltest du auf die animierte Slotmaschine um.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip-Ansicht</b>Ein E-Auto fährt die Daily-Strecke ab, die Batterie zeigt die Redezeit. Ist sie leer, kommt die Schildkröte.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Glücksrad-Ansicht</b>Ein buntes Rad mit allen Namen dreht sich und lost nacheinander aus, wer dran ist.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Kartenspiel-Ansicht</b>Für jeden Sprecher fliegt eine bunte Namenskarte auf den Stapel. Sonderkarten sorgen für Spaß – „Aussetzen" verschiebt jemanden ans Ende, der Rest ist nur Show.</div></li><li><span class="help-ico">🚉</span><div class="help-text"><b>Abfahrtstafel-Ansicht</b>Wie am Bahnhof: Pro Klick klappert eine Zeile durch und rastet auf dem nächsten Sprecher ein – die ganze Reihenfolge bleibt dabei sichtbar.</div></li><li><span class="help-ico">🚇</span><div class="help-text"><b>Linienplan-Ansicht</b>Die Reihenfolge als Strecke: Jede Person ist eine Haltestelle, der Zug fährt während der Redezeit zur nächsten. So sieht man immer, wie weit das Daily ist.</div></li><li><span class="help-ico">🤖</span><div class="help-text"><b>Saugroboter-Ansicht</b>Jede Person ist ein Raum im Büro – mal groß, mal klein, mit Schreibtischen, Sofas und Pflanzen. Der Roboter saugt den Raum in Bahnen ab und fährt dabei um die Möbel herum – so lange, wie die Person Redezeit hat – und rollt dann durch die Tür in den nächsten Raum. Oben zählen die gesaugten Quadratmeter mit; am Ende parkt er an der Ladestation.</div></li><li><span class="help-ico">⏳</span><div class="help-text"><b>Fokus-Ansicht</b>Bewusst ruhig: ein großer Name und eine Sanduhr, die abläuft. Kein Bunt, keine Animation nebenbei.</div></li><li><span class="help-ico">🔊</span><div class="help-text"><b>Sounds</b>Jede Ansicht hat ihren eigenen Klang – Glücksrad-Klackern, Slotmaschine, Kartenwurf, Fallblatt-Tafel. In den Einstellungen einschaltbar, ab Werk aus.</div></li><li><span class="help-ico">🎨</span><div class="help-text"><b>Farbthema</b>In den Einstellungen wählst du einen Grundton – klassisch Blau, eine der Voreinstellungen oder eine eigene Farbe. Alle Flächen, Verläufe und Schatten werden daraus berechnet.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Einstellungen</b>Namen, Dauer, Ansicht, Farbe und Sprache jederzeit anpassen. Mit <b>Esc</b> schließt du die Dialoge.</div></li>',
         alertPickOne: 'Bitte wähle mindestens einen Teilnehmer aus!',
         alertError: 'Ein Fehler ist aufgetreten: {msg}\nBitte Seite neu laden oder Cache leeren.',
         errorNotice: 'Es ist ein Fehler aufgetreten ({msg}) – das Daily läuft weiter.',
@@ -3832,6 +3972,8 @@
         vacNext: 'Up next',
         vacDock: 'Charging dock',
         vacDocked: 'All clean',
+        vacCleaned: 'Cleaned',
+        vacOf: 'of {total} m²',
         viewFocus: 'Focus view (hourglass)',
         flapColPos: 'Pos',
         flapColName: 'Speaker',
@@ -3900,7 +4042,7 @@
         helpTitle: 'How it works',
         helpIntro: 'Set a fair, random speaking order for your daily in seconds – with a timer that splits the time evenly across everyone.',
         helpUsageTitle: 'At a glance',
-        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Attendance</b>Tick who is in today. Unticked people (vacation, sick) are skipped.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Roll the order</b>Tap “Roll” and the app builds a random order of the active people and starts the timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>The total time is split evenly. As it runs low the timer changes colour – yellow, then red.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Next person</b>Tap “Next participant” or press the spacebar.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Step back</b>Ctrl or Shift + Space jumps to the previous person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slot machine view</b>Want a bit of show? Switch to the animated slot machine in the settings.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip view</b>An EV drives the daily route while the battery shows the speaking time. When it is empty, the turtle appears.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Wheel of fortune view</b>A colourful wheel with every name spins and draws who is up next, one by one.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Card game view</b>A colourful name card is thrown onto the pile for each speaker. Special cards add fun – “Skip” moves someone to the end, the rest are just for show.</div></li><li><span class="help-ico">🚉</span><div class="help-text"><b>Departure board view</b>Like a railway station: each click sends a row clattering until it settles on the next speaker – with the whole running order staying on screen.</div></li><li><span class="help-ico">🚇</span><div class="help-text"><b>Line map view</b>The running order as a route: every person is a stop and the train travels to the next one while they speak, so you can always see how far along the daily is.</div></li><li><span class="help-ico">🤖</span><div class="help-text"><b>Robot vacuum view</b>Every person is a room in the office. The robot vacuums the room in lanes for as long as that person has speaking time, then rolls through the door into the next room. The planned route is drawn dashed.</div></li><li><span class="help-ico">⏳</span><div class="help-text"><b>Focus view</b>Deliberately quiet: one large name and an hourglass running out. No colour, no side show.</div></li><li><span class="help-ico">🔊</span><div class="help-text"><b>Sounds</b>Every view has its own voice – the wheel’s clatter, the slot machine, cards landing, the departure board. Switch it on in the settings; it ships off.</div></li><li><span class="help-ico">🎨</span><div class="help-text"><b>Colour theme</b>Pick a base colour in the settings – classic blue, one of the presets, or your own. Every surface, gradient and shadow is derived from it.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Settings</b>Adjust names, duration, view, colour and language anytime. Press <b>Esc</b> to close the dialogs.</div></li>',
+        helpList: '<li><span class="help-ico">✅</span><div class="help-text"><b>Attendance</b>Tick who is in today. Unticked people (vacation, sick) are skipped.</div></li><li><span class="help-ico">🎲</span><div class="help-text"><b>Roll the order</b>Tap “Roll” and the app builds a random order of the active people and starts the timer.</div></li><li><span class="help-ico">⏱️</span><div class="help-text"><b>Timer</b>The total time is split evenly. As it runs low the timer changes colour – yellow, then red.</div></li><li><span class="help-ico">👉</span><div class="help-text"><b>Next person</b>Tap “Next participant” or press the spacebar.</div></li><li><span class="help-ico">↩️</span><div class="help-text"><b>Step back</b>Ctrl or Shift + Space jumps to the previous person.</div></li><li><span class="help-ico">🎰</span><div class="help-text"><b>Slot machine view</b>Want a bit of show? Switch to the animated slot machine in the settings.</div></li><li><span class="help-ico">🚗</span><div class="help-text"><b>Roadtrip view</b>An EV drives the daily route while the battery shows the speaking time. When it is empty, the turtle appears.</div></li><li><span class="help-ico">🎡</span><div class="help-text"><b>Wheel of fortune view</b>A colourful wheel with every name spins and draws who is up next, one by one.</div></li><li><span class="help-ico">🃏</span><div class="help-text"><b>Card game view</b>A colourful name card is thrown onto the pile for each speaker. Special cards add fun – “Skip” moves someone to the end, the rest are just for show.</div></li><li><span class="help-ico">🚉</span><div class="help-text"><b>Departure board view</b>Like a railway station: each click sends a row clattering until it settles on the next speaker – with the whole running order staying on screen.</div></li><li><span class="help-ico">🚇</span><div class="help-text"><b>Line map view</b>The running order as a route: every person is a stop and the train travels to the next one while they speak, so you can always see how far along the daily is.</div></li><li><span class="help-ico">🤖</span><div class="help-text"><b>Robot vacuum view</b>Every person is a room in the office – big or small, with desks, sofas and plants. The robot vacuums the room in lanes and drives around the furniture for as long as that person has speaking time, then rolls through the door into the next room. The cleaned square metres count up at the top; in the end it parks at the charging dock.</div></li><li><span class="help-ico">⏳</span><div class="help-text"><b>Focus view</b>Deliberately quiet: one large name and an hourglass running out. No colour, no side show.</div></li><li><span class="help-ico">🔊</span><div class="help-text"><b>Sounds</b>Every view has its own voice – the wheel’s clatter, the slot machine, cards landing, the departure board. Switch it on in the settings; it ships off.</div></li><li><span class="help-ico">🎨</span><div class="help-text"><b>Colour theme</b>Pick a base colour in the settings – classic blue, one of the presets, or your own. Every surface, gradient and shadow is derived from it.</div></li><li><span class="help-ico">⚙️</span><div class="help-text"><b>Settings</b>Adjust names, duration, view, colour and language anytime. Press <b>Esc</b> to close the dialogs.</div></li>',
         alertPickOne: 'Please select at least one participant!',
         alertError: 'An error occurred: {msg}\nPlease reload the page or clear the cache.',
         errorNotice: 'Something went wrong ({msg}) – the daily keeps running.',
@@ -6627,21 +6769,38 @@
 
     // --- Robot Vacuum View Module ---
     //
-    // The office is a grid of rooms (2 or 3 per row) in the same snaking order
-    // as the running order, so every room borders the next one. The route is a
-    // single polyline: lane after lane through room 1, through the door, lane
-    // after lane through room 2 … and finally onto the charging dock. Every
-    // room's start and end distance along it is known, so the robot's position
-    // is "start of the current room + used share of the speaker's time × the
-    // length of that room's lanes". Stepping on drives through the door.
+    // The office is a floor plan of rooms in different sizes. Rooms sit in rows
+    // that snake like the running order (left to right, then right to left …),
+    // so every room borders the next one and a door connects the two. Each room
+    // is furnished (desks, meeting table, sofa, kitchen island …); the robot has
+    // to drive around that furniture. The whole route is one polyline: coverage
+    // lanes through room 1, through the door, lanes through room 2 … and finally
+    // onto the charging dock. Every room's start and end distance along the route
+    // is known, so the robot's position is "start of the current room + used
+    // share of the speaker's time × the length of that room's route".
+    //
+    // Obstacle handling: the free floor of a room (inset by the robot's radius)
+    // is cut into rectangular cells around the inflated furniture; every cell is
+    // covered with lanes, cells are linked by shortest paths around the furniture
+    // (visibility graph). Stepping on drives through the door.
 
-    const VAC = { W: 340, M: 8, HEAD: 24, BOT: 10, INS: 14, BRUSH: 11, DOOR: 17 };
-    const VAC_TINTS = ['#f7f0e1', '#e8f1f5', '#f2ebf6', '#eaf4e6'];
-    let vacGeo = null;       // { cells[], start[], end[], total, pts[], cum[], ... }
+    const VAC = {
+      W: 340, M: 8,
+      WT: 3,         // wall thickness
+      HEAD: 27,      // room top → first lane (the name tag sits above)
+      INS: 12.5,     // wall → robot centre
+      R: 8.5,        // robot radius
+      GAP: 11,       // distance between two lanes
+      WIPE: 18,      // width of the strip the robot cleans
+      DOOR: 24,      // width of a doorway
+      CLR: 10,       // furniture edge → robot centre
+      M2: 0.000376   // m² per square unit – the robot is about 33 cm wide
+    };
+    let vacGeo = null;       // everything the update functions need
     let vacShownLen = 0;     // where the robot is drawn right now
     let vacTweenRaf = null;
 
-    /** Small seeded generator so a room's dust specks stay put across redraws. */
+    /** Small seeded generator so a floor plan stays put across redraws. */
     function vacRandom(seed) {
       let a = (seed * 2654435761 + 12345) >>> 0;
       return () => {
@@ -6653,10 +6812,504 @@
       };
     }
 
+    function vacHash(s) {
+      let h = 2166136261;
+      for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+      return h >>> 0;
+    }
+
+    // --- Geometry helpers ----------------------------------------------------
+
+    /** Do two rectangles come closer than pad? */
+    function vacNear(a, b, pad) {
+      return a.x0 < b.x1 + pad && a.x1 > b.x0 - pad && a.y0 < b.y1 + pad && a.y1 > b.y0 - pad;
+    }
+
+    /** Does segment a-b cross the inside of rectangle r (touching its edge is fine)? */
+    function vacSegHitsRect(a, b, r) {
+      const e = 0.02;
+      const x0 = (r.ex0 !== undefined ? r.ex0 : r.x0) + e, x1 = (r.ex1 !== undefined ? r.ex1 : r.x1) - e;
+      const y0 = (r.ey0 !== undefined ? r.ey0 : r.y0) + e, y1 = (r.ey1 !== undefined ? r.ey1 : r.y1) - e;
+      if (x1 <= x0 || y1 <= y0) return false;
+      let t0 = 0, t1 = 1;
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const clip = (p, q) => {
+        if (Math.abs(p) < 1e-12) return q >= 0;
+        const t = q / p;
+        if (p < 0) { if (t > t1) return false; if (t > t0) t0 = t; }
+        else { if (t < t0) return false; if (t < t1) t1 = t; }
+        return true;
+      };
+      return clip(-dx, a.x - x0) && clip(dx, x1 - a.x) && clip(-dy, a.y - y0) && clip(dy, y1 - a.y) && t1 - t0 > 1e-9;
+    }
+
+    function vacLen(pts) {
+      let l = 0;
+      for (let i = 1; i < pts.length; i++) l += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+      return l;
+    }
+
     /**
-     * Builds the floor plan for the current running order: one room per name
-     * plus the charging dock, the planned route, the dust, the doors and the
-     * robot.
+     * Shortest way from a to b around the (inflated) furniture rectangles:
+     * Dijkstra over the visibility graph of the rectangle corners.
+     */
+    function vacRoute(a, b, rects) {
+      const hit = (p, q) => rects.some(r => vacSegHitsRect(p, q, r));
+      if (!hit(a, b)) return [a, b];
+      const nodes = [a, b];
+      rects.forEach(r => nodes.push({ x: r.x0, y: r.y0 }, { x: r.x1, y: r.y0 }, { x: r.x1, y: r.y1 }, { x: r.x0, y: r.y1 }));
+      const N = nodes.length;
+      const dist = new Array(N).fill(Infinity);
+      const prev = new Array(N).fill(-1);
+      const done = new Array(N).fill(false);
+      dist[0] = 0;
+      for (;;) {
+        let u = -1;
+        for (let i = 0; i < N; i++) if (!done[i] && dist[i] < Infinity && (u < 0 || dist[i] < dist[u])) u = i;
+        if (u < 0 || u === 1) break;
+        done[u] = true;
+        for (let v = 0; v < N; v++) {
+          if (done[v] || hit(nodes[u], nodes[v])) continue;
+          const d = dist[u] + Math.hypot(nodes[u].x - nodes[v].x, nodes[u].y - nodes[v].y);
+          if (d < dist[v]) { dist[v] = d; prev[v] = u; }
+        }
+      }
+      if (prev[1] < 0) return [a, b];
+      const path = [];
+      for (let v = 1; v !== -1; v = prev[v]) path.push(nodes[v]);
+      return path.reverse();
+    }
+
+    /** Replaces diagonal legs by an L (vertical first, so lanes are not retraced) where that is free. */
+    function vacOrtho(route, rects) {
+      const hit = (p, q) => rects.some(r => vacSegHitsRect(p, q, r));
+      const out = [route[0]];
+      for (let i = 1; i < route.length; i++) {
+        const p = out[out.length - 1], q = route[i];
+        if (Math.abs(q.x - p.x) > 0.5 && Math.abs(q.y - p.y) > 0.5) {
+          const c2 = { x: p.x, y: q.y }, c1 = { x: q.x, y: p.y };
+          if (!hit(p, c2) && !hit(c2, q)) out.push(c2);
+          else if (!hit(p, c1) && !hit(c1, q)) out.push(c1);
+        }
+        out.push(q);
+      }
+      return out;
+    }
+
+    /**
+     * Furniture rectangle → what the robot centre must keep out of: grown by the
+     * clearance, clipped to the room, snapped to a wall when only a sliver would
+     * remain. Null when it would cut the room in two.
+     */
+    function vacInflate(r, B) {
+      const c = VAC.CLR, snap = 7;
+      let x0 = Math.max(B.x0, r.x0 - c), y0 = Math.max(B.y0, r.y0 - c);
+      let x1 = Math.min(B.x1, r.x1 + c), y1 = Math.min(B.y1, r.y1 + c);
+      if (x1 <= x0 || y1 <= y0) return null;
+      if (x0 - B.x0 < snap) x0 = B.x0;
+      if (B.x1 - x1 < snap) x1 = B.x1;
+      if (y0 - B.y0 < snap) y0 = B.y0;
+      if (B.y1 - y1 < snap) y1 = B.y1;
+      if (x0 <= B.x0 && x1 >= B.x1) return null;
+      if (y0 <= B.y0 && y1 >= B.y1) return null;
+      // Where the zone reaches a wall the furniture sits beyond it: the wall
+      // line itself is blocked too, so the hit test extends past the room.
+      const out = 40;
+      return { x0, y0, x1, y1,
+        ex0: x0 <= B.x0 ? x0 - out : x0, ex1: x1 >= B.x1 ? x1 + out : x1,
+        ey0: y0 <= B.y0 ? y0 - out : y0, ey1: y1 >= B.y1 ? y1 + out : y1 };
+    }
+
+    /** Can the robot still get from every free spot of the room to every other one? */
+    function vacConnected(B, rects, probes) {
+      const s = 2.5;
+      const nx = Math.floor((B.x1 - B.x0) / s) + 1, ny = Math.floor((B.y1 - B.y0) / s) + 1;
+      const free = new Uint8Array(nx * ny);
+      let total = 0;
+      for (let j = 0; j < ny; j++) {
+        for (let i = 0; i < nx; i++) {
+          const px = B.x0 + i * s, py = B.y0 + j * s;
+          if (!rects.some(r => px > r.ex0 + 0.01 && px < r.ex1 - 0.01 && py > r.ey0 + 0.01 && py < r.ey1 - 0.01)) { free[j * nx + i] = 1; total++; }
+        }
+      }
+      const near = p => {
+        const i = Math.max(0, Math.min(nx - 1, Math.round((p.x - B.x0) / s)));
+        const j = Math.max(0, Math.min(ny - 1, Math.round((p.y - B.y0) / s)));
+        return j * nx + i;
+      };
+      if (!total || probes.some(p => !free[near(p)])) return false;
+      const seen = new Uint8Array(nx * ny);
+      const stack = [near(probes[0])];
+      seen[stack[0]] = 1;
+      let cnt = 1;
+      while (stack.length) {
+        const c = stack.pop();
+        const i = c % nx, j = (c - i) / nx;
+        [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(d => {
+          const ii = i + d[0], jj = j + d[1];
+          if (ii < 0 || jj < 0 || ii >= nx || jj >= ny) return;
+          const q = jj * nx + ii;
+          if (free[q] && !seen[q]) { seen[q] = 1; cnt++; stack.push(q); }
+        });
+      }
+      return cnt === total;
+    }
+
+    // --- Coverage planning -----------------------------------------------------
+
+    /** Free floor cut into rectangles: horizontal bands between the furniture edges. */
+    function vacCells(B, rects) {
+      const ys = [B.y0, B.y1];
+      rects.forEach(r => { ys.push(r.y0, r.y1); });
+      const yl = Array.from(new Set(ys)).sort((p, q) => p - q);
+      const out = [];
+      for (let i = 0; i < yl.length - 1; i++) {
+        const ya = yl[i], yb = yl[i + 1];
+        if (yb - ya < 0.5) continue;
+        const mid = (ya + yb) / 2;
+        const blk = rects.filter(r => r.y0 < mid && r.y1 > mid).sort((p, q) => p.x0 - q.x0);
+        let x = B.x0;
+        blk.forEach(r => {
+          if (r.x0 - x > 1.5) out.push({ x0: x, x1: r.x0, y0: ya, y1: yb });
+          x = Math.max(x, r.x1);
+        });
+        if (B.x1 - x > 1.5) out.push({ x0: x, x1: B.x1, y0: ya, y1: yb });
+      }
+      return out;
+    }
+
+    /** Lanes through one cell, beginning in the given corner. */
+    function vacLanes(c, top, left) {
+      const h = c.y1 - c.y0;
+      const n = h < VAC.GAP * 0.7 ? 1 : Math.ceil(h / VAC.GAP) + 1;
+      const step = n > 1 ? h / (n - 1) : 0;
+      const out = [];
+      for (let j = 0; j < n; j++) {
+        const y = n === 1 ? (c.y0 + c.y1) / 2 : (top ? c.y0 + j * step : c.y1 - j * step);
+        const l2r = (j % 2 === 0) === left;
+        out.push({ x: l2r ? c.x0 : c.x1, y }, { x: l2r ? c.x1 : c.x0, y });
+      }
+      return out;
+    }
+
+    /**
+     * Route through one room from its entry to its exit: lanes cell by cell
+     * (always on to the nearest cell), shortest paths around the furniture in
+     * between. covA/covB mark the first and the last coverage point.
+     */
+    function vacPlanRoom(B, rects, from, to) {
+      const cells = vacCells(B, rects).filter(c => c.x1 - c.x0 >= 4);
+      const pts = [from];
+      const add = p => {
+        const q = pts[pts.length - 1];
+        if (Math.hypot(p.x - q.x, p.y - q.y) > 0.05) pts.push(p);
+      };
+      let covA = -1;
+      let cur = from;
+      while (cells.length) {
+        let best = null;
+        cells.forEach((c, ci) => {
+          [[true, true], [true, false], [false, true], [false, false]].forEach(o => {
+            const lanes = vacLanes(c, o[0], o[1]);
+            const route = vacOrtho(vacRoute(cur, lanes[0], rects), rects);
+            const len = vacLen(route);
+            if (!best || len < best.len - 0.01) best = { ci, lanes, route, len };
+          });
+        });
+        cells.splice(best.ci, 1);
+        best.route.slice(1).forEach(add);
+        if (covA < 0) covA = pts.length - 1;
+        best.lanes.forEach(add);
+        cur = pts[pts.length - 1];
+      }
+      const covB = covA < 0 ? -1 : pts.length - 1;
+      vacOrtho(vacRoute(cur, to, rects), rects).slice(1).forEach(add);
+      return { pts, covA, covB };
+    }
+
+    // --- Floor plan ------------------------------------------------------------
+
+    /** Rooms in rows of different sizes; every second row runs right to left. */
+    function vacLayout(entries, rnd) {
+      const n = entries.length;
+      const W = VAC.W, M = VAC.M, inner = W - 2 * M;
+      const sizes = [];
+      let rem = n;
+      while (rem > 0) {
+        let take;
+        if (rem <= 3) take = rem;
+        else {
+          take = rnd() < 0.4 ? 3 : 2;
+          if (rem - take === 1) take = take === 2 ? 3 : 2;
+        }
+        sizes.push(take);
+        rem -= take;
+      }
+      const cells = [];
+      let y = M;
+      let k = 0;
+      sizes.forEach((cnt, r) => {
+        const dir = r % 2 ? -1 : 1;
+        const loneDock = cnt === 1 && k === n - 1;
+        const h = loneDock ? 100 : Math.round(104 + rnd() * 26);
+        const ws = [];
+        for (let i = 0; i < cnt; i++) {
+          // The first room of a row is entered from above and wants the space.
+          ws.push(k + i === n - 1 ? 0.62 : (i === 0 ? 1.1 : 0.8) + rnd() * 0.5);
+        }
+        const sum = ws.reduce((p, q) => p + q, 0);
+        const rowW = loneDock ? Math.round(inner * 0.42) : inner;
+        let pos = dir > 0 ? M : W - M;
+        let used = 0;
+        for (let i = 0; i < cnt; i++) {
+          const w = i === cnt - 1 ? rowW - used : Math.round(rowW * ws[i] / sum);
+          used += w;
+          const x = dir > 0 ? pos : pos - w;
+          cells.push({ k: k + i, r, c: i, name: entries[k + i], dir, x, y, w, h, dock: k + i === n - 1 });
+          pos += dir * w;
+        }
+        y += h;
+        k += cnt;
+      });
+      return { cells, H: y + M };
+    }
+
+    /** One door per step: through the shared wall to the next room. */
+    function vacDoors(cells, rnd) {
+      const { DOOR, HEAD, INS } = VAC;
+      const doors = [];
+      for (let k = 0; k < cells.length - 1; k++) {
+        const a = cells[k], b = cells[k + 1];
+        if (a.r === b.r) {
+          const wx = a.dir > 0 ? a.x + a.w : a.x;
+          const lo = a.y + HEAD + 2, hi = a.y + a.h - INS - 2;
+          const y = lo + (hi - lo) * (0.1 + 0.8 * rnd());
+          doors.push({ k, side: true, dir: a.dir, pt: { x: wx, y },
+            exit: { x: wx - a.dir * INS, y }, entry: { x: wx + a.dir * INS, y } });
+        } else {
+          const wy = a.y + a.h;
+          const ox0 = Math.max(a.x, b.x), ox1 = Math.min(a.x + a.w, b.x + b.w);
+          // At the outer end of the rooms, so the name tag has the rest of the top wall.
+          const x = a.dir > 0 ? ox1 - INS - 4 : ox0 + INS + 4;
+          doors.push({ k, side: false, dir: 1, pt: { x, y: wy },
+            exit: { x, y: wy - INS }, entry: { x, y: wy + HEAD } });
+        }
+      }
+      return doors;
+    }
+
+    // --- Furniture -------------------------------------------------------------
+
+    const VAC_PIECES = {
+      desk: { w: 30, h: 26 }, table: { w: 58, h: 32 }, plant: { w: 12, h: 12 },
+      bin: { w: 9, h: 9 }, lamp: { w: 8, h: 8 }, sofa: { w: 38, h: 16 },
+      coffee: { w: 16, h: 10 }, island: { w: 36, h: 24 }, fridge: { w: 12, h: 16 },
+      shelf: { w: 32, h: 9 }, printer: { w: 16, h: 13 }
+    };
+    // What a room of each kind holds: piece, probability, [stands at a wall].
+    const VAC_PLAN = {
+      office:  [['desk', 1], ['desk', 0.55], ['plant', 0.8], ['printer', 0.35], ['bin', 0.5], ['shelf', 0.45, true]],
+      meeting: [['table', 1], ['plant', 0.7], ['bin', 0.4], ['shelf', 0.35, true]],
+      lounge:  [['sofa', 1, true], ['coffee', 0.8], ['plant', 0.9], ['lamp', 0.6]],
+      kitchen: [['island', 1], ['fridge', 1, true], ['bin', 0.6], ['plant', 0.3]]
+    };
+    const VAC_ROOM_KINDS = ['office', 'office', 'meeting', 'lounge', 'kitchen'];
+    const VAC_STAMP = { desk: 1, shelf: 1, sofa: 1, fridge: 1 };   // may stand turned by 90°
+
+    const VAC_DRAW = {
+      desk(s) {
+        s('rect', { x: 0, y: 0, width: 30, height: 14, rx: 2, fill: '#c9a46f', stroke: '#8d6b3e', 'stroke-width': 0.8 });
+        s('rect', { x: 10, y: 1.8, width: 10, height: 2.6, rx: 0.6, fill: '#2b3140' });
+        s('rect', { x: 14.2, y: 4.4, width: 1.6, height: 1.4, fill: '#2b3140' });
+        s('rect', { x: 9.5, y: 7.4, width: 11, height: 3.4, rx: 0.8, fill: '#f3f5f8', stroke: '#98a1b1', 'stroke-width': 0.4 });
+        s('rect', { x: 23.2, y: 7.6, width: 2.4, height: 3.6, rx: 1.2, fill: '#f3f5f8', stroke: '#98a1b1', 'stroke-width': 0.4 });
+        s('circle', { cx: 4.6, cy: 6.6, r: 1.8, fill: '#e8553d' });
+        s('circle', { cx: 15, cy: 19.8, r: 5.6, fill: '#3c4454', stroke: '#222936', 'stroke-width': 0.8 });
+        s('circle', { cx: 15, cy: 19.4, r: 3.4, fill: '#4e596d' });
+        s('path', { d: 'M9.8 23.4 A6.2 6.2 0 0 0 20.2 23.4', fill: 'none', stroke: '#222936', 'stroke-width': 1.8, 'stroke-linecap': 'round' });
+      },
+      table(s) {
+        [14, 29, 44].forEach(cx => [4.4, 27.6].forEach(cy =>
+          s('circle', { cx, cy, r: 3.7, fill: '#4e596d', stroke: '#222936', 'stroke-width': 0.7 })));
+        s('rect', { x: 3, y: 7.5, width: 52, height: 17, rx: 8.5, fill: '#c2955f', stroke: '#8a6439', 'stroke-width': 0.9 });
+        s('rect', { x: 6, y: 10, width: 46, height: 12, rx: 6, fill: 'none', stroke: 'rgba(255,255,255,0.3)', 'stroke-width': 0.8 });
+        s('rect', { x: 11, y: 11.5, width: 8, height: 5.5, rx: 0.8, fill: '#d4dae4', stroke: '#7f8aa0', 'stroke-width': 0.4 });
+        s('rect', { x: 39, y: 15, width: 8, height: 5.5, rx: 0.8, fill: '#d4dae4', stroke: '#7f8aa0', 'stroke-width': 0.4 });
+        s('circle', { cx: 29, cy: 16, r: 1.8, fill: '#e8553d' });
+      },
+      plant(s) {
+        s('circle', { cx: 6, cy: 6, r: 5.8, fill: '#2f8f4e' });
+        for (let a = 0; a < 6; a++) {
+          s('ellipse', { cx: 6, cy: 2.8, rx: 1.9, ry: 3.4, fill: a % 2 ? '#3fae63' : '#52c27a', transform: `rotate(${a * 60} 6 6)` });
+        }
+        s('circle', { cx: 6, cy: 6, r: 1.7, fill: '#b5703a' });
+      },
+      bin(s) {
+        s('circle', { cx: 4.5, cy: 4.5, r: 4.3, fill: '#5d6677', stroke: '#3a4150', 'stroke-width': 0.7 });
+        s('circle', { cx: 4.5, cy: 4.5, r: 2.9, fill: '#2f3644' });
+      },
+      lamp(s) {
+        s('circle', { cx: 4, cy: 4, r: 4, fill: 'rgba(255,230,140,0.35)' });
+        s('circle', { cx: 4, cy: 4, r: 2.6, fill: '#fff3b0', stroke: '#d6b84a', 'stroke-width': 0.8 });
+      },
+      sofa(s) {
+        s('rect', { x: 0, y: 0, width: 38, height: 16, rx: 4, fill: '#6d7fb0', stroke: '#47557f', 'stroke-width': 0.8 });
+        s('rect', { x: 0, y: 0, width: 38, height: 5.5, rx: 3, fill: '#586a9b' });
+        s('rect', { x: 0, y: 3, width: 4.5, height: 13, rx: 2, fill: '#586a9b' });
+        s('rect', { x: 33.5, y: 3, width: 4.5, height: 13, rx: 2, fill: '#586a9b' });
+        s('rect', { x: 5.2, y: 6, width: 13.4, height: 9, rx: 2.4, fill: '#8294c4' });
+        s('rect', { x: 19.4, y: 6, width: 13.4, height: 9, rx: 2.4, fill: '#8294c4' });
+        s('rect', { x: 6.5, y: 6.8, width: 5, height: 4.6, rx: 1.2, fill: '#f08a5d', transform: 'rotate(-14 9 9)' });
+      },
+      coffee(s) {
+        s('rect', { x: 0, y: 0, width: 16, height: 10, rx: 3.5, fill: '#b98b5a', stroke: '#82602f', 'stroke-width': 0.8 });
+        s('circle', { cx: 5.5, cy: 5, r: 1.6, fill: '#f3f5f8', stroke: '#98a1b1', 'stroke-width': 0.4 });
+        s('rect', { x: 9, y: 3, width: 4.5, height: 4, rx: 0.8, fill: '#e8553d' });
+      },
+      island(s) {
+        s('rect', { x: 0, y: 0, width: 36, height: 13, rx: 2.5, fill: '#dfe5ec', stroke: '#8f9bad', 'stroke-width': 0.8 });
+        s('rect', { x: 4.5, y: 2.8, width: 10, height: 7.2, rx: 2, fill: '#b4c1d1', stroke: '#8f9bad', 'stroke-width': 0.5 });
+        s('circle', { cx: 9.5, cy: 4.3, r: 0.8, fill: '#6d7a8e' });
+        s('circle', { cx: 23, cy: 6.5, r: 2.4, fill: '#3a4150' });
+        s('circle', { cx: 30, cy: 6.5, r: 2.4, fill: '#3a4150' });
+        [8, 18, 28].forEach(cx => s('circle', { cx, cy: 19.4, r: 3.3, fill: '#e8553d', stroke: '#a93724', 'stroke-width': 0.6 }));
+      },
+      fridge(s) {
+        s('rect', { x: 0, y: 0, width: 12, height: 16, rx: 1.8, fill: '#eef2f7', stroke: '#8f9bad', 'stroke-width': 0.8 });
+        s('line', { x1: 0.6, y1: 6.5, x2: 11.4, y2: 6.5, stroke: '#b4bfcd', 'stroke-width': 0.6 });
+        s('line', { x1: 9.4, y1: 2.4, x2: 9.4, y2: 5, stroke: '#7d889a', 'stroke-width': 1, 'stroke-linecap': 'round' });
+        s('line', { x1: 9.4, y1: 8.2, x2: 9.4, y2: 12, stroke: '#7d889a', 'stroke-width': 1, 'stroke-linecap': 'round' });
+      },
+      shelf(s) {
+        s('rect', { x: 0, y: 0, width: 32, height: 9, rx: 1, fill: '#a5794a', stroke: '#6f4d2b', 'stroke-width': 0.8 });
+        const cols = ['#e8553d', '#4f7bd9', '#f2c14e', '#47a36b', '#8e5bc4'];
+        for (let i = 0; i < 9; i++) {
+          s('rect', { x: 1.6 + i * 3.35, y: 1.6, width: 2.6, height: 5.8, rx: 0.4, fill: cols[i % cols.length] });
+        }
+      },
+      printer(s) {
+        s('rect', { x: 0, y: 0, width: 16, height: 13, rx: 2, fill: '#d0d6df', stroke: '#8b95a5', 'stroke-width': 0.8 });
+        s('rect', { x: 2, y: 1.8, width: 12, height: 4.6, rx: 1, fill: '#aeb7c4' });
+        s('rect', { x: 3.2, y: 7.8, width: 9.6, height: 3.6, rx: 0.6, fill: '#ffffff', stroke: '#b4bccb', 'stroke-width': 0.4 });
+      }
+    };
+
+    /** Draws a piece at x/y (its bounding box), quarter-turned and/or mirrored. */
+    function vacDrawPiece(parent, kind, x, y, rot, flip) {
+      const P = VAC_PIECES[kind];
+      const w = rot ? P.h : P.w, h = rot ? P.w : P.h;
+      svgEl('rect', { class: 'vac-fshadow', x: x + 1.2, y: y + 1.8, width: w, height: h, rx: 3 }, parent);
+      let tr = rot ? `translate(${x + P.h} ${y}) rotate(90)` : `translate(${x} ${y})`;
+      if (flip) tr += ` translate(0 ${P.h}) scale(1 -1)`;
+      const g = svgEl('g', { transform: tr }, parent);
+      VAC_DRAW[kind]((tag, attrs) => svgEl(tag, attrs, g));
+    }
+
+    function vacDrawRug(parent, x, y, w, h, colour) {
+      svgEl('rect', { x, y, width: w, height: h, rx: 4, fill: colour, stroke: 'rgba(0,0,0,0.2)', 'stroke-width': 0.8 }, parent);
+      svgEl('rect', { x: x + 3, y: y + 3, width: w - 6, height: h - 6, rx: 2.5, fill: 'none', stroke: 'rgba(255,255,255,0.6)', 'stroke-width': 1, 'stroke-dasharray': '3 2' }, parent);
+      svgEl('rect', { x: x + 8, y: y + 8, width: w - 16, height: h - 16, rx: 2, fill: 'rgba(255,255,255,0.18)' }, parent);
+    }
+
+    /**
+     * Furnishes one room. Pieces are placed by trial: they must stay out of the
+     * door zones, keep the robot's lanes connected and leave a passage.
+     * Returns the pieces, the rectangles the robot has to avoid and a rug.
+     */
+    function vacFurnish(cell, rnd, keeps, probes) {
+      const B = cell.B;
+      const F = { x0: cell.x + 1.5, y0: cell.y + 24, x1: cell.x + cell.w - 1.5, y1: cell.y + cell.h - 1.5 };
+      const items = [];
+      const rects = [];
+      // Big rooms get a second helping of everything but the main piece.
+      const base = VAC_PLAN[cell.type];
+      const plan = cell.w * cell.h > 22000 ? base.concat(base.slice(1)) : base;
+      plan.forEach(spec => {
+        if (rnd() >= spec[1]) return;
+        const kind = spec[0], P = VAC_PIECES[kind];
+        for (let attempt = 0; attempt < 16; attempt++) {
+          let rot = VAC_STAMP[kind] && rnd() < 0.35 ? 1 : 0;
+          let flip = rnd() < 0.5;
+          let w = rot ? P.h : P.w, h = rot ? P.w : P.h;
+          let x, y;
+          if (spec[2]) {
+            // Against a wall, its back to the wall.
+            const side = ['bottom', 'left', 'right'][Math.floor(rnd() * 3)];
+            if (side === 'bottom') { rot = 0; flip = true; w = P.w; h = P.h; x = F.x0 + rnd() * (F.x1 - F.x0 - w); y = F.y1 - h; }
+            else {
+              rot = 1; flip = side === 'left'; w = P.h; h = P.w;
+              x = side === 'left' ? F.x0 : F.x1 - w;
+              y = F.y0 + rnd() * (F.y1 - F.y0 - h);
+            }
+          } else {
+            if (F.x1 - F.x0 - w < 8 || F.y1 - F.y0 - h < 8) continue;
+            x = F.x0 + 4 + rnd() * (F.x1 - F.x0 - w - 8);
+            y = F.y0 + 4 + rnd() * (F.y1 - F.y0 - h - 8);
+          }
+          x = Math.round(x * 2) / 2; y = Math.round(y * 2) / 2;
+          if (y + h > F.y1 + 0.01 || x + w > F.x1 + 0.01 || x < F.x0 - 0.01) continue;
+          const r = { x0: x, y0: y, x1: x + w, y1: y + h };
+          if (keeps.some(k => vacNear(r, k, 2))) continue;
+          const inf = vacInflate(r, B);
+          if (!inf) continue;
+          if (rects.some(o => vacNear(inf, o, 6))) continue;
+          if (!vacConnected(B, rects.concat([inf]), probes)) continue;
+          items.push({ kind, x, y, rot, flip, r });
+          rects.push(inf);
+          break;
+        }
+      });
+      let rug = null;
+      if (cell.type === 'lounge' && cell.w >= 100) {
+        const w = Math.min(54, cell.w - 40), h = Math.min(34, cell.h - 62);
+        if (h >= 22) rug = { x: cell.x + (cell.w - w) / 2 + (rnd() - 0.5) * 10, y: cell.y + 34 + (cell.h - 34 - h) / 2 * (0.5 + rnd()), w, h };
+      }
+      return { items, rects, rug };
+    }
+
+    // --- Drawing ---------------------------------------------------------------
+
+    /** Floor materials as patterns. */
+    function vacFloorDefs(defs) {
+      const pat = (id, w, h) => svgEl('pattern', { id, width: w, height: h, patternUnits: 'userSpaceOnUse' }, defs);
+      let p = pat('vacWood', 36, 18);
+      svgEl('rect', { width: 36, height: 18, fill: '#ecd9b8' }, p);
+      svgEl('rect', { y: 9, width: 36, height: 9, fill: 'rgba(120,80,30,0.05)' }, p);
+      [['M0 0.3H36', 0], ['M0 9.3H36', 0], ['M12 0V9', 0], ['M30 9V18', 0]].forEach(l =>
+        svgEl('path', { d: l[0], stroke: '#cfb68c', 'stroke-width': 0.7, fill: 'none' }, p));
+      p = pat('vacCarpet', 6, 6);
+      svgEl('rect', { width: 6, height: 6, fill: '#dde3ee' }, p);
+      svgEl('circle', { cx: 1.5, cy: 1.5, r: 0.7, fill: '#c9d1e0' }, p);
+      svgEl('circle', { cx: 4.5, cy: 4.5, r: 0.7, fill: '#c9d1e0' }, p);
+      p = pat('vacCarpetWarm', 6, 6);
+      svgEl('rect', { width: 6, height: 6, fill: '#efe3d8' }, p);
+      svgEl('circle', { cx: 1.5, cy: 1.5, r: 0.7, fill: '#e0cfc0' }, p);
+      svgEl('circle', { cx: 4.5, cy: 4.5, r: 0.7, fill: '#e0cfc0' }, p);
+      p = pat('vacTile', 16, 16);
+      svgEl('rect', { width: 16, height: 16, fill: '#eef1f4' }, p);
+      svgEl('path', { d: 'M16 0V16M0 16H16', stroke: '#d0d7df', 'stroke-width': 0.9, fill: 'none' }, p);
+      p = pat('vacTileMint', 16, 16);
+      svgEl('rect', { width: 16, height: 16, fill: '#e3f2e8' }, p);
+      svgEl('path', { d: 'M16 0V16M0 16H16', stroke: '#c3dccb', 'stroke-width': 0.9, fill: 'none' }, p);
+    }
+
+    /** Charging station against a wall, drawn as if the wall were on its right. */
+    function vacDrawDock(parent, wp, angle) {
+      const g = svgEl('g', { transform: `translate(${wp.x} ${wp.y}) rotate(${angle}) scale(1.25)` }, parent);
+      svgEl('rect', { class: 'vac-dock-zone', x: -38, y: -16, width: 30, height: 32, rx: 7 }, g);
+      svgEl('rect', { class: 'vac-fshadow', x: -7, y: -9, width: 8.5, height: 20, rx: 3 }, g);
+      svgEl('path', { class: 'vac-dock-ramp', d: 'M-8 -8 L-14 -5.5 L-14 5.5 L-8 8 Z' }, g);
+      svgEl('line', { class: 'vac-dock-pin', x1: -13, y1: -3, x2: -11, y2: -3 }, g);
+      svgEl('line', { class: 'vac-dock-pin', x1: -13, y1: 3, x2: -11, y2: 3 }, g);
+      svgEl('rect', { class: 'vac-dock-body', x: -8, y: -10, width: 8, height: 20, rx: 3 }, g);
+      svgEl('path', { class: 'vac-dock-bolt', d: 'M-3.2 -4.6 L-6.2 0.6 H-4.2 L-4.9 4.6 L-1.9 -0.8 H-4Z' }, g);
+      svgEl('circle', { class: 'vac-dock-led', cx: -2.6, cy: 7.4, r: 0.9 }, g);
+    }
+
+    /**
+     * Builds the floor plan for the current running order: rooms with floor,
+     * dust and furniture, walls and doors, the planned route, the dock and
+     * the robot.
      */
     function buildVacMap() {
       const svg = document.getElementById('vacSvg');
@@ -6666,78 +7319,83 @@
 
       const entries = currentShuffledList.concat([t('vacDock')]);
       const n = entries.length;
-      const cols = n > 9 ? 3 : 2;
-      const W = VAC.W, M = VAC.M;
-      const rw = (W - 2 * M) / cols;
-      const rh = cols === 3 ? 92 : 98;
-      const rows = Math.ceil(n / cols);
-      const H = 2 * M + rows * rh;
+      const rnd = vacRandom(vacHash(currentShuffledList.join('|')) % 100000 + n);
+      const { INS, HEAD, GAP, R } = VAC;
+      const W = VAC.W;
+
+      const { cells, H } = vacLayout(entries, rnd);
       svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      const doors = vacDoors(cells, rnd);
 
-      // Lanes: an odd count, so a room that is entered on one side is left on
-      // the other, and tight enough that the brush covers the whole floor.
-      const avail = rh - VAC.HEAD - VAC.BOT;
-      let lanes = Math.ceil(avail / VAC.BRUSH) + 1;
-      if (lanes % 2 === 0) lanes++;
-      const gap = avail / (lanes - 1);
+      // --- Rooms: bounds, furniture, route ----------------------------------
+      let prevKind = '';
+      cells.forEach((cell, k) => {
+        cell.B = { x0: cell.x + INS, y0: cell.y + HEAD, x1: cell.x + cell.w - INS, y1: cell.y + cell.h - INS };
+        cell.inDoor = k > 0 ? doors[k - 1] : null;
+        cell.outDoor = k < n - 1 ? doors[k] : null;
+        cell.entry = cell.inDoor ? cell.inDoor.entry : { x: cell.B.x0, y: cell.B.y0 };
+        cell.exit = cell.outDoor ? cell.outDoor.exit : null;
+        cell.items = []; cell.rects = []; cell.rug = null;
+        if (cell.dock) { cell.type = 'dock'; return; }
 
-      // Cells in snaking order: every second row runs right to left.
-      const cells = entries.map((name, k) => {
-        const r = Math.floor(k / cols);
-        const c = k % cols;
-        const col = r % 2 ? cols - 1 - c : c;
-        return { k, r, c, name, dir: r % 2 ? -1 : 1, x: M + col * rw, y: M + r * rh, dock: k === n - 1 };
+        let kind = VAC_ROOM_KINDS[Math.floor(rnd() * VAC_ROOM_KINDS.length)];
+        if (kind === prevKind && rnd() < 0.75) kind = VAC_ROOM_KINDS[Math.floor(rnd() * VAC_ROOM_KINDS.length)];
+        if (kind === 'meeting' && cell.w < 118) kind = 'office';
+        if (kind === 'kitchen' && cell.w < 100) kind = 'office';
+        cell.type = prevKind = kind;
+
+        const keeps = [];
+        [cell.inDoor, cell.outDoor].forEach(d => {
+          if (!d) return;
+          keeps.push(d.side
+            ? { x0: d.pt.x - 36, x1: d.pt.x + 36, y0: d.pt.y - 22, y1: d.pt.y + 22 }
+            : { x0: d.pt.x - 22, x1: d.pt.x + 22, y0: d.pt.y - 38, y1: d.pt.y + 38 });
+        });
+        if (k === 0) keeps.push({ x0: cell.x, y0: cell.y, x1: cell.x + 46, y1: cell.y + 54 });
+        const probes = [cell.entry, cell.exit].filter(Boolean);
+        const f = vacFurnish(cell, rnd, keeps, probes);
+        cell.items = f.items; cell.rects = f.rects; cell.rug = f.rug;
       });
 
-      // --- Route: lanes per room, door crossings in between -----------------
+      // The charging dock: flush against the wall opposite the door, the robot
+      // drives straight at it.
+      const dc = cells[n - 1];
+      let dockWall, dockAng, dockPt;
+      {
+        const B = dc.B, e = dc.entry;
+        if (dc.inDoor.side) {
+          const right = dc.inDoor.dir > 0;
+          const dy = Math.max(B.y0 + 14, Math.min(B.y1 - 14, B.y0 + (B.y1 - B.y0) * 0.55));
+          dockWall = { x: right ? dc.x + dc.w - 1.5 : dc.x + 1.5, y: dy };
+          dockAng = right ? 0 : 180;
+          const fin = { x: dockWall.x + (right ? -23 : 23), y: dy };
+          const xm = e.x + (fin.x - e.x) * 0.4;
+          dockPt = [e, { x: xm, y: e.y }, { x: xm, y: dy }, fin];
+        } else {
+          const dx = dc.x + dc.w * (e.x > dc.x + dc.w / 2 ? 0.34 : 0.66);
+          dockWall = { x: dx, y: dc.y + dc.h - 1.5 };
+          dockAng = 90;
+          dockPt = [e, { x: dx, y: e.y }, { x: dx, y: dc.y + dc.h - 1.5 - 23 }];
+        }
+      }
+
       const pts = [];
-      const start = [];
-      const end = [];
-      const doors = [];       // door k leads from room k to room k+1
-      let startTop = true;
+      const start = [], end = [], covA = [], covB = [];
       cells.forEach((cell, k) => {
-        const sx = cell.dir > 0 ? cell.x + VAC.INS : cell.x + rw - VAC.INS;
-        const fx = cell.dir > 0 ? cell.x + rw - VAC.INS : cell.x + VAC.INS;
-        const yTop = cell.y + VAC.HEAD;
-        const yBot = cell.y + rh - VAC.BOT;
-        // Entered from above (first room of a row) → start at the top lane;
-        // entered through a side door → continue at the height of that door.
-        startTop = cell.c === 0 ? true : !startTop;
-        if (k > 0) {
-          const prev = cells[k - 1];
-          const E = prev.exit;
-          if (prev.r === cell.r) {
-            const wallX = prev.dir > 0 ? prev.x + rw : prev.x;
-            doors.push({ side: true, x: wallX, y: E.y, dir: prev.dir });
-            pts.push({ x: wallX, y: E.y });
-          } else {
-            const wallY = prev.y + rh;
-            doors.push({ side: false, x: E.x, y: wallY, dir: 1 });
-            pts.push({ x: E.x, y: wallY });
-          }
-        }
-        // The dock sits a little lower than a lane start, clear of its name tag.
-        const S = { x: sx, y: startTop ? yTop + (cell.dock ? 12 : 0) : yBot };
-        cell.entry = S;
-        pts.push(S);
-        start[k] = pts.length - 1;
-        if (!cell.dock) {
-          for (let j = 0; j < lanes; j++) {
-            const y = startTop ? yTop + j * gap : yBot - j * gap;
-            const a = j % 2 === 0 ? sx : fx;
-            const b = j % 2 === 0 ? fx : sx;
-            if (j > 0) pts.push({ x: a, y });
-            pts.push({ x: b, y });
-          }
-        }
+        if (k > 0) pts.push(doors[k - 1].pt);
+        const local = cell.dock
+          ? { pts: dockPt.filter((p, i) => i === 0 || Math.hypot(p.x - dockPt[i - 1].x, p.y - dockPt[i - 1].y) > 0.05), covA: -1, covB: -1 }
+          : vacPlanRoom(cell.B, cell.rects, cell.entry, cell.exit);
+        const off = pts.length;
+        local.pts.forEach(p => pts.push(p));
+        start[k] = off;
         end[k] = pts.length - 1;
-        cell.exit = pts[pts.length - 1];
+        covA[k] = local.covA < 0 ? -1 : off + local.covA;
+        covB[k] = local.covB < 0 ? -1 : off + local.covB;
       });
 
       const cum = [0];
-      for (let i = 1; i < pts.length; i++) {
-        cum.push(cum[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y));
-      }
+      for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y));
       const total = cum[cum.length - 1];
       // Heading of every route segment and, per corner, the stretch over which
       // the robot swings round (half of it before the corner, half after).
@@ -6750,42 +7408,96 @@
         : Math.min(7, (cum[v] - cum[v - 1]) / 2, (cum[v + 1] - cum[v]) / 2));
       const d = pts.map((p, i) => (i ? 'L' : 'M') + p.x.toFixed(1) + ' ' + p.y.toFixed(1)).join(' ');
 
-      // --- Defs: mask that hides dust where the robot has been --------------
+      // Cleaned floor per room, for the m² counter.
+      const rooms = cells.map((cell, k) => {
+        if (cell.dock) return { area: 0, c0: 0, c1: 1 };
+        let area = (cell.w - 3) * (cell.h - 3);
+        cell.items.forEach(it => { area -= (it.r.x1 - it.r.x0) * (it.r.y1 - it.r.y0); });
+        const a = covA[k] >= 0 ? covA[k] : start[k], b = covB[k] >= 0 ? covB[k] : end[k];
+        return { area, c0: cum[a], c1: cum[b] };
+      });
+
+      // --- Defs: floors, mask that hides the dirt where the robot has been ----
       const defs = svgEl('defs', {}, svg);
+      vacFloorDefs(defs);
       const blur = svgEl('filter', { id: 'vacBlur', x: '-80%', y: '-80%', width: '260%', height: '260%' }, defs);
       svgEl('feGaussianBlur', { stdDeviation: 3.5 }, blur);
       const topGrad = svgEl('radialGradient', { id: 'vacTop', cx: '35%', cy: '30%', r: '80%' }, defs);
       svgEl('stop', { offset: '0', 'stop-color': '#5a647a' }, topGrad);
       svgEl('stop', { offset: '1', 'stop-color': '#363e4e' }, topGrad);
+      const shine = svgEl('linearGradient', { id: 'vacShine', x1: 0, y1: 0, x2: 1, y2: 1 }, defs);
+      [[0, 0.5], [0.26, 0.06], [0.42, 0], [0.62, 0.22], [0.8, 0], [1, 0.18]].forEach(s =>
+        svgEl('stop', { offset: s[0], 'stop-color': '#ffffff', 'stop-opacity': s[1] }, shine));
       const mask = svgEl('mask', { id: 'vacDirtMask', maskUnits: 'userSpaceOnUse', x: 0, y: 0, width: W, height: H }, defs);
       svgEl('rect', { width: W, height: H, fill: '#fff' }, mask);
-      const maskPath = svgEl('path', { d, fill: 'none', stroke: '#000', 'stroke-width': gap + 2,
+      const maskPath = svgEl('path', { d, fill: 'none', stroke: '#000', 'stroke-width': VAC.WIPE,
         'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, mask);
 
-      // --- Outside + rooms ---------------------------------------------------
-      svgEl('rect', { width: W, height: H, fill: '#dfe5ec' }, svg);
-      const roomEls = cells.map((cell, k) => {
-        const g = svgEl('g', { class: 'vac-room' + (cell.dock ? ' vac-dockroom' : '') }, svg);
-        svgEl('rect', { class: 'vac-floor', x: cell.x, y: cell.y, width: rw, height: rh,
-          fill: cell.dock ? '#e6f4ea' : VAC_TINTS[k % VAC_TINTS.length] }, g);
+      svgEl('rect', { class: 'vac-bg', width: W, height: H }, svg);
 
-        // Dust specks, hidden again by the mask once the robot has passed.
+      // --- Rooms ----------------------------------------------------------------
+      const FLOORS = { office: ['vacWood', 'vacCarpet'], meeting: ['vacCarpet'], lounge: ['vacCarpetWarm'], kitchen: ['vacTile'], dock: ['vacTileMint'] };
+      const roomEls = cells.map((cell, k) => {
+        const g = svgEl('g', { class: 'vac-room vac-' + cell.type }, svg);
+        const floors = FLOORS[cell.type];
+        const floor = floors[Math.floor(rnd() * floors.length)];
+        const clip = svgEl('clipPath', { id: 'vacClip' + k }, defs);
+        svgEl('rect', { x: cell.x, y: cell.y, width: cell.w, height: cell.h }, clip);
+        svgEl('rect', { x: cell.x, y: cell.y, width: cell.w, height: cell.h, fill: `url(#${floor})` }, g);
+        if (cell.rug) {
+          vacDrawRug(g, cell.rug.x, cell.rug.y, cell.rug.w, cell.rug.h, ['#c9707a', '#6f8fc9', '#d3a84f'][Math.floor(rnd() * 3)]);
+        }
+
+        // Dirt: a dull film, dust, crumbs and a stain or two – wiped away by the mask.
         if (!cell.dock) {
           const dust = svgEl('g', { class: 'vac-dust', mask: 'url(#vacDirtMask)' }, g);
-          const rnd = vacRandom(k + 1);
-          for (let i = 0; i < 26; i++) {
-            const px = cell.x + 8 + rnd() * (rw - 16);
-            const py = cell.y + VAC.HEAD - 4 + rnd() * (rh - VAC.HEAD - 2);
-            if (rnd() < 0.7) svgEl('circle', { cx: px.toFixed(1), cy: py.toFixed(1), r: (0.7 + rnd() * 1.1).toFixed(2), fill: '#b4a283', opacity: 0.75 }, dust);
-            else svgEl('rect', { x: px.toFixed(1), y: py.toFixed(1), width: 2.6, height: 1.6, rx: 0.8, fill: '#9c8c70', opacity: 0.6,
-              transform: `rotate(${Math.round(rnd() * 180)} ${px.toFixed(1)} ${py.toFixed(1)})` }, dust);
+          svgEl('rect', { class: 'vac-dirt', x: cell.x, y: cell.y, width: cell.w, height: cell.h }, dust);
+          const rr = vacRandom(k + 1);
+          const count = Math.round(cell.w * cell.h / 420);
+          for (let i = 0; i < count; i++) {
+            const px = cell.x + 6 + rr() * (cell.w - 12);
+            const py = cell.y + VAC.HEAD - 6 + rr() * (cell.h - VAC.HEAD);
+            const q = rr();
+            if (q < 0.62) svgEl('circle', { cx: px.toFixed(1), cy: py.toFixed(1), r: (0.7 + rr() * 1.2).toFixed(2), fill: '#a89674', opacity: 0.8 }, dust);
+            else if (q < 0.92) svgEl('rect', { x: px.toFixed(1), y: py.toFixed(1), width: 2.8, height: 1.6, rx: 0.8, fill: '#8d7d60', opacity: 0.65,
+              transform: `rotate(${Math.round(rr() * 180)} ${px.toFixed(1)} ${py.toFixed(1)})` }, dust);
+            else svgEl('ellipse', { cx: px.toFixed(1), cy: py.toFixed(1), rx: (3 + rr() * 2.5).toFixed(1), ry: (2 + rr() * 1.6).toFixed(1), fill: '#7b5a35', opacity: 0.2,
+              transform: `rotate(${Math.round(rr() * 180)} ${px.toFixed(1)} ${py.toFixed(1)})` }, dust);
+          }
+        }
+        svgEl('rect', { class: 'vac-shine', x: cell.x, y: cell.y, width: cell.w, height: cell.h, fill: 'url(#vacShine)' }, g);
+
+        cell.items.forEach(it => vacDrawPiece(g, it.kind, it.x, it.y, it.rot, it.flip));
+        if (cell.dock) vacDrawDock(g, dockWall, dockAng);
+
+        // This room's part of the route: planned (dashed), swept swath, gloss, trail.
+        // A finished room drops plan and trail and keeps only a polished floor.
+        const i0 = k > 0 ? start[k] - 1 : 0;
+        const i1 = k < n - 1 ? start[k + 1] - 1 : end[k];
+        const rd = pts.slice(i0, i1 + 1).map((q, i) => (i ? 'L' : 'M') + q.x.toFixed(1) + ' ' + q.y.toFixed(1)).join(' ');
+        svgEl('path', { class: 'vac-plan', d: rd }, g);
+        rooms[k].s0 = cum[i0];
+        rooms[k].len = cum[i1] - cum[i0];
+        rooms[k].swath = svgEl('path', { class: 'vac-swath', 'stroke-width': GAP + 0.8, d: rd }, g);
+        rooms[k].gloss = svgEl('path', { class: 'vac-gloss', 'stroke-width': GAP * 0.36, d: rd }, g);
+        rooms[k].trail = svgEl('path', { class: 'vac-trail', d: rd }, g);
+        rooms[k].dash = '';
+
+        svgEl('rect', { class: 'vac-inner', x: cell.x, y: cell.y, width: cell.w, height: cell.h, 'clip-path': `url(#vacClip${k})` }, g);
+        svgEl('rect', { class: 'vac-outline', x: cell.x + 1.5, y: cell.y + 1.5, width: cell.w - 3, height: cell.h - 3 }, g);
+        svgEl('rect', { class: 'vac-wall', x: cell.x, y: cell.y, width: cell.w, height: cell.h }, g);
+
+        // Sparkles that pop when the room is clean.
+        if (!cell.dock) {
+          for (let i = 0; i < 4; i++) {
+            const sx = cell.x + 18 + rnd() * (cell.w - 36), sy = cell.y + 34 + rnd() * (cell.h - 52);
+            const sg = svgEl('g', { transform: `translate(${sx.toFixed(1)} ${sy.toFixed(1)})` }, g);
+            svgEl('path', { class: 'vac-spark', d: 'M0 -5.5 Q0.8 -0.8 5.5 0 Q0.8 0.8 0 5.5 Q-0.8 0.8 -5.5 0 Q-0.8 -0.8 0 -5.5Z',
+              style: `--d:${(i * 0.18).toFixed(2)}s` }, sg);
           }
         }
 
-        svgEl('rect', { class: 'vac-outline', x: cell.x + 1.5, y: cell.y + 1.5, width: rw - 3, height: rh - 3 }, g);
-
-        // Name tag on the far side of the room: the entry lines run on the
-        // near side, the tag stays clear of them. Always the full name.
+        // Name tag at the top wall, on the side away from the door that leads in.
         const tag = svgEl('g', { class: 'vac-tag' }, g);
         const bg = svgEl('rect', { class: 'vac-tag-bg', rx: 8, height: 16, y: cell.y + 5 }, tag);
         const num = svgEl('circle', { class: 'vac-num', r: 6.5, cy: cell.y + 13 }, tag);
@@ -6793,7 +7505,16 @@
         numT.textContent = cell.dock ? '⚡' : String(k + 1);
         const label = svgEl('text', { class: 'vac-name', y: cell.y + 13.4 }, tag);
         label.textContent = cell.name;
-        const maxText = rw - 12 - 20 - 8;
+        let left;
+        let maxText = cell.w - 12 - 20 - 8;
+        if (cell.inDoor && !cell.inDoor.side) {
+          const dx = cell.inDoor.pt.x;
+          const spaceL = dx - 15 - (cell.x + 6), spaceR = cell.x + cell.w - 6 - (dx + 15);
+          left = spaceL >= spaceR;
+          maxText = Math.min(maxText, Math.max(26, (left ? spaceL : spaceR) - 28));
+        } else {
+          left = cell.dir < 0;
+        }
         let tw = label.getBBox().width;
         if (tw > maxText) {
           label.setAttribute('textLength', maxText.toFixed(1));
@@ -6801,64 +7522,70 @@
           tw = maxText;
         }
         const tagW = 20 + tw + 8;
-        const tagX = cell.dir > 0 ? cell.x + rw - 6 - tagW : cell.x + 6;
+        const tagX = left ? cell.x + 6 : cell.x + cell.w - 6 - tagW;
         bg.setAttribute('x', tagX.toFixed(1));
         bg.setAttribute('width', tagW.toFixed(1));
         num.setAttribute('cx', (tagX + 10).toFixed(1));
         numT.setAttribute('x', (tagX + 10).toFixed(1));
         label.setAttribute('x', (tagX + 20).toFixed(1));
-
-        if (cell.dock) {
-          const S = cell.entry;
-          const ix = S.x + cell.dir * 21;
-          svgEl('circle', { class: 'vac-dock-ring', cx: S.x, cy: S.y, r: 11 }, g);
-          svgEl('rect', { class: 'vac-dock-body', x: ix - 7, y: S.y - 9, width: 14, height: 18, rx: 4 }, g);
-          svgEl('path', { class: 'vac-dock-bolt', d: `M${ix + 1.5} ${S.y - 6} L${ix - 3.5} ${S.y + 0.5} H${ix} L${ix - 1.5} ${S.y + 6} L${ix + 3.5} ${S.y - 1} H${ix}Z` }, g);
-        }
         return g;
       });
 
-      // --- Door openings ----------------------------------------------------
-      doors.forEach(dr => {
-        if (dr.side) {
-          svgEl('rect', { class: 'vac-door', x: dr.x - 3.2, y: dr.y - VAC.DOOR / 2, width: 6.4, height: VAC.DOOR }, svg);
-        } else {
-          svgEl('rect', { class: 'vac-door', x: dr.x - VAC.DOOR / 2, y: dr.y - 3.2, width: VAC.DOOR, height: 6.4 }, svg);
-        }
+      // --- Doors: opening in the wall, swing arc and a leaf that opens ---------
+      const L = VAC.DOOR - 2;
+      const doorEls = doors.map(dr => {
+        const g = svgEl('g', { class: 'vac-door' }, svg);
+        const { x, y } = dr.pt;
+        const jx = dr.side ? 0 : 1, jy = dr.side ? 1 : 0;        // along the doorway
+        const gw = VAC.DOOR;
+        if (dr.side) svgEl('rect', { class: 'vac-gap', x: x - 2.4, y: y - gw / 2, width: 4.8, height: gw }, g);
+        else svgEl('rect', { class: 'vac-gap', x: x - gw / 2, y: y - 2.4, width: gw, height: 4.8 }, g);
+        [-1, 1].forEach(s => svgEl('rect', { class: 'vac-jamb', x: x + jx * s * gw / 2 - 1.6, y: y + jy * s * gw / 2 - 1.6, width: 3.2, height: 3.2 }, g));
+        // The leaf hangs at the jamb before the doorway and opens towards the next room.
+        const P = { x: x - jx * gw / 2 + (dr.side ? 0 : 1), y: y - jy * gw / 2 + (dr.side ? 1 : 0) };
+        const u = { x: jx, y: jy };
+        const v = dr.side ? { x: dr.dir, y: 0 } : { x: 0, y: 1 };
+        const deg = Math.atan2(v.y, v.x) * 180 / Math.PI - Math.atan2(u.y, u.x) * 180 / Math.PI;
+        const open = ((deg + 540) % 360) - 180;
+        const cross = u.x * v.y - u.y * v.x;
+        svgEl('path', { class: 'vac-swing', d: `M${(P.x + u.x * L).toFixed(1)} ${(P.y + u.y * L).toFixed(1)} A${L} ${L} 0 0 ${cross > 0 ? 1 : 0} ${(P.x + v.x * L).toFixed(1)} ${(P.y + v.y * L).toFixed(1)}` }, g);
+        const lg = svgEl('g', { class: 'vac-leaf-g', style: `transform-origin:${P.x.toFixed(1)}px ${P.y.toFixed(1)}px;--open:${open}deg` }, g);
+        svgEl('line', { class: 'vac-leaf', x1: P.x.toFixed(1), y1: P.y.toFixed(1), x2: (P.x + u.x * L).toFixed(1), y2: (P.y + u.y * L).toFixed(1) }, lg);
+        svgEl('circle', { class: 'vac-leaf-knob', cx: (P.x + u.x * (L - 3)).toFixed(1), cy: (P.y + u.y * (L - 3)).toFixed(1), r: 1.1 }, lg);
+        return g;
       });
-
-      // --- Planned route, swept swath, trail --------------------------------
-      const pathAttrs = { d };
-      svgEl('path', Object.assign({ class: 'vac-plan' }, pathAttrs), svg);
-      const swath = svgEl('path', Object.assign({ class: 'vac-swath', 'stroke-width': gap + 0.8 }, pathAttrs), svg);
-      const trail = svgEl('path', Object.assign({ class: 'vac-trail' }, pathAttrs), svg);
 
       // Arrows on the door crossings: the next one pulses.
       const arrows = doors.map(dr => {
+        const x = dr.pt.x, y = dr.pt.y;
         const a = dr.side
-          ? (dr.dir > 0 ? `M${dr.x - 4} ${dr.y - 5} L${dr.x + 5} ${dr.y} L${dr.x - 4} ${dr.y + 5} Z`
-                        : `M${dr.x + 4} ${dr.y - 5} L${dr.x - 5} ${dr.y} L${dr.x + 4} ${dr.y + 5} Z`)
-          : `M${dr.x - 5} ${dr.y - 4} L${dr.x + 5} ${dr.y - 4} L${dr.x} ${dr.y + 5} Z`;
+          ? (dr.dir > 0 ? `M${x - 4} ${y - 5} L${x + 5} ${y} L${x - 4} ${y + 5} Z`
+                        : `M${x + 4} ${y - 5} L${x - 5} ${y} L${x + 4} ${y + 5} Z`)
+          : `M${x - 5} ${y - 4} L${x + 5} ${y - 4} L${x} ${y + 5} Z`;
         return svgEl('path', { class: 'vac-arrow', d: a }, svg);
       });
 
       // --- The robot --------------------------------------------------------
       const robot = svgEl('g', {}, svg);
-      const glow = svgEl('circle', { class: 'vac-robot-glow', r: 15, filter: 'url(#vacBlur)' }, robot);
+      const glow = svgEl('circle', { class: 'vac-robot-glow', r: 14, filter: 'url(#vacBlur)' }, robot);
       // Top view, facing +x (the heading rotates this group). Round shell with
       // a bumper arc in front, the lidar turret and buttons on top, and the side
       // brush at the front right, where the real ones sit.
       const body = svgEl('g', {}, robot);
-      svgEl('circle', { class: 'vac-shadow', cx: 0.8, cy: 1.2, r: 10.4 }, body);
-      svgEl('circle', { class: 'vac-body', r: 10 }, body);
-      svgEl('circle', { r: 8.5, fill: 'url(#vacTop)' }, body);
-      svgEl('path', { class: 'vac-bumper', d: 'M5.8 -8.2 A10 10 0 0 1 5.8 8.2' }, body);
-      svgEl('circle', { class: 'vac-lidar', cx: -1.8, cy: 0, r: 3.5 }, body);
-      svgEl('circle', { class: 'vac-lidar-dot', cx: -2.3, cy: -0.6, r: 1.2 }, body);
-      svgEl('circle', { class: 'vac-btn', cx: 4.2, cy: -3.4, r: 0.95 }, body);
-      svgEl('circle', { class: 'vac-led', cx: 5.4, cy: 0, r: 1.15 }, body);
-      svgEl('circle', { class: 'vac-btn', cx: 4.2, cy: 3.4, r: 0.95 }, body);
-      const brushPos = svgEl('g', { transform: 'translate(7.3 8)' }, body);
+      const rb = svgEl('g', { transform: `scale(${(R / 10).toFixed(2)})` }, body);
+      [[-15, 2.5, 0], [-19.5, -3, 0.35], [-24, 1, 0.7]].forEach(s =>
+        svgEl('path', { class: 'vac-twinkle', d: 'M0 -3 Q0.5 -0.5 3 0 Q0.5 0.5 0 3 Q-0.5 0.5 -3 0 Q-0.5 -0.5 0 -3Z',
+          transform: `translate(${s[0]} ${s[1]})`, style: `animation-delay:${s[2]}s` }, rb));
+      svgEl('circle', { class: 'vac-shadow', cx: 0.8, cy: 1.2, r: 10.4 }, rb);
+      svgEl('circle', { class: 'vac-body', r: 10 }, rb);
+      svgEl('circle', { r: 8.5, fill: 'url(#vacTop)' }, rb);
+      svgEl('path', { class: 'vac-bumper', d: 'M5.8 -8.2 A10 10 0 0 1 5.8 8.2' }, rb);
+      svgEl('circle', { class: 'vac-lidar', cx: -1.8, cy: 0, r: 3.5 }, rb);
+      svgEl('circle', { class: 'vac-lidar-dot', cx: -2.3, cy: -0.6, r: 1.2 }, rb);
+      svgEl('circle', { class: 'vac-btn', cx: 4.2, cy: -3.4, r: 0.95 }, rb);
+      svgEl('circle', { class: 'vac-led', cx: 5.4, cy: 0, r: 1.15 }, rb);
+      svgEl('circle', { class: 'vac-btn', cx: 4.2, cy: 3.4, r: 0.95 }, rb);
+      const brushPos = svgEl('g', { transform: 'translate(7.3 8)' }, rb);
       const brush = svgEl('g', { class: 'vac-brush' }, brushPos);
       [0, 120, 240].forEach(a => {
         const rad = a * Math.PI / 180;
@@ -6867,9 +7594,22 @@
       });
       svgEl('circle', { class: 'vac-hub', r: 1.3 }, brushPos);
 
-      vacGeo = { cells, roomEls, start, end, cum, pts, total, maskPath, swath, trail, arrows, robot, glow, body, ang, turnW };
+      const totalArea = rooms.reduce((s, r) => s + r.area, 0) * VAC.M2;
+      vacGeo = {
+        cells, roomEls, doorEls, start, end, covA, covB, cum, pts, total, maskPath, arrows, robot, glow, body, ang, turnW,
+        rooms, totalArea,
+        areaEl: document.getElementById('vacArea'), pctEl: document.getElementById('vacPct'), barEl: document.getElementById('vacBarFill')
+      };
+      const of = document.getElementById('vacAreaOf');
+      if (of) setText(of, 'vacOf', { total: vacFmt(totalArea) });
       vacShownLen = 0;
       vacSetProgress(0);
+    }
+
+    /** 12.3 → "12,3" (German) or "12.3". */
+    function vacFmt(v) {
+      const s = v.toFixed(1);
+      return currentLang === 'de' ? s.replace('.', ',') : s;
     }
 
     /** Point on the route at distance l along it. */
@@ -6903,7 +7643,7 @@
       return g.ang[i];
     }
 
-    /** Draws robot and swept section at distance l. */
+    /** Draws robot, cleaned swath and the m² counter at distance l. */
     function vacSetProgress(l) {
       const g = vacGeo;
       if (!g) return;
@@ -6912,8 +7652,24 @@
       g.body.setAttribute('transform', `rotate(${vacHeadingAt(l).toFixed(1)})`);
       const dash = `${Math.max(0.01, l).toFixed(2)} ${(g.total + 40).toFixed(0)}`;
       g.maskPath.setAttribute('stroke-dasharray', dash);
-      g.swath.setAttribute('stroke-dasharray', dash);
-      g.trail.setAttribute('stroke-dasharray', dash);
+      g.rooms.forEach(r => {
+        const run = Math.max(0.01, Math.min(r.len, l - r.s0)).toFixed(1);
+        if (r.dash === run) return;
+        r.dash = run;
+        const da = `${run} ${(r.len + 40).toFixed(0)}`;
+        r.swath.setAttribute('stroke-dasharray', da);
+        r.gloss.setAttribute('stroke-dasharray', da);
+        r.trail.setAttribute('stroke-dasharray', da);
+      });
+
+      let cleaned = 0;
+      g.rooms.forEach(r => {
+        if (r.area > 0) cleaned += r.area * Math.max(0, Math.min(1, (l - r.c0) / ((r.c1 - r.c0) || 1)));
+      });
+      const share = g.totalArea > 0 ? Math.min(1, cleaned * VAC.M2 / g.totalArea) : 0;
+      if (g.areaEl) g.areaEl.textContent = vacFmt(share * g.totalArea);
+      if (g.pctEl) g.pctEl.textContent = Math.round(share * 100) + ' %';
+      if (g.barEl) g.barEl.style.width = (share * 100).toFixed(1) + '%';
     }
 
     /** Glides the robot to distance target. */
@@ -6942,8 +7698,8 @@
     }
 
     /**
-     * Moves the robot inside the current room: the share of the lanes already
-     * vacuumed is the share of the speaker's time already used up.
+     * Moves the robot inside the current room: the share of the route already
+     * driven is the share of the speaker's time already used up.
      *
      * @param {boolean} [atDock] - Park the robot on the charging dock.
      */
@@ -6954,10 +7710,8 @@
       if (last < 1) return;
 
       let target;
-      let progress;
       if (atDock) {
-        target = g.cum[g.start[last]];
-        progress = 1;
+        target = g.total;
       } else {
         const i = Math.max(0, Math.min(last - 1, activeIndex));
         const used = individualTimeSeconds > 0
@@ -6966,7 +7720,6 @@
         const a = g.cum[g.start[i]];
         const b = g.cum[g.end[i]];
         target = a + used * (b - a);
-        progress = (i + used) / last;
       }
       vacMoveTo(target);
 
@@ -6979,24 +7732,28 @@
         if (numT && k < last) numT.textContent = el.classList.contains('is-done') ? '✓' : String(k + 1);
       });
       g.arrows.forEach((el, k) => el.classList.toggle('is-next', !atDock && k === activeIndex));
+      g.doorEls.forEach((el, k) => {
+        el.classList.toggle('is-open', atDock || k < activeIndex);
+        el.classList.toggle('is-ajar', !atDock && k === activeIndex);
+      });
       const map = document.getElementById('vacMap');
       if (map) {
         map.classList.toggle('is-late', !atDock && timeRemainingSeconds < 0);
         map.classList.toggle('is-docked', !!atDock);
       }
-      updateVacHead(atDock, last, progress);
+      updateVacHead(atDock, last);
     }
 
     /**
-     * Head of the display: the room being vacuumed, the room after it, the
-     * share of the floor plan that is clean and – in overtime – a delay chip.
+     * Head of the display: the room being vacuumed, the room after it, the room
+     * count and – in overtime – a delay chip.
      */
-    function updateVacHead(atDock, last, progress) {
+    function updateVacHead(atDock, last) {
       const label = document.getElementById('vacHeadLabel');
       const nameEl = document.getElementById('vacHeadName');
       const nextRow = document.getElementById('vacNext');
       const nextName = document.getElementById('vacNextName');
-      const pct = document.getElementById('vacPercent');
+      const count = document.getElementById('vacPercent');
       const delay = document.getElementById('vacDelay');
 
       setText(label, atDock ? 'vacDocked' : 'vacNow');
@@ -7012,7 +7769,7 @@
         const nx = Math.min(last, Math.max(0, activeIndex) + 1);
         if (nextName) nextName.textContent = nx === last ? '⚡ ' + t('vacDock') : currentShuffledList[nx];
       }
-      if (pct) pct.textContent = Math.round(Math.max(0, Math.min(1, progress)) * 100) + ' %';
+      if (count) count.textContent = (atDock ? last : Math.max(0, activeIndex) + 1) + ' / ' + last;
       if (delay) {
         const late = !atDock && timeRemainingSeconds < 0;
         delay.classList.toggle('is-on', late);

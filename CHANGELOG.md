@@ -10,6 +10,30 @@ den Cache-Namen und löst im laufenden Betrieb das „Neue Version verfügbar“
 aus. **Merkregel:** Bei jeder Änderung, die ausgeliefert wird, `CACHE_VERSION`
 hochzählen *und* hier einen Eintrag ergänzen.
 
+## [v25] – 2026-11-26
+
+### Geändert
+- **Saugroboter – Grundriss komplett neu:** Statt eines gleichmäßigen Rasters
+  gibt es jetzt Räume in unterschiedlichen Größen (2–3 pro Reihe, mal ein
+  breiter Besprechungsraum, mal ein kleines Büro), jeweils mit eigenem Boden
+  (Parkett, Teppich, Fliesen) und Möbeln: Schreibtisch mit Stuhl, Besprechungs-
+  tisch, Sofa mit Teppich, Kücheninsel, Regale, Pflanzen. Der Grundriss ist für
+  dieselbe Mannschaft stabil.
+- **Saugroboter – fährt um Hindernisse herum:** Die Möbel sind echte
+  Hindernisse. Der Roboter saugt den freien Boden in Bahnen, hält Abstand zu
+  den Möbeln und fährt rechtwinklig um sie herum zur nächsten Fläche.
+- **Saugroboter – Türen:** Wände mit Türrahmen, Schwenkbogen und Türblatt. Das
+  Türblatt öffnet sich, wenn der Roboter hindurchfährt; die nächste Tür steht
+  einen Spalt offen und leuchtet orange.
+- **Saugroboter – Ladestation:** Sie steht jetzt bündig an der Wand
+  gegenüber der Tür, mit Rampe, Kontakten, LED und markierter Andockzone; der
+  Roboter fährt gerade darauf zu und lädt am Ende (grüne LED).
+- **Saugroboter – gesaugte Fläche:** Neue Kennzahlenleiste mit gesaugten m²
+  (zählen live hoch), Fortschrittsbalken und Prozent. Der Boden ist vorher
+  matt und staubig mit Flecken; hinter dem Roboter wird er sauber und
+  glänzend. Ist ein Raum fertig, blenden Plan und Spur aus, der Boden glänzt
+  und Glitzersterne poppen auf. Die Kopfzeile zeigt jetzt den Raum („4 / 8“).
+
 ## [v24] – 2026-11-25
 
 ### Behoben
